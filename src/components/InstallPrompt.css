@@ -1,0 +1,101 @@
+/* ── InstallPrompt banner ────────────────────────────────────────────── */
+.install-prompt {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  right: 1rem;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  background: rgba(22, 33, 62, 0.96);
+  border: 1px solid rgba(108, 71, 255, 0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(108, 71, 255, 0.2),
+    0 0 24px rgba(108, 71, 255, 0.2);
+  /* slide up in */
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.install-prompt--in {
+  animation: promptSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes promptSlideIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.install-prompt__icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.install-prompt__text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.install-prompt__text strong {
+  font-family: var(--font-heading);
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.install-prompt__text span {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  color: var(--color-subtext);
+  line-height: 1.4;
+}
+
+.install-prompt__text b {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.install-prompt__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.install-prompt__btn {
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.install-prompt__btn:active { transform: scale(0.95); }
+
+.install-prompt__btn--install {
+  background: linear-gradient(135deg, var(--color-primary), #9B6BFF);
+  color: #fff;
+}
+
+.install-prompt__btn--install:hover { opacity: 0.9; }
+
+.install-prompt__btn--dismiss {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--color-subtext);
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.install-prompt__btn--dismiss:hover { color: var(--color-text); }
