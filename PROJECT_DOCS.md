@@ -1,4 +1,4 @@
-# Unique.com — Project Documentation
+# Earth Ranker — Project Documentation
 
 ## 1. Current Project Status
 
@@ -19,7 +19,7 @@ Based on an audit of the actual codebase, here is the real-time status of all ma
 ## 2. Complete File Structure
 
 ```text
-W:\The Office\Currently Working\Unique\
+W:\The Office\Currently Working\Earth Ranker\
 ├── .env                        - Local environment variables (do not commit)
 ├── .env.example                - Template for required environment variables
 ├── .gitignore                  - Git ignore rules

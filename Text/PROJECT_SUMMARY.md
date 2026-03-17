@@ -1,10 +1,10 @@
-# Unique (Rarity) — Project Status & Summary
+# Earth Ranker (Rarity) — Project Status & Summary
 
 > **Current Status:** 🟢 Production Ready (98%)  
 > **Stack:** React 18, Vite 8, Tailwind CSS 3, Firebase Firestore, Groq AI (Llama 3.1)
 
 ## 1. Project Overview
-**Unique.com (Rarity)** is a highly interactive web application designed to calculate a user's statistical rarity among the 8.28 billion people on Earth. Users take a 9-step quiz about their biological traits, demographics, and skills. The system then computes a **Rarity Score (0-100)**, assigns a **Rarity Tier** (Common to Mythic), and displays a "1 in X" probability of another human sharing the exact same combination of traits.
+**Earth Ranker (Rarity)** is a highly interactive web application designed to calculate a user's statistical rarity among the 8.28 billion people on Earth. Users take a 9-step quiz about their biological traits, demographics, and skills. The system then computes a **Rarity Score (0-100)**, assigns a **Rarity Tier** (Common to Mythic), and displays a "1 in X" probability of another human sharing the exact same combination of traits.
 
 ## 2. Recent Updates & What Has Been Done
 Over the recent development sessions, several critical features and security fixes have been successfully implemented:

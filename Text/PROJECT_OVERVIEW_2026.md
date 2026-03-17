@@ -1,7 +1,7 @@
-# Unique.com — Project Overview 2026
+# Earth Ranker — Project Overview 2026
 
 ## 1. Project Concept
-**Unique.com** is a high-polish, interactive web application designed to calculate a user's "Global Rarity Score." It uses a probability engine to analyze a combination of biological and sociological traits, comparing the user against the 8.2 billion human population.
+**Earth Ranker** is a high-polish, interactive web application designed to calculate a user's "Global Rarity Score." It uses a probability engine to analyze a combination of biological and sociological traits, comparing the user against the 8.2 billion human population.
 
 ## 2. Core Features
 - **Uniqueness Quiz:** A 9-step animated quiz covering core traits (Age, Gender, Country, Education) and bonus traits (Handedness, Blood Type, Eye/Hair Color, Skills, Birthday).

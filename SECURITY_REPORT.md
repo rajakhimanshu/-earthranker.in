@@ -1,6 +1,6 @@
-# Security Audit Report — Unique.com (March 2026)
+# Security Audit Report — Earth Ranker (March 2026)
 
-This report details the security status of the Unique project based on a comprehensive audit of the React, Vite, and serverless backend architecture.
+This report details the security status of the Earth Ranker project based on a comprehensive audit of the React, Vite, and serverless backend architecture.
 
 ## 🔴 CRITICAL (Fix Before Deploying)
 *None.* All critical security vulnerabilities identified during the audit (including the Groq API key exposure) have been remediated in the current codebase.

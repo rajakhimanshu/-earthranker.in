@@ -9,7 +9,7 @@ export default function About() {
   const [copied, setCopied] = useState(false);
   const { t } = useTranslation();
 
-  const embedCode = `<iframe src="https://unique.com/quiz?embed=true" width="100%" height="600px" frameborder="0" style="border-radius: 12px; border: 1px solid rgba(108,71,255,0.2);"></iframe>`;
+  const embedCode = `<iframe src="https://earthranker.himanshurajak.in/quiz?embed=true" width="100%" height="600px" frameborder="0" style="border-radius: 12px; border: 1px solid rgba(108,71,255,0.2);"></iframe>`;
 
   const copyEmbedCode = async () => {
     try {
@@ -32,7 +32,7 @@ export default function About() {
         {/* Hero */}
         <div className="mb-12 mt-4">
           <h1 className="font-heading text-4xl md:text-5xl font-bold mb-4">
-            {t.about.title} <span className="text-gradient">Unique.com</span>
+            {t.about.title} <span className="text-gradient">Earth Ranker</span>
           </h1>
           <p className="text-lg leading-relaxed" style={{ color: 'var(--color-subtext)' }}>
             {t.about.subtitle1}<br />{t.about.subtitle2}
@@ -91,7 +91,7 @@ export default function About() {
             <div className="relative group">
               <pre className="p-4 rounded-xl bg-[#1E1E1E] border border-white/5 overflow-x-auto text-sm font-mono text-[#D4D4D4] shadow-inner mb-4">
                 <code>
-                  <span className="text-[#569CD6]">&lt;iframe</span> <span className="text-[#9CDCFE]">src</span>=<span className="text-[#CE9178]">"https://unique.com/quiz?embed=true"</span> <span className="text-[#9CDCFE]">width</span>=<span className="text-[#CE9178]">"100%"</span> <span className="text-[#9CDCFE]">height</span>=<span className="text-[#CE9178]">"600px"</span> <span className="text-[#9CDCFE]">frameborder</span>=<span className="text-[#CE9178]">"0"</span> <span className="text-[#9CDCFE]">style</span>=<span className="text-[#CE9178]">"border-radius: 12px; border: 1px solid rgba(108,71,255,0.2);"</span><span className="text-[#569CD6]">&gt;&lt;/iframe&gt;</span>
+                  <span className="text-[#569CD6]">&lt;iframe</span> <span className="text-[#9CDCFE]">src</span>=<span className="text-[#CE9178]">"https://earthranker.himanshurajak.in/quiz?embed=true"</span> <span className="text-[#9CDCFE]">width</span>=<span className="text-[#CE9178]">"100%"</span> <span className="text-[#9CDCFE]">height</span>=<span className="text-[#CE9178]">"600px"</span> <span className="text-[#9CDCFE]">frameborder</span>=<span className="text-[#CE9178]">"0"</span> <span className="text-[#9CDCFE]">style</span>=<span className="text-[#CE9178]">"border-radius: 12px; border: 1px solid rgba(108,71,255,0.2);"</span><span className="text-[#569CD6]">&gt;&lt;/iframe&gt;</span>
                 </code>
               </pre>
               

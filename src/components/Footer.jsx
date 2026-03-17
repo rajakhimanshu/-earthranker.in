@@ -45,7 +45,7 @@ export default function Footer() {
         <div className="site-footer__brand">
           <Link to="/" className="site-footer__logo">
             <span className="site-footer__logo-dot" aria-hidden="true" />
-            Unique<span className="site-footer__logo-tld">.com</span>
+            Earth<span className="site-footer__logo-tld"> Ranker</span>
           </Link>
           <p className="site-footer__tagline" dangerouslySetInnerHTML={{__html: t.footer.tagline}}>
           </p>
@@ -86,7 +86,7 @@ export default function Footer() {
 
       {/* Bottom bar */}
       <div className="site-footer__bottom">
-        <span className="site-footer__copy">© {year} Unique.com</span>
+        <span className="site-footer__copy">© {year} Earth Ranker</span>
         <span className="site-footer__disclaimer">
           {t.footer.disclaimer}
         </span>

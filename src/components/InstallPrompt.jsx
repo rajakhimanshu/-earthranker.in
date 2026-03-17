@@ -75,7 +75,7 @@ export default function InstallPrompt() {
     <div className={`install-prompt install-prompt--in`} role="banner" aria-live="polite">
       <div className="install-prompt__icon" aria-hidden>📲</div>
       <div className="install-prompt__text">
-        <strong>Install Unique.com</strong>
+        <strong>Install Earth Ranker</strong>
         {isIOS
           ? <span>Tap <b>Share</b> → <b>Add to Home Screen</b> for the full app experience.</span>
           : <span>Add to your home screen for instant access — works offline too!</span>

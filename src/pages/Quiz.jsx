@@ -584,7 +584,7 @@ export default function Quiz() {
       
       {isEmbed && (
         <div className="text-center pb-4 z-10 relative">
-          <a href="https://unique.com" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white/60 text-xs font-medium transition-colors">
+          <a href="https://earthranker.himanshurajak.in" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white/60 text-xs font-medium transition-colors">
             {t.poweredBy}
           </a>
         </div>

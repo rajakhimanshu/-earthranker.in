@@ -190,7 +190,7 @@ function downloadScoreCard({ oneIn, rarityTier, tierEmoji, tierColor, score, t }
   ctx.fillStyle = stripe;
   ctx.fillRect(0, 0, SIZE, 5);
 
-  // ── UNIQUE.COM logo text ────────────────────────────────────────────
+  // ── EARTH RANKER logo text ────────────────────────────────────────────
   ctx.font         = 'bold 52px "Space Grotesk", "Arial", sans-serif';
   ctx.letterSpacing = '6px';
   ctx.textAlign    = 'center';
@@ -199,7 +199,7 @@ function downloadScoreCard({ oneIn, rarityTier, tierEmoji, tierColor, score, t }
   ctx.shadowColor  = '#8B5CF6';
   ctx.shadowBlur   = 24;
   ctx.fillStyle    = '#A78BFA';
-  ctx.fillText('UNIQUE.COM', SIZE/2, 130);
+  ctx.fillText('EARTH RANKER', SIZE/2, 130);
   ctx.shadowBlur   = 0;
 
   // ── Thin divider under logo ─────────────────────────────────────────
@@ -301,7 +301,7 @@ function downloadScoreCard({ oneIn, rarityTier, tierEmoji, tierColor, score, t }
   ctx.font      = '500 32px "Inter", "Arial", sans-serif';
   ctx.fillStyle = 'rgba(167,139,250,0.85)';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('unique.com', SIZE/2, 960);
+  ctx.fillText('earthranker.himanshurajak.in', SIZE/2, 960);
 
   // ── Bottom color stripe ──────────────────────────────────────────────
   ctx.fillStyle = stripe;
@@ -309,7 +309,7 @@ function downloadScoreCard({ oneIn, rarityTier, tierEmoji, tierColor, score, t }
 
   // ── Trigger download ─────────────────────────────────────────────────
   const link = document.createElement('a');
-  link.download = 'unique-score-card.png';
+  link.download = 'earthranker-score-card.png';
   link.href     = canvas.toDataURL('image/png');
   link.click();
 }
@@ -419,7 +419,7 @@ function downloadCertificate({ name, oneIn, rarityTier, tierColor, t }) {
   ctx.textAlign = 'center';
   ctx.font = 'bold 32px "Space Grotesk", sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.8)';
-  ctx.fillText('Unique.com', W / 2, H - pad - 45);
+  ctx.fillText('Earth Ranker', W / 2, H - pad - 45);
 
   // Footnote
   ctx.font = '400 18px "Inter", sans-serif';
@@ -434,7 +434,7 @@ function downloadCertificate({ name, oneIn, rarityTier, tierColor, t }) {
 
   // Download
   const link = document.createElement('a');
-  link.download = 'unique-certificate.png';
+  link.download = 'earthranker-certificate.png';
   link.href = canvas.toDataURL('image/png', 1.0);
   link.click();
 }
@@ -1040,7 +1040,7 @@ export default function Result() {
         
         {isEmbed && (
           <div className="text-center pt-8 pb-4 z-10 relative mt-4">
-            <a href="https://unique.com" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white/60 text-xs font-medium transition-colors">
+            <a href="https://earthranker.himanshurajak.in" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white/60 text-xs font-medium transition-colors">
               {t.poweredBy}
             </a>
           </div>

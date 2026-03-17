@@ -1,4 +1,4 @@
-# Unique.com — Short Status Summary
+# Earth Ranker — Short Status Summary
 
 ## 📊 Current State
 **Status:** 🟢 **Production Ready (98%)**

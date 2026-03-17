@@ -1,5 +1,5 @@
-// ── Service Worker — Unique.com App Shell Cache ──────────────────────
-const CACHE_NAME = 'unique-v1';
+// ── Service Worker — Earth Ranker App Shell Cache ──────────────────────
+const CACHE_NAME = 'earthranker-v1';
 const OFFLINE_URL = '/';
 
 // Assets that make up the app shell (precached on install)

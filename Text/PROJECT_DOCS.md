@@ -1,4 +1,4 @@
-# Unique.com — Complete Project Documentation
+# Earth Ranker — Complete Project Documentation
 
 > **Last updated:** March 2026  
 > **Stack:** React 18 · Vite 8 · Tailwind CSS 3 · Firebase Firestore · React Router 7
@@ -29,7 +29,7 @@
 
 ## 1. Project Overview
 
-**Unique.com** is a web application that calculates how statistically rare a person is among the 8 billion people on Earth. Users answer a 9-step quiz about their biological traits, demographic background, and personal skills. The app multiplies the independent probabilities of each trait and produces a **Rarity Score** (0–100), a **Rarity Tier** (Common → Mythic), and a **"1 in X"** figure showing exactly how rare their combination is.
+**Earth Ranker** is a web application that calculates how statistically rare a person is among the 8 billion people on Earth. Users answer a 9-step quiz about their biological traits, demographic background, and personal skills. The app multiplies the independent probabilities of each trait and produces a **Rarity Score** (0–100), a **Rarity Tier** (Common → Mythic), and a **"1 in X"** figure showing exactly how rare their combination is.
 
 ### Original Idea
 Conceived in December 2023 as a viral curiosity tool — a "What makes you unique?" calculator that could spread through social sharing. The core insight: even if each individual trait is common, the *combination* of all traits together is almost always extraordinarily rare.
@@ -103,7 +103,7 @@ Press `Ctrl + C` in the terminal.
 ## 3. Complete Folder & File Structure
 
 ```
-Unique/
+Earth Ranker/
 ├── public/                        # Static files served as-is
 │   ├── favicon.svg                # Browser tab icon (SVG)
 │   ├── icons.svg                  # Source icon artwork
@@ -269,7 +269,7 @@ Both fonts are loaded from Google Fonts via `@import` in `globals.css`.
 
 See **Section 6** for full step-by-step breakdown.
 
-**Embed Mode:** Append `?embed=true` to hide the header, back link, and footer. A "Powered by Unique.com" link appears at the bottom instead.
+**Embed Mode:** Append `?embed=true` to hide the header, back link, and footer. A "Powered by Earth Ranker" link appears at the bottom instead.
 
 **Sections:**
 - Top header bar: back link, step dots, step counter (hidden in embed mode)
@@ -355,7 +355,7 @@ See **Section 6** for full step-by-step breakdown.
 
 **Sections:**
 - Back to Home link
-- "About **Unique.com**" heading (gradient on brand)
+- "About **Earth Ranker**" heading (gradient on brand)
 - Subtitle: two lines explaining the concept
 - 4 feature cards: Science-backed, Fully anonymous, Probability engine, Built for curiosity
 - FAQ accordion (3 questions): How is score calculated? Where does data come from? Is my data stored?
@@ -793,7 +793,7 @@ Exports two objects: `EN` and `HI`. Both have identical key structures.
 | `leaderboard` | back, title, subtitle, live, loading, error |
 | `tiers` | Mythic, Legendary, Epic, Rare, Uncommon, Common |
 | `sharingText` | Template with `{oneIn}` and `{tier}` placeholders |
-| `poweredBy` | "Powered by Unique.com" |
+| `poweredBy` | "Powered by Earth Ranker" |
 
 ---
 
@@ -902,8 +902,8 @@ export const db = getFirestore(app);
 
 | Field | Value |
 |---|---|
-| `name` | Unique.com |
-| `short_name` | Unique |
+| `name` | Earth Ranker |
+| `short_name` | Earth Ranker |
 | `description` | Discover how rare you are among 8 billion people on Earth. |
 | `start_url` | `/` |
 | `display` | `standalone` |
@@ -917,11 +917,11 @@ export const db = getFirestore(app);
 
 ### Service Worker (`public/sw.js`)
 
-**Cache name:** `unique-v1`
+**Cache name:** `earthranker-v1`
 
 **Strategy:**
 - **Install:** Pre-caches app shell: `/`, `/index.html`, `/manifest.json`, `/src/main.jsx`
-- **Activate:** Deletes any old caches not named `unique-v1`; immediately claims clients
+- **Activate:** Deletes any old caches not named `earthranker-v1`; immediately claims clients
 - **Navigation requests (HTML):** Network-first → cache fallback → offline response
 - **Static assets:** Cache-first → network fallback (caches successful same-origin responses)
 
@@ -1070,14 +1070,13 @@ firebase deploy --only hosting
 ### Step 6 — Expected Live URL
 
 ```
-https://uniquecom.web.app
-https://uniquecom.firebaseapp.com
+https://earthranker.himanshurajak.in
 ```
 
 ### Step 7 — Connect a Custom Domain
 
 1. Firebase Console → Hosting → Add custom domain
-2. Enter your domain (e.g. `unique.com`)
+2. Enter your domain (e.g. `earthranker.himanshurajak.in`)
 3. Add the provided DNS records in your domain registrar
 4. Wait for SSL certificate provisioning (15–60 minutes)
 

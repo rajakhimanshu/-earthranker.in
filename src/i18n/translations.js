@@ -233,7 +233,7 @@ export const EN = {
     back: 'Back to Home',
     title: 'About',
     subtitle1: 'There are 8.28 billion people on Earth. Not one of them is exactly like you.',
-    subtitle2: 'Unique.com turns that insight into a number — your personal rarity score.',
+    subtitle2: 'Earth Ranker turns that insight into a number — your personal rarity score.',
     faqTitle: 'Frequently Asked Questions',
     faq1Q: 'How is the score calculated?',
     faq1A: 'We use a probability engine based on independent trait multiplication. For example, if trait A occurs in 10% of people and trait B in 5%, the combination occurs in 0.5% (0.1 &times; 0.05). We multiply all your selected traits, scale it logarithmically to a 0–100 score, and assign you a global rarity tier.',
@@ -243,7 +243,7 @@ export const EN = {
     faq3A: '<span className="text-white">No. Everything is entirely local to your device.</span> Nothing is ever sent to a server. We don\'t use cookies for tracking, we don\'t ask for a login, and we do not store your quiz configuration. It disappears the moment you close the tab unless you explicitly save a share link.',
     ctaTitle: 'Ready to find out?',
     ctaSub: 'Take the 2-minute quiz and get your uniqueness score instantly.',
-    embedTitle: 'Add Unique.com to Your Website',
+    embedTitle: 'Add Earth Ranker to Your Website',
     embedSub: 'Embed our uniqueness calculator directly on your blog or website. Simply copy and paste the snippet below into your HTML.',
     embedCopy: 'Copy Embed Code',
     embedNote: 'Widget supports dynamic sizing and responsive layouts.',
@@ -262,7 +262,7 @@ export const EN = {
       },
       {
         title: 'Built for curiosity',
-        body: 'Unique.com is a passion project celebrating the statistical miracle that is every individual human being.'
+        body: 'Earth Ranker is a passion project celebrating the statistical miracle that is every individual human being.'
       }
     ]
   },
@@ -271,7 +271,7 @@ export const EN = {
   compare: {
     backToHome: 'Back to Home',
     title: 'Compare Rarity',
-    subtitle: 'Ask a friend to send you their Unique.com challenge link, and see who has the rarest combination of traits!',
+    subtitle: 'Ask a friend to send you their Earth Ranker challenge link, and see who has the rarest combination of traits!',
     placeholder: "Enter friend's username or share link…",
     invite: 'Invite',
     challengedTitle: "You've been challenged! ⚔️",
@@ -293,7 +293,7 @@ export const EN = {
   // Leaderboard Page
   leaderboard: {
     back: 'Back to Home',
-    title: 'Global Leaderboard',
+    title: 'Earth Ranker Leaderboard',
     subtitle: 'Top 50 rarest human profiles on Earth.',
     live: 'Live Updates',
     loading: 'Scanning the globe...',
@@ -353,8 +353,8 @@ export const EN = {
     "Fewer than 0.1% of people are estimated to carry all four Rh-null blood group antigens — the rarest blood on Earth.",
   ],
   
-  sharingText: 'I am 1 in {oneIn} people on Earth! I got {tier} on Unique.com 🔥 Find out how rare YOU are →',
-  poweredBy: 'Powered by Unique.com'
+  sharingText: 'I am 1 in {oneIn} people on Earth! I got {tier} on Earth Ranker 🔥 Find out how rare YOU are →',
+  poweredBy: 'Powered by Earth Ranker'
 };
 
 export const HI = {
@@ -592,7 +592,7 @@ export const HI = {
     back: 'होम पर वापस जाएँ',
     title: 'हमारे बारे में',
     subtitle1: 'पृथ्वी पर 8 अरब लोग हैं। उनमें से कोई भी आपके जैसा नहीं है।',
-    subtitle2: 'Unique.com उस अंतर्दृष्टि को एक संख्या में बदल देता है — आपका व्यक्तिगत दुर्लभता स्कोर।',
+    subtitle2: 'Earth Ranker उस अंतर्दृष्टि को एक संख्या में बदल देता है — आपका व्यक्तिगत दुर्लभता स्कोर।',
     faqTitle: 'अक्सर पूछे जाने वाले प्रश्न',
     faq1Q: 'स्कोर की गणना कैसे की जाती है?',
     faq1A: 'हम स्वतंत्र विशेषता गुणा के आधार पर एक संभाव्यता इंजन का उपयोग करते हैं। उदाहरण के लिए, यदि विशेषता A 10% लोगों में और विशेषता B 5% लोगों में होती है, तो संयोजन 0.5% (0.1 × 0.05) में होता है। हम आपके सभी चयनित गुणों को गुणा करते हैं, इसे 0-100 स्कोर पर लघुगणकीय रूप से स्केल करते हैं, और आपको एक वैश्विक दुर्लभता स्तर प्रदान करते हैं।',
@@ -602,7 +602,7 @@ export const HI = {
     faq3A: '<span className="text-white">नहीं। सब कुछ पूरी तरह से आपके डिवाइस के लिए स्थानीय है।</span> सर्वर पर कुछ भी नहीं भेजा जाता है। हम ट्रैकिंग के लिए कुकीज़ का उपयोग नहीं करते हैं, हम लॉगिन के लिए नहीं पूछते हैं, और हम आपके क्विज़ कॉन्फ़िगरेशन को संग्रहीत नहीं करते हैं। यह उसी क्षण गायब हो जाता है जब आप टैब बंद करते हैं जब तक कि आप स्पष्ट रूप से साझा लिंक को सहेजते नहीं हैं।',
     ctaTitle: 'जानने के लिए तैयार हैं?',
     ctaSub: '2 मिनट का क्विज़ लें और तुरंत अपना विशिष्टता स्कोर प्राप्त करें।',
-    embedTitle: 'अपनी वेबसाइट पर Unique.com जोड़ें',
+    embedTitle: 'अपनी वेबसाइट पर Earth Ranker जोड़ें',
     embedSub: 'हमारे विशिष्टता कैलकुलेटर को सीधे अपने ब्लॉग या वेबसाइट पर एम्बेड करें। बस नीचे दिए गए स्निपेट को कॉपी करें और अपने HTML में पेस्ट करें।',
     embedCopy: 'एम्बेड कोड कॉपी करें',
     embedNote: 'विजेट डायनेमिक साइज़िंग और रिस्पॉन्सिव लेआउट का समर्थन करता है।',
@@ -621,7 +621,7 @@ export const HI = {
       },
       {
         title: 'जिज्ञासा के लिए निर्मित',
-        body: 'Unique.com एक जुनून प्रोजेक्ट है जो प्रत्येक व्यक्तिगत मानव होने के सांख्यिकीय चमत्कार का जश्न मनाता है।'
+        body: 'Earth Ranker एक जुनून प्रोजेक्ट है जो प्रत्येक व्यक्तिगत मानव होने के सांख्यिकीय चमत्कार का जश्न मनाता है।'
       }
     ]
   },
@@ -630,7 +630,7 @@ export const HI = {
   compare: {
     backToHome: 'होम पर वापस जाएँ',
     title: 'दुर्लभता की तुलना',
-    subtitle: 'किसी दोस्त से उनका Unique.com चुनौती लिंक मांगें, और देखें कि किसके पास गुणों का सबसे दुर्लभ संयोजन है!',
+    subtitle: 'किसी दोस्त से उनका Earth Ranker चुनौती लिंक मांगें, और देखें कि किसके पास गुणों का सबसे दुर्लभ संयोजन है!',
     placeholder: "दोस्त का उपयोगकर्ता नाम या साझा लिंक दर्ज करें...",
     invite: 'आमंत्रित करें',
     challengedTitle: "आपको चुनौती दी गई है! ⚔️",
@@ -652,7 +652,7 @@ export const HI = {
   // Leaderboard Page
   leaderboard: {
     back: 'होम पर वापस जाएँ',
-    title: 'वैश्विक लीडरबोर्ड',
+    title: 'Earth Ranker लीडरबोर्ड',
     subtitle: 'पृथ्वी पर शीर्ष 50 सबसे दुर्लभ मानव प्रोफ़ाइल।',
     live: 'लाइव अपडेट',
     loading: 'दुनिया को स्कैन कर रहा है...',
@@ -712,6 +712,6 @@ export const HI = {
     "अनुमान है कि 0.1% से भी कम लोग चारों Rh-null रक्त समूह एंटीजन ले जाते हैं — पृथ्वी पर सबसे दुर्लभ रक्त।"
   ],
   
-  sharingText: 'मैं पृथ्वी पर {oneIn} लोगों में से 1 हूँ! मुझे Unique.com पर {tier} मिला 🔥 पता करें कि आप कितने दुर्लभ हैं →',
-  poweredBy: 'Unique.com द्वारा संचालित'
+  sharingText: 'मैं पृथ्वी पर {oneIn} लोगों में से 1 हूँ! मुझे Earth Ranker पर {tier} मिला 🔥 पता करें कि आप कितने दुर्लभ हैं →',
+  poweredBy: 'Earth Ranker द्वारा संचालित'
 };
