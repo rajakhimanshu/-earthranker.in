@@ -57,13 +57,18 @@ export default function Compare() {
 
   // 1. Decode challenger data
   useEffect(() => {
-    const challengerParam = searchParams.get('challenger');
+    const params = new URLSearchParams(window.location.search);
+    const challengerParam = params.get('challenger');
+    
     if (challengerParam) {
       try {
-        const decoded = JSON.parse(decodeURIComponent(escape(atob(challengerParam))));
+        // Handle URL-safe base64 (replace - with + and _ with /)
+        const base64 = challengerParam.replace(/-/g, '+').replace(/_/g, '/');
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(base64))));
         setChallenger(decoded);
       } catch (err) {
         console.error("Failed to decode challenger data", err);
+        setChallenger(null);
       }
     }
   }, [searchParams]);

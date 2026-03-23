@@ -164,6 +164,16 @@ function ProfileModal({ entry, onClose }) {
 
         {/* Scrollable body */}
         <div className="lb-modal-body">
+          {/* AI Story */}
+          {entry.aiStory && (
+            <div className="lb-modal-section">
+              <div className="lb-modal-section-title">✨ Rarity Story</div>
+              <p className="text-sm italic text-white/70 leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">
+                "{entry.aiStory}"
+              </p>
+            </div>
+          )}
+
           {/* Traits */}
           {traits.length > 0 && (
             <div className="lb-modal-section">
@@ -197,6 +207,85 @@ function ProfileModal({ entry, onClose }) {
           Joined {formatTimeAgo(entry.timestamp)}
         </div>
       </div>
+    </div>
+  );
+}
+
+function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSkills, timestamp, aiStory, isMe, idx, onClick }) {
+  const [expanded, setExpanded] = useState(false);
+  const { color, emoji } = getTierVisuals(tier);
+  const flag = getFlag(country);
+  const isTop3 = (idx + 1) <= 3;
+  const rankColor = isTop3 ? RANK_COLORS[idx + 1] : 'var(--color-subtext)';
+  const rank = idx + 1;
+
+  return (
+    <div
+      className="glass-card px-4 py-4 sm:px-5 flex flex-col gap-3 transition-all hover:scale-[1.01] w-full max-w-full overflow-hidden cursor-pointer"
+      style={isTop3 ? { borderColor: `${rankColor}50`, background: `linear-gradient(90deg, ${rankColor}10, transparent)` }
+        : isMe ? { borderColor: '#A855F750', background: 'rgba(168,85,247,0.07)' } : {}}
+      onClick={(e) => {
+        if (e.target.closest('.story-toggle')) return;
+        onClick();
+      }}
+    >
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Rank */}
+        <div className="w-6 sm:w-8 text-center font-heading font-bold text-lg shrink-0"
+          style={{ color: isMe ? '#A855F7' : rankColor, ...(isTop3 ? { filter: `drop-shadow(0 0 5px ${rankColor}80)` } : {}) }}>
+          #{rank}
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0 flex flex-col justify-center">
+          <div className="flex items-center gap-2">
+            <span className="font-heading font-semibold text-white truncate text-base sm:text-lg">{displayName}</span>
+            {isMe && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">YOU</span>}
+            <span className="text-sm" title={country}>{flag}</span>
+          </div>
+          <div className="flex items-center gap-2 mt-0.5 text-xs sm:text-sm">
+            <span style={{ color }}>{emoji} {tier}</span>
+            <span className="opacity-40">•</span>
+            <span style={{ color: 'var(--color-subtext)' }}>
+              {oneIn && oneIn > 0 ? `1 in ${oneIn.toLocaleString('en-US')}` : 'Score only'}
+            </span>
+          </div>
+        </div>
+
+        {/* Score & Time */}
+        <div className="flex flex-col items-end shrink-0">
+          <div className="font-heading font-bold text-lg sm:text-xl" style={{ color: isMe ? '#A855F7' : rankColor }}>
+            {score.toFixed(2)}
+          </div>
+          <div className="text-[10px] sm:text-xs" style={{ color: 'var(--color-subtext)' }}>
+            {formatTimeAgo(timestamp)}
+          </div>
+        </div>
+      </div>
+
+      {aiStory && (
+        <div className="mt-1 pl-9 sm:pl-12">
+          <p className={`text-xs italic text-white/40 leading-relaxed ${expanded ? '' : 'line-clamp-1'}`}>
+            "{aiStory}"
+          </p>
+          <button 
+            onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
+            className="story-toggle text-[10px] font-bold uppercase tracking-widest text-purple-400/80 hover:text-purple-400 mt-1"
+          >
+            {expanded ? 'Show less ↑' : 'Read full story ↓'}
+          </button>
+        </div>
+      )}
+
+      {topSkills && topSkills.length > 0 && (
+        <div className="flex items-center gap-1 mt-1 pl-9 sm:pl-12 flex-wrap">
+          {topSkills.map((sk, i) => {
+            const name = sk.split(' ').slice(1).join(' ') || sk;
+            const icon = sk.split(' ')[0] || '';
+            return <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/70">{icon} {name}</span>;
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -313,63 +402,16 @@ export default function Leaderboard() {
             <div className="text-center py-20 text-gray-500 animate-pulse">{t.leaderboard.loading}</div>
           ) : (
             <div className="space-y-3 pb-32 w-full overflow-hidden">
-              {filtered.map(({ id, displayName = 'Unknown', score = 0, tier = 'Common', oneIn, country = 'Global', topSkills = [], timestamp }, idx) => {
-                const rank = entries.findIndex(e => e.id === id) + 1;
-                const { color, emoji } = getTierVisuals(tier);
-                const flag = getFlag(country);
-                const isTop3 = rank <= 3;
-                const rankColor = isTop3 ? RANK_COLORS[rank] : 'var(--color-subtext)';
-                const isMe = id === myLeaderboardDocId;
-
+              {filtered.map((entry, idx) => {
+                const isMe = entry.id === myLeaderboardDocId;
                 return (
-                  <div
-                    key={id || idx}
-                    className="glass-card px-4 py-4 sm:px-5 flex items-center gap-3 sm:gap-4 transition-all hover:scale-[1.01] w-full max-w-full overflow-hidden cursor-pointer"
-                    style={isTop3 ? { borderColor: `${rankColor}50`, background: `linear-gradient(90deg, ${rankColor}10, transparent)` }
-                      : isMe ? { borderColor: '#A855F750', background: 'rgba(168,85,247,0.07)' } : {}}
-                    onClick={() => setSelectedEntry({ id, displayName, score, tier, oneIn, country, topSkills, timestamp, ...entries.find(e => e.id === id) })}
-                  >
-                    {/* Rank */}
-                    <div className="w-6 sm:w-8 text-center font-heading font-bold text-lg shrink-0"
-                      style={{ color: isMe ? '#A855F7' : rankColor, ...(isTop3 ? { filter: `drop-shadow(0 0 5px ${rankColor}80)` } : {}) }}>
-                      #{rank}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <div className="flex items-center gap-2">
-                        <span className="font-heading font-semibold text-white truncate text-base sm:text-lg">{displayName}</span>
-                        {isMe && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">{t.leaderboard.you}</span>}
-                        <span className="text-sm" title={country}>{flag}</span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5 text-xs sm:text-sm">
-                        <span style={{ color }}>{emoji} {t.tiers[tier.toLowerCase()] || tier}</span>
-                        <span className="opacity-40">•</span>
-                        <span style={{ color: 'var(--color-subtext)' }}>
-                          {oneIn && oneIn > 0 ? `1 in ${oneIn.toLocaleString('en-US')}` : 'Score only'}
-                        </span>
-                      </div>
-                      {topSkills && topSkills.length > 0 && (
-                        <div className="flex items-center gap-1 mt-2 flex-wrap">
-                          {topSkills.map((sk, i) => {
-                            const name = sk.split(' ').slice(1).join(' ') || sk;
-                            const icon = sk.split(' ')[0] || '';
-                            return <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/70">{icon} {name}</span>;
-                          })}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Score & Time */}
-                    <div className="flex flex-col items-end shrink-0">
-                      <div className="font-heading font-bold text-lg sm:text-xl" style={{ color: isMe ? '#A855F7' : rankColor }}>
-                        {score.toFixed(2)}
-                      </div>
-                      <div className="text-[10px] sm:text-xs" style={{ color: 'var(--color-subtext)' }}>
-                        {formatTimeAgo(timestamp)}
-                      </div>
-                    </div>
-                  </div>
+                  <LeaderboardEntry 
+                    key={entry.id || idx}
+                    {...entry}
+                    idx={entries.findIndex(e => e.id === entry.id)}
+                    isMe={isMe}
+                    onClick={() => setSelectedEntry(entry)}
+                  />
                 );
               })}
             </div>

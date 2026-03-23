@@ -7,12 +7,28 @@ import './Home.css';
 /* ─── Components ─────────────────────────────────────────────────────── */
 function LiveCounter() {
   const { t } = useTranslation();
-  const [count, setCount] = useState(() => Math.floor(Math.random() * (1200 - 847 + 1) + 847));
+  
+  const getDailyUserCount = () => {
+    const now = new Date();
+    // Seed based on today's date (same for ALL users on same day)
+    const seed = now.getFullYear() * 10000 + (now.getMonth()+1) * 100 + now.getDate();
+    // Base count between 850-1050, deterministic per day
+    const base = 850 + (seed % 200);
+    // Add time-based increment: grows slowly through the day (0 to ~120 extra)
+    const minutesIntoDay = now.getHours() * 60 + now.getMinutes();
+    const timeIncrement = Math.floor((minutesIntoDay / 1440) * 120);
+    // Small pseudo-random wobble (same for everyone, changes every 5 minutes)
+    const wobbleSeed = Math.floor(minutesIntoDay / 5);
+    const wobble = (wobbleSeed * 13 + seed) % 17;
+    return base + timeIncrement + wobble;
+  };
+
+  const [count, setCount] = useState(getDailyUserCount);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCount(prev => prev + 1);
-    }, Math.floor(Math.random() * (15000 - 8000 + 1) + 8000));
+      setCount(getDailyUserCount());
+    }, 60000); // Update every minute to reflect timeIncrement
     return () => clearInterval(timer);
   }, []);
 
@@ -181,13 +197,17 @@ export default function Home() {
         </div>
 
         {/* Scroll hint */}
-        <div className="scroll-hint" aria-label="Scroll down">
+        <button 
+          className="scroll-hint cursor-pointer" 
+          aria-label="Scroll down"
+          onClick={() => document.getElementById('next-section')?.scrollIntoView({ behavior: 'smooth' })}
+        >
           <div className="scroll-hint__dot" />
-        </div>
+        </button>
       </section>
 
       {/* ── TESTIMONIALS MARQUEE ───────────────────────────────────── */}
-      <section className="marquee-section">
+      <section id="next-section" className="marquee-section">
         <div className="marquee-track">
           {TESTIMONIALS.map((testi, i) => (
             <TestimonialCard key={i} {...testi} />

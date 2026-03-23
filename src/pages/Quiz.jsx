@@ -383,7 +383,21 @@ export default function Quiz() {
 
       {/* ── Card ────────────────────────────────────────────── */}
       <div className="quiz-card-wrap">
+        {/* Scroll hint for mobile (only if content is long) */}
+        <button 
+          className="scroll-hint cursor-pointer md:hidden" 
+          aria-label="Scroll down"
+          style={{ position: 'fixed', bottom: '1.5rem', zIndex: 100 }}
+          onClick={() => {
+            const next = document.getElementById('next-section');
+            if (next) next.scrollIntoView({ behavior: 'smooth' });
+            else window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+          }}
+        >
+          <div className="scroll-hint__dot" />
+        </button>
         <form 
+          id="next-section"
           key={animKey} 
           className={`quiz-card quiz-card--${dir}`}
           onSubmit={(e) => {

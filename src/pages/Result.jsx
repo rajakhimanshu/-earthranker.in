@@ -319,7 +319,7 @@ function downloadScoreCard({ oneIn, rarityTier, tierEmoji, tierColor, score, t }
 }
 
 /* Canvas Certificate generator */
-function downloadCertificate({ name, oneIn, rarityTier, tierColor, t }) {
+function downloadCertificate({ name, oneIn, rarityTier, tierColor, t, traitBreakdown }) {
   const W = 1920;
   const H = 1080;
   const canvas = document.createElement('canvas');
@@ -327,193 +327,273 @@ function downloadCertificate({ name, oneIn, rarityTier, tierColor, t }) {
   canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  // 1. Background
-  ctx.fillStyle = '#050515'; // Dark navy
+  // 1. Background: Deep navy with subtle star particles
+  ctx.fillStyle = '#0F0A2E';
   ctx.fillRect(0, 0, W, H);
 
-  // 2. Decorative Border
-  const pad = 60;
-  ctx.strokeStyle = '#6C47FF'; // Purple border
-  ctx.lineWidth = 8;
-  ctx.strokeRect(pad, pad, W - pad * 2, H - pad * 2);
-
-  // Corner Ornaments
-  ctx.lineWidth = 4;
-  const drawOrnament = (x, y, rot) => {
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rot);
+  // Draw star particles
+  ctx.fillStyle = '#FFFFFF';
+  for (let i = 0; i < 200; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const size = Math.random() * 2;
+    const opacity = Math.random() * 0.8;
+    ctx.globalAlpha = opacity;
     ctx.beginPath();
-    ctx.moveTo(0, 40);
-    ctx.lineTo(0, 0);
-    ctx.lineTo(40, 0);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(15, 15, 10, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-  };
-  drawOrnament(pad + 20, pad + 20, 0);
-  drawOrnament(W - pad - 20, pad + 20, Math.PI / 2);
-  drawOrnament(W - pad - 20, H - pad - 20, Math.PI);
-  drawOrnament(pad + 20, H - pad - 20, -Math.PI / 2);
-
-  // 3. Header
-  ctx.textAlign = 'center';
-  const goldGrad = ctx.createLinearGradient(0, 150, 0, 250);
-  goldGrad.addColorStop(0, '#D4AF37');
-  goldGrad.addColorStop(0.5, '#FFD700');
-  goldGrad.addColorStop(1, '#B8860B');
-  
-  ctx.font = 'bold 80px "Space Grotesk", sans-serif';
-  ctx.fillStyle = goldGrad;
-  ctx.letterSpacing = '12px';
-  ctx.fillText('CERTIFICATE OF RARITY', W / 2, 220);
-
-  // 4. Certification Text
-  ctx.font = 'italic 48px Georgia, serif';
-  ctx.fillStyle = '#E2E8F0';
-  ctx.letterSpacing = 'normal';
-  ctx.fillText(`This certifies that ${name || 'a unique individual'}`, W / 2, 340);
-  ctx.fillText('is among the rarest humans on Earth', W / 2, 410);
-
-  // 5. Massive 1-in-X Number
-  const numText = `1 in ${oneIn.toLocaleString('en-US')}`;
-  const numGrad = ctx.createLinearGradient(W/2 - 400, 0, W/2 + 400, 0);
-  numGrad.addColorStop(0, '#A855F7');
-  numGrad.addColorStop(1, '#FF6B6B');
-  
-  ctx.font = 'black 180px "Space Grotesk", sans-serif';
-  ctx.fillStyle = numGrad;
-  ctx.shadowColor = 'rgba(168, 85, 247, 0.4)';
-  ctx.shadowBlur = 50;
-  ctx.fillText(numText, W / 2, 620);
-  ctx.shadowBlur = 0;
-
-  // 6. Tier Hexagon Badge
-  const hexX = W / 2;
-  const hexY = 780;
-  const hexSize = 80;
-  ctx.fillStyle = tierColor;
-  ctx.beginPath();
-  for (let i = 0; i < 6; i++) {
-    const angle = (Math.PI / 3) * i;
-    const x = hexX + hexSize * Math.cos(angle);
-    const y = hexY + hexSize * Math.sin(angle);
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fill();
   }
+  ctx.globalAlpha = 1.0;
+
+  // 2. Watermark: Rotated 45 degrees, very transparent
+  ctx.save();
+  ctx.translate(W / 2, H / 2);
+  ctx.rotate(-Math.PI / 4);
+  ctx.font = 'bold 200px "Space Grotesk", sans-serif';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+  ctx.textAlign = 'center';
+  ctx.fillText('EARTH RANKER', 0, 0);
+  ctx.restore();
+
+  // 3. Outer border: Double line gold
+  const pad = 60;
+  ctx.strokeStyle = '#FFD700';
+  ctx.lineWidth = 4;
+  // Outer rectangle
+  ctx.strokeRect(pad, pad, W - pad * 2, H - pad * 2);
+  // Inner rectangle
+  ctx.strokeRect(pad + 15, pad + 15, W - pad * 2 - 30, H - pad * 2 - 30);
+
+  // 4. Header
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 80px "Space Grotesk", sans-serif';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.letterSpacing = '10px';
+  ctx.fillText('🌍 EARTH RANKER', W / 2, 180);
+
+  // Subtitle
+  ctx.font = 'italic 42px "Space Grotesk", sans-serif';
+  ctx.fillStyle = '#A78BFA';
+  ctx.letterSpacing = '2px';
+  ctx.fillText('Certificate of Global Rarity', W / 2, 245);
+
+  // Divider line: Gradient purple-to-pink
+  const grad = ctx.createLinearGradient(W / 2 - 300, 0, W / 2 + 300, 0);
+  grad.addColorStop(0, '#A78BFA');
+  grad.addColorStop(1, '#FF6B6B');
+  ctx.fillStyle = grad;
+  ctx.fillRect(W / 2 - 300, 280, 600, 4);
+
+  // 5. Body Text
+  ctx.font = '400 32px "Inter", sans-serif';
+  ctx.fillStyle = '#94A3B8'; // Gray
+  ctx.letterSpacing = 'normal';
+  ctx.fillText('This certifies that', W / 2, 380);
+
+  // USER NAME
+  ctx.font = 'bold 110px "Space Grotesk", sans-serif';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillText((name || 'A Unique Soul').toUpperCase(), W / 2, 510);
+
+  // Rarity Statement
+  ctx.font = 'bold 64px "Space Grotesk", sans-serif';
+  const rarityText = `is ranked 1 in ${oneIn.toLocaleString('en-US')} Billion`;
+  const rarityGrad = ctx.createLinearGradient(W/2 - 400, 0, W/2 + 400, 0);
+  rarityGrad.addColorStop(0, '#A78BFA');
+  rarityGrad.addColorStop(1, '#FF6B6B');
+  ctx.fillStyle = rarityGrad;
+  ctx.fillText(rarityText, W / 2, 620);
+
+  // 6. Tier Badge Box
+  const badgeW = 600;
+  const badgeH = 100;
+  const badgeX = W / 2 - badgeW / 2;
+  const badgeY = 680;
+  ctx.fillStyle = tierColor;
+  // Rounded rectangle
+  const r = 20;
+  ctx.beginPath();
+  ctx.moveTo(badgeX + r, badgeY);
+  ctx.lineTo(badgeX + badgeW - r, badgeY);
+  ctx.quadraticCurveTo(badgeX + badgeW, badgeY, badgeX + badgeW, badgeY + r);
+  ctx.lineTo(badgeX + badgeW, badgeY + badgeH - r);
+  ctx.quadraticCurveTo(badgeX + badgeW, badgeY + badgeH, badgeX + badgeW - r, badgeY + badgeH);
+  ctx.lineTo(badgeX + r, badgeY + badgeH);
+  ctx.quadraticCurveTo(badgeX, badgeY + badgeH, badgeX, badgeY + badgeH - r);
+  ctx.lineTo(badgeX, badgeY + r);
+  ctx.quadraticCurveTo(badgeX, badgeY, badgeX + r, badgeY);
   ctx.closePath();
   ctx.fill();
-  
-  ctx.font = 'bold 36px "Space Grotesk", sans-serif';
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillText(rarityTier.toUpperCase(), hexX, hexY + 12);
 
-  // 7. Footer Details
-  ctx.font = '400 24px "Inter", sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.4)';
-  
-  // Date
-  const today = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+  ctx.font = 'bold 48px "Space Grotesk", sans-serif';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.letterSpacing = '4px';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`✨ ${rarityTier.toUpperCase()}`, W / 2, badgeY + badgeH / 2);
+  ctx.textBaseline = 'alphabetic';
+
+  // 7. Top Rarest Traits
+  const traits = (traitBreakdown || []).slice(0, 3);
+  if (traits.length > 0) {
+    ctx.font = '500 28px "Inter", sans-serif';
+    ctx.fillStyle = '#A78BFA';
+    ctx.textAlign = 'left';
+    const startY = 850;
+    traits.forEach((t, i) => {
+      ctx.fillText(`• ${t.value} (${t.percentage} population)`, W / 2 - 250, startY + (i * 45));
+    });
+  }
+
+  // 8. Footer Info
+  ctx.font = '400 22px "Inter", sans-serif';
+  ctx.fillStyle = '#64748B';
   ctx.textAlign = 'left';
-  ctx.fillText(`Issued: ${today}`, pad + 40, H - pad - 40);
+  
+  // Certificate ID
+  const certId = `ER-2026-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+  ctx.fillText(`ID: ${certId}`, pad + 60, H - pad - 60);
+
+  // Date
+  ctx.textAlign = 'right';
+  const dateStr = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+  ctx.fillText(`Certified: ${dateStr}`, W - pad - 60, H - pad - 60);
 
   // Branding
   ctx.textAlign = 'center';
-  ctx.font = 'bold 32px "Space Grotesk", sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.8)';
-  ctx.fillText('Earth Ranker', W / 2, H - pad - 45);
+  ctx.font = '500 24px "Inter", sans-serif';
+  ctx.fillStyle = 'rgba(167, 139, 250, 0.6)';
+  ctx.fillText('earthranker.himanshurajak.in', W / 2, H - pad - 60);
 
-  // Footnote
-  ctx.font = '400 18px "Inter", sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.3)';
-  ctx.fillText('Based on world population of 8.28 billion — March 2026', W / 2, H - pad - 15);
-
-  // ID
-  const certId = Math.random().toString(16).substr(2, 8).toUpperCase();
-  ctx.textAlign = 'right';
-  ctx.font = '400 24px "Inter", sans-serif';
-  ctx.fillText(`Cert ID: #${certId}`, W - pad - 40, H - pad - 40);
-
-  // Download
+  // 9. Download
   const link = document.createElement('a');
-  link.download = 'earthranker-certificate.png';
+  link.download = `EarthRanker-Certificate-${certId}.png`;
   link.href = canvas.toDataURL('image/png', 1.0);
   link.click();
 }
 
 /* Famous Compare Section */
-function FamousCompareSection() {
+function FamousCompareSection({ userName, userTraits, score, tier, oneIn, tierEmoji, tierColor }) {
   const { t } = useTranslation();
-  const [person, setPerson] = useState(null);
+  const [query, setQuery] = useState('');
   const [result, setResult] = useState(null);
-  const [isRolling, setIsRolling] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  function rollRandomPerson() {
-    setIsRolling(true);
-    setTimeout(() => {
-      // Pick a random person different from current (if any)
-      const available = person ? famousProfiles.filter(p => p.name !== person.name) : famousProfiles;
-      const pick = available[Math.floor(Math.random() * available.length)];
-      setPerson(pick);
-      
-      // Calculate their rarity
-      const data = calculateScore(pick.traits);
+  async function handleSearch(e) {
+    if (e) e.preventDefault();
+    if (!query.trim()) return;
+    
+    setLoading(true);
+    setError('');
+    setResult(null);
+    
+    try {
+      const data = await compareCelebrity({ 
+        userName: userName || 'You', 
+        userTraits: userTraits.map(t => t.value),
+        celebrityName: query 
+      });
       setResult(data);
-      setIsRolling(false);
-    }, 400); // Small delay for UX
-  }
-
-  if (!person || !result) {
-    return (
-      <section className="famous-section glass-card">
-        <h2 className="result-section-title">{t.result.famous.title}</h2>
-        <p className="result-section-sub">{t.result.famous.sub}</p>
-        <button className="famous-btn" onClick={rollRandomPerson}>
-          {t.result.famous.btn}
-        </button>
-      </section>
-    );
+      trackEvent('celebrity_compared', { name: query });
+    } catch (err) {
+      console.error(err);
+      setError('Try a more famous name or check your connection.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <section className="famous-section glass-card">
-      <div className="famous-header">
-        <h2 className="result-section-title">{t.result.famous.title}</h2>
-        <button className="famous-shuffle-btn" onClick={rollRandomPerson} disabled={isRolling}>
-          {isRolling ? '...' : t.result.famous.shuffle}
+      <h2 className="result-section-title">AI Personality Match</h2>
+      <p className="result-section-sub">Compare your rarity with any famous person in history.</p>
+      
+      <form onSubmit={handleSearch} className="flex gap-2 mb-8">
+        <input 
+          type="text" 
+          placeholder="Type any famous person's name..."
+          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500/40"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+        />
+        <button 
+          type="submit" 
+          disabled={loading || !query.trim()}
+          className="px-6 py-3 rounded-xl bg-purple-600 font-bold text-sm hover:bg-purple-500 transition-colors disabled:opacity-50"
+        >
+          {loading ? 'Analyzing...' : 'Compare'}
         </button>
-      </div>
+      </form>
 
-      <div className={`famous-card ${isRolling ? 'famous-rolling' : ''}`}>
-        <div className="famous-profile">
-          <div className="famous-emoji">{person.emoji}</div>
-          <div className="famous-details">
-            <h3>{person.name}</h3>
-            <p className="famous-fact">{person.fact}</p>
+      {error && <p className="text-coral-400 text-sm mb-4">{error}</p>}
+
+      {loading && (
+        <div className="flex flex-col items-center gap-4 py-12 animate-pulse">
+          <div className="text-4xl">🧠</div>
+          <p className="text-sm text-white/40 uppercase tracking-widest font-bold">Analyzing {query}'s traits with AI...</p>
+        </div>
+      )}
+
+      {result && !loading && (
+        <div className="famous-compare-grid animate-fade-in">
+          <div className="compare-card side-user">
+            <div className="compare-header">
+              <span className="compare-emoji">{tierEmoji}</span>
+              <div>
+                <h4 className="compare-name">{userName || 'You'}</h4>
+                <span className="compare-tier" style={{ color: tierColor }}>{tier}</span>
+              </div>
+            </div>
+            <div className="compare-score-box">
+              <span className="compare-score-label">Rarity Score</span>
+              <span className="compare-score-value">{score}</span>
+            </div>
+          </div>
+
+          <div className="compare-divider">
+            <div className="match-circle">
+              <span className="match-val">{result.matchScore}%</span>
+              <span className="match-label">Match</span>
+            </div>
+            <div className="match-bar-wrap">
+              <div className="match-bar-fill" style={{ width: `${result.matchScore}%` }} />
+            </div>
+          </div>
+
+          <div className="compare-card side-celeb">
+            <div className="compare-header">
+              <span className="compare-emoji">{result.celebrityEmoji}</span>
+              <div>
+                <h4 className="compare-name">{result.celebrityName}</h4>
+                <span className="compare-tier" style={{ color: '#FFD700' }}>Famous Figure</span>
+              </div>
+            </div>
+            <div className="compare-score-box">
+              <span className="compare-score-label">Global Impact</span>
+              <span className="compare-score-value">High</span>
+            </div>
+          </div>
+
+          <div className="compare-details-full">
+             <div className="details-box">
+                <h5>Shared Traits</h5>
+                <div className="details-tags">
+                  {result.sharedTraits.map(t => <span key={t} className="tag-shared">{t}</span>)}
+                </div>
+             </div>
+             <div className="details-box">
+                <h5>Key Differences</h5>
+                <div className="details-tags">
+                  {result.keyDifferences.map(t => <span key={t} className="tag-diff">{t}</span>)}
+                </div>
+             </div>
+             <div className="details-fact" style={{ borderColor: tierColor }}>
+                <p><strong>Fun Fact:</strong> {result.funFact}</p>
+                <p className="mt-2 text-xs text-white/40 italic">{result.rarityNote}</p>
+             </div>
           </div>
         </div>
-
-        <div className="famous-stats">
-          <div className="famous-stat-row">
-            <span className="famous-stat-label">{t.result.famous.tierLabel}</span>
-            <span className="famous-stat-value" style={{ color: result.tierColor }}>
-              {result.tierEmoji} {t.tiers[result.rarityTier] || result.rarityTier}
-            </span>
-          </div>
-          <div className="famous-stat-row">
-            <span className="famous-stat-label">{t.result.famous.oneInLabel}</span>
-            <span className="famous-stat-value">
-              {result.oneIn.toLocaleString('en-US')}
-            </span>
-          </div>
-        </div>
-
-        <div className="famous-conclusion" style={{ background: `${result.tierColor}20`, borderLeft: `4px solid ${result.tierColor}` }}>
-          {t.result.famous.conclusion.replace('{name}', person.name).split('{tier}')[0]}<strong>{t.tiers[result.rarityTier] || result.rarityTier}</strong>{t.result.famous.conclusion.replace('{name}', person.name).split('{tier}')[1]}
-        </div>
-      </div>
+      )}
     </section>
   );
 }
@@ -676,6 +756,7 @@ export default function Result() {
         nameInitial:  rawAnswers.nameInitial   || '',
         birthDay:     rawAnswers.bDay          || '',
         birthMonth:   rawAnswers.bMonth        || '',
+        aiStory:      aiStory || '',
         topSkills: [...skillTraits].sort((a, b) => a.fraction - b.fraction).slice(0, 3).map(s => s.value),
         allSkills: (rawAnswers.skills || []),
         timestamp: Date.now(),
@@ -1009,7 +1090,15 @@ export default function Result() {
         )}
 
         {/* ── Famous Person Comparison ──────────────────────────────── */}
-        <FamousCompareSection />
+        <FamousCompareSection 
+          userName={rawAnswers.userName}
+          userTraits={traitBreakdown}
+          score={score}
+          tier={rarityTier}
+          oneIn={baseOneIn}
+          tierEmoji={tierEmoji}
+          tierColor={tierColor}
+        />
 
         {/* ── Daily Fact ─────────────────────────────────────────── */}
         <DailyFact />
@@ -1035,11 +1124,12 @@ export default function Result() {
             onClick={async () => {
               await document.fonts.ready;
               downloadCertificate({ 
-                name: rawAnswers.name, 
+                name: rawAnswers.userName || rawAnswers.name, 
                 oneIn, 
                 rarityTier, 
                 tierColor, 
-                t 
+                t,
+                traitBreakdown: traitBreakdown.sort((a, b) => a.fraction - b.fraction)
               });
               trackEvent('certificate_downloaded');
             }}
@@ -1066,7 +1156,10 @@ export default function Result() {
                     handedness: rawAnswers.hand,
                     education: rawAnswers.education
                   };
-                  const payload = btoa(unescape(encodeURIComponent(JSON.stringify(challengerData))));
+                  const payload = btoa(unescape(encodeURIComponent(JSON.stringify(challengerData))))
+                    .replace(/\+/g, '-')
+                    .replace(/\//g, '_')
+                    .replace(/=+$/, '');
                   const url = `${window.location.origin}/compare?challenger=${payload}`;
                   navigator.clipboard.writeText(url);
                   localStorage.setItem('myChallenge', payload);

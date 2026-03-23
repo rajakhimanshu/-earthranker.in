@@ -2,6 +2,7 @@ export const config = {
   runtime: 'edge',
 };
 
+// Groq Free Tier: ~14,400 req/day
 export default async function handler(req) {
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
@@ -28,6 +29,9 @@ export default async function handler(req) {
       });
     }
 
+    // Basic Input Sanitization
+    const sanitize = (str) => (str || '').toString().slice(0, 500).replace(/<[^>]*>/g, '');
+
     const {
       userName,
       name = 'You',
@@ -42,7 +46,13 @@ export default async function handler(req) {
       oneIn = 1
     } = userProfile;
 
-    const actualName = userName || (name !== 'You' && name !== '' ? name : 'You');
+    const actualName = sanitize(userName || (name !== 'You' && name !== '' ? name : 'You'));
+    const cleanCountry = sanitize(country);
+    const cleanAge = sanitize(age);
+    const cleanEducation = sanitize(education);
+    const cleanBlood = sanitize(bloodType);
+    const cleanEye = sanitize(eyeColor);
+    const cleanSkills = (skills || []).map(s => sanitize(s));
 
     const promptText = `You are a poetic data scientist writing a personalised rarity report. 
 Write exactly 3 sentences about this person's statistical rarity. 
@@ -53,12 +63,12 @@ Start with '${actualName !== 'You' ? actualName : '[userName]'},' if name is pro
 
 Traits: 
 Name: ${actualName}, 
-Country: ${country}, 
-Age: ${age}, 
-Education: ${education}, 
-Blood Type: ${bloodType}, 
-Eye Color: ${eyeColor}, 
-Rare Skills: ${skills.join(', ')}, 
+Country: ${cleanCountry}, 
+Age: ${cleanAge}, 
+Education: ${cleanEducation}, 
+Blood Type: ${cleanBlood}, 
+Eye Color: ${cleanEye}, 
+Rare Skills: ${cleanSkills.join(', ')}, 
 Score: ${score}/100, 
 Tier: ${tier}, 
 1 in ${oneIn.toLocaleString('en-US')} people.`;
@@ -90,7 +100,7 @@ Tier: ${tier},
       status: response.status,
       headers: { 
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*', // Standard for Edge, Vercel handles actual CORS in vercel.json usually
+        'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'no-store, max-age=0'
       },
     });

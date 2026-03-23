@@ -10,17 +10,23 @@ service cloud.firestore {
       allow read: if true;
       
       // Allow creation of new entries with basic validation
-      // We prevent updates and deletes to ensure scores can't be tampered with after submission
       allow create: if 
+        request.resource.data.keys().hasAll(['score', 'displayName', 'tier', 'timestamp']) &&
+        request.resource.data.keys().hasOnly([
+          'id', 'displayName', 'score', 'tier', 'oneIn', 'country', 
+          'topSkills', 'allSkills', 'timestamp', 'birthDay', 'birthMonth', 
+          'education', 'bloodType', 'eyeColor', 'hairColor', 'handedness', 
+          'nameInitial', 'aiStory'
+        ]) &&
         request.resource.data.score is number &&
         request.resource.data.score >= 0 &&
         request.resource.data.score <= 100 &&
         request.resource.data.displayName is string &&
         request.resource.data.displayName.size() > 0 &&
-        request.resource.data.displayName.size() <= 25 &&
+        request.resource.data.displayName.size() <= 50 &&
         request.resource.data.timestamp == request.time;
 
-      // No one can update or delete entries (including the author, as we don't have auth yet)
+      // No one can update or delete entries
       allow update, delete: if false;
     }
     
