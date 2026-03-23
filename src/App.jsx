@@ -6,6 +6,7 @@ import Compare     from './pages/Compare';
 import Leaderboard from './pages/Leaderboard';
 import About       from './pages/About';
 import NotFound    from './pages/NotFound';
+import AdminPanel  from './pages/AdminPanel';
 import InstallPrompt from './components/InstallPrompt';
 import { LanguageProvider } from './contexts/LanguageContext';
 import LanguageToggle from './components/LanguageToggle';
@@ -22,8 +23,9 @@ export default function App() {
           <Route path="/result"      element={<Result />}      />
           <Route path="/compare"     element={<Compare />}     />
           <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/about"       element={<About />}       />
-          <Route path="*"            element={<NotFound />}    />
+          <Route path="/about"              element={<About />}       />
+          <Route path="/admin-er-panel-9x7" element={<AdminPanel />}  />
+          <Route path="*"                   element={<NotFound />}    />
         </Routes>
         <InstallPrompt />
       </BrowserRouter>

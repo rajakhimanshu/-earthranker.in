@@ -29,6 +29,7 @@ export default async function handler(req) {
     }
 
     const {
+      userName,
       name = 'You',
       country = 'Unknown',
       age = 'Unknown',
@@ -41,15 +42,17 @@ export default async function handler(req) {
       oneIn = 1
     } = userProfile;
 
+    const actualName = userName || (name !== 'You' && name !== '' ? name : 'You');
+
     const promptText = `You are a poetic data scientist writing a personalised rarity report. 
 Write exactly 3 sentences about this person's statistical rarity. 
 Be specific — mention their actual traits by name. 
 Make it feel like a personal revelation, not a generic compliment. 
 Never use the phrases 'truly unique', 'one of a kind', or 'special'. 
-Start with their name if provided or 'You' if not. 
+Start with '${actualName !== 'You' ? actualName : '[userName]'},' if name is provided, or 'You' if not provided. Never invent or assume a name.
 
 Traits: 
-Name: ${name}, 
+Name: ${actualName}, 
 Country: ${country}, 
 Age: ${age}, 
 Education: ${education}, 

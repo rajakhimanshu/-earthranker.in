@@ -588,16 +588,22 @@
 
   .quiz-card-wrap { padding: 1rem 0.75rem 2rem; }
 
-  /* ── Thumb-friendly tap targets (min 48 px) ── */
+  /* ── Thumb-friendly tap targets (min 52 px) ── */
   .option-btn {
     padding: 0.9rem 0.75rem;
-    min-height: 48px;
+    min-height: 52px;
     font-size: 0.9rem;
+    width: 100%;
+    white-space: normal;
+    text-align: center;
+    word-break: break-word;
   }
 
-  /* 3-col grids drop to 2 on small screens */
+  /* Force all grids to 1col on mobile */
+  .option-grid,
+  .option-grid[style*="repeat(2"],
   .option-grid[style*="repeat(3"] {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: 1fr !important;
   }
 
   /* Age input goes full-width on mobile */
@@ -651,6 +657,7 @@
 @media (max-width: 380px) {
   .quiz-card { padding: 1.25rem 0.9rem; }
 
+  .option-grid,
   .option-grid[style*="repeat(2"],
   .option-grid[style*="repeat(3"] {
     grid-template-columns: 1fr !important;

@@ -99,10 +99,98 @@ function getTierVisuals(tierName) {
   return match || { color: '#a0aec0', emoji: '✨' };
 }
 
+/* ── Profile Modal ───────────────────────────────────────────────── */
+function ProfileModal({ entry, onClose }) {
+  const { color, emoji } = getTierVisuals(entry.tier);
+
+  // Trait rows to display — only non-empty ones
+  const traits = [
+    entry.gender      && { icon: entry.gender === 'Male' ? '♂️' : entry.gender === 'Female' ? '♀️' : '⚧️', label: 'Gender',      value: entry.gender },
+    entry.eyeColor    && { icon: '👁️',  label: 'Eye Color',    value: entry.eyeColor },
+    entry.hairColor   && { icon: '💇',  label: 'Hair Color',   value: entry.hairColor },
+    entry.handedness  && { icon: '✋',  label: 'Handedness',   value: entry.handedness },
+    entry.bloodType   && { icon: '🩸',  label: 'Blood Type',   value: entry.bloodType },
+    entry.education   && { icon: '🎓',  label: 'Education',    value: entry.education },
+    entry.country     && { icon: '🌍',  label: 'Country',      value: entry.country },
+    entry.nameInitial && { icon: '🔠',  label: 'Name Initial', value: `"${entry.nameInitial}"` },
+  ].filter(Boolean);
+
+  const allSkills = entry.allSkills?.length > 0 ? entry.allSkills : entry.topSkills || [];
+  const flag = getFlag(entry.country);
+
+  return (
+    <div
+      className="lb-modal-overlay"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="lb-modal-card">
+        {/* Close */}
+        <button className="lb-modal-close" onClick={onClose} aria-label="Close">✕</button>
+
+        {/* Top strip */}
+        <div className="lb-modal-top" style={{ borderColor: color }}>
+          <div className="lb-modal-emoji" style={{ filter: `drop-shadow(0 0 12px ${color}90)` }}>
+            {entry.tierEmoji || emoji}
+          </div>
+          <div>
+            <h2 className="lb-modal-name">{entry.displayName} {flag}</h2>
+            <div className="lb-modal-tier" style={{ color }}>{entry.tier}</div>
+          </div>
+        </div>
+
+        {/* Score row */}
+        <div className="lb-modal-scores">
+          <div className="lb-modal-pill">
+            <span className="lb-pill-label">Score</span>
+            <span className="lb-pill-value" style={{ color }}>{(entry.score || 0).toFixed(2)}</span>
+          </div>
+          <div className="lb-modal-pill">
+            <span className="lb-pill-label">1 in</span>
+            <span className="lb-pill-value">{(entry.oneIn || 0).toLocaleString('en-US')}</span>
+          </div>
+        </div>
+
+        {/* Traits */}
+        {traits.length > 0 && (
+          <div className="lb-modal-section">
+            <div className="lb-modal-section-title">🧬 Traits</div>
+            <div className="lb-modal-traits">
+              {traits.map(({ icon, label, value }) => (
+                <div key={label} className="lb-trait-row">
+                  <span className="lb-trait-icon">{icon}</span>
+                  <span className="lb-trait-label">{label}</span>
+                  <span className="lb-trait-value">{value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Skills */}
+        {allSkills.length > 0 && (
+          <div className="lb-modal-section">
+            <div className="lb-modal-section-title">⚡ Skills</div>
+            <div className="lb-skills-wrap">
+              {allSkills.map(sk => (
+                <span key={sk} className="lb-skill-chip">{sk}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="lb-modal-joined">
+          Joined {formatTimeAgo(entry.timestamp)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Leaderboard() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedEntry, setSelectedEntry] = useState(null);
   const myLeaderboardDocId = sessionStorage.getItem('myLeaderboardDocId') || null;
   const { t } = useTranslation();
 
@@ -172,6 +260,9 @@ export default function Leaderboard() {
 
   return (
     <>
+      {selectedEntry && (
+        <ProfileModal entry={selectedEntry} onClose={() => setSelectedEntry(null)} />
+      )}
       <main className="min-h-screen flex flex-col items-center px-4 py-16 sm:px-6 sm:py-20" style={{ backgroundColor: '#0A0A14' }}>
         <div className="w-full max-w-[1100px]">
           <Link to="/" className="text-sm mb-8 inline-flex items-center gap-1 transition-colors hover:text-white" style={{ color: 'var(--color-subtext)' }}>
@@ -206,7 +297,7 @@ export default function Leaderboard() {
           {loading ? (
             <div className="text-center py-20 text-gray-500 animate-pulse">{t.leaderboard.loading}</div>
           ) : (
-            <div className="space-y-3 pb-32">
+            <div className="space-y-3 pb-32 w-full overflow-hidden">
               {filtered.map(({ id, displayName = 'Unknown', score = 0, tier = 'Common', oneIn, country = 'Global', topSkills = [], timestamp }, idx) => {
                 const rank = entries.findIndex(e => e.id === id) + 1;
                 const { color, emoji } = getTierVisuals(tier);
@@ -218,9 +309,10 @@ export default function Leaderboard() {
                 return (
                   <div
                     key={id || idx}
-                    className="glass-card px-4 py-4 sm:px-5 flex items-center gap-3 sm:gap-4 transition-transform hover:scale-[1.01]"
+                    className="glass-card px-4 py-4 sm:px-5 flex items-center gap-3 sm:gap-4 transition-all hover:scale-[1.01] w-full max-w-full overflow-hidden cursor-pointer"
                     style={isTop3 ? { borderColor: `${rankColor}50`, background: `linear-gradient(90deg, ${rankColor}10, transparent)` }
                       : isMe ? { borderColor: '#A855F750', background: 'rgba(168,85,247,0.07)' } : {}}
+                    onClick={() => setSelectedEntry({ id, displayName, score, tier, oneIn, country, topSkills, timestamp, ...entries.find(e => e.id === id) })}
                   >
                     {/* Rank */}
                     <div className="w-6 sm:w-8 text-center font-heading font-bold text-lg shrink-0"

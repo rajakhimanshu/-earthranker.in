@@ -72,6 +72,10 @@ export function normaliseAnswers(raw) {
   if (raw.bDay)      out.bDay       = raw.bDay;
   if (raw.bMonth)    out.bMonth     = raw.bMonth;
   if (raw.bYear)     out.bYear      = raw.bYear;
+  // New optional traits
+  if (raw.nameInitial) out.nameInitial = raw.nameInitial;
+  if (raw.moles && raw.moles.length > 0 && !raw.moles.includes('None'))
+    out.moleLocations = raw.moles;
   return out;
 }
 
@@ -561,7 +565,8 @@ export default function Result() {
 
     try {
       const profile = {
-        name: rawAnswers.name,
+        userName: rawAnswers.userName,
+        name: rawAnswers.userName, // Kept to not break anything else.
         country: rawAnswers.country,
         age: rawAnswers.age,
         education: rawAnswers.education,
@@ -658,9 +663,19 @@ export default function Result() {
         displayName: modalName.trim(),
         score,
         tier: rarityTier,
+        tierEmoji: tierEmoji || '',
         oneIn: baseOneIn,
         country: rawAnswers.country || 'Global',
+        // Public trait showcase — no personal/identifying data
+        gender:       rawAnswers.gender       || '',
+        handedness:   rawAnswers.hand         || '',
+        eyeColor:     rawAnswers.eyeColor      || '',
+        hairColor:    rawAnswers.hairColor     || '',
+        bloodType:    rawAnswers.blood         || '',
+        education:    rawAnswers.education     || '',
+        nameInitial:  rawAnswers.nameInitial   || '',
         topSkills: [...skillTraits].sort((a, b) => a.fraction - b.fraction).slice(0, 3).map(s => s.value),
+        allSkills: (rawAnswers.skills || []),
         timestamp: Date.now(),
       });
       sessionStorage.setItem("myLeaderboardDocId", entryId);
@@ -935,6 +950,58 @@ export default function Result() {
                 <span className="bday-num"><SlotCounter target={birthdayTwinExact} className="bday-slot" /></span>
                 <span className="bday-label">{isCosmic ? t.result.birthday.exactShareUniverse : t.result.birthday.exactShareEarth} {t.result.birthday.exactShareText}</span>
               </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── Name Initial Fun Fact ─────────────────────────────────── */}
+        {rawAnswers.nameInitial && (() => {
+          const letter = rawAnswers.nameInitial;
+          const FRACS = { A:0.12,B:0.06,C:0.07,D:0.06,E:0.05,F:0.04,G:0.04,H:0.05,I:0.03,J:0.08,K:0.06,L:0.05,M:0.10,N:0.05,O:0.03,P:0.06,Q:0.002,R:0.08,S:0.11,T:0.05,U:0.01,V:0.03,W:0.03,X:0.001,Y:0.005,Z:0.003 };
+          const frac = FRACS[letter] ?? 0.04;
+          const worldCount = Math.round(frac * 8_280_000_000);
+          const countStr = worldCount >= 1_000_000_000
+            ? `${(worldCount / 1_000_000_000).toFixed(1)}B`
+            : worldCount >= 1_000_000
+            ? `${(worldCount / 1_000_000).toFixed(0)}M`
+            : `${(worldCount / 1_000).toFixed(0)}K`;
+          return (
+            <section className="glass-card" style={{ width: '100%', padding: '1.75rem 2rem', display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+              <div style={{ fontSize: '3rem', lineHeight: 1, background: 'linear-gradient(135deg,#A855F7,#FF6B6B)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', fontFamily:'var(--font-heading)', fontWeight: 900 }}>{letter}</div>
+              <div>
+                <p style={{ fontFamily:'var(--font-heading)', fontWeight: 700, color: '#fff', fontSize: '1.05rem', marginBottom: '0.3rem' }}>
+                  🔠 Your name initial <span style={{ color:'#A855F7' }}>({letter})</span>
+                </p>
+                <p style={{ fontFamily:'var(--font-body)', color:'rgba(255,255,255,0.55)', fontSize:'0.9rem' }}>
+                  Shared by approximately <strong style={{ color:'#fff' }}>{countStr}</strong> people on Earth — {(frac * 100).toFixed(1)}% of the population.
+                </p>
+              </div>
+            </section>
+          );
+        })()}
+
+        {/* ── Mole Fun Facts ────────────────────────────────────────── */}
+        {rawAnswers.moles && rawAnswers.moles.length > 0 && !rawAnswers.moles.includes('None') && (
+          <section className="glass-card" style={{ width: '100%', padding: '1.75rem 2rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem', flexWrap:'wrap' }}>
+              <span style={{ fontSize: '1.4rem' }}>🖤</span>
+              <p style={{ fontFamily:'var(--font-heading)', fontWeight: 700, color: '#fff', fontSize: '1.05rem' }}>Mole Locations</p>
+              <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.75rem', borderRadius: 99, background: 'rgba(255,107,107,0.12)', border: '1px solid rgba(255,107,107,0.25)', color: '#FF6B6B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>🎉 Fun Bonus</span>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+              {rawAnswers.moles.map(loc => {
+                const MOLE_FRACS = { Face: 0.20, Hand: 0.15, Neck: 0.10, Back: 0.25 };
+                const frac = MOLE_FRACS[loc] ?? 0.15;
+                const count = Math.round(frac * 8_280_000_000);
+                const countStr = `~${(count / 1_000_000).toFixed(0)}M`;
+                const emoji = loc === 'Face' ? '😊' : loc === 'Hand' ? '✋' : loc === 'Neck' ? '🦒' : '🔙';
+                return (
+                  <div key={loc} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '0.85rem 1.25rem' }}>
+                    <p style={{ fontFamily:'var(--font-heading)', fontWeight: 700, color: '#fff', marginBottom: '0.2rem' }}>{emoji} Mole on {loc}</p>
+                    <p style={{ fontFamily:'var(--font-body)', color:'rgba(255,255,255,0.5)', fontSize:'0.82rem' }}>Shared by {countStr} people ({(frac * 100).toFixed(0)}%)</p>
+                  </div>
+                );
+              })}
             </div>
           </section>
         )}

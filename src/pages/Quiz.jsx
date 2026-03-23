@@ -36,8 +36,25 @@ export const COUNTRIES = [
 ];
 
 export const BLOOD_TYPES = ['A+','A-','B+','B-','AB+','AB-','O+','O-','Unknown'];
-export const EYE_COLORS  = ['Brown','Blue','Green','Hazel','Gray','Other'];
-export const HAIR_COLORS = ['Black','Brown','Blonde','Red','White','Gray','Other'];
+export const EYE_COLORS  = [
+  { label: 'Black', icon: '⚫' },
+  { label: 'Brown', icon: '🟤' },
+  { label: 'Blue', icon: '🔵' },
+  { label: 'Green', icon: '🟢' },
+  { label: 'Hazel', icon: '🟡' },
+  { label: 'Gray', icon: '⬜' },
+  { label: 'Other', icon: '👁️' }
+];
+
+export const HAIR_COLORS = [
+  { label: 'Black', icon: '🖤' },
+  { label: 'Brown', icon: '🟤' },
+  { label: 'Blonde', icon: '🌕' },
+  { label: 'Red', icon: '🔴' },
+  { label: 'White', icon: '⬜' },
+  { label: 'Gray', icon: '🩶' },
+  { label: 'Other', icon: '✨' }
+];
 
 export const GENDERS = [
   { label: 'Male',              icon: '♂' },
@@ -202,15 +219,17 @@ export function SkillsSelection({ selected = [], onChange }) {
 
 /* ─── Step metadata ───────────────────────────────────────────────── */
 const getSteps = (t) => [
-  { id: 'age',       label: t?.quiz?.questions?.start?.title?.replace('.', '') || 'Start',          emoji: '🎂', isCore: true },
-  { id: 'gender',    label: t?.quiz?.questions?.gender?.title?.replace('?', '') || 'Gender',       emoji: '🧬', isCore: true },
-  { id: 'country',   label: t?.quiz?.questions?.country?.title?.replace('?', '') || 'Country',      emoji: '🌍', isCore: true },
-  { id: 'education', label: t?.quiz?.questions?.education?.title?.replace('?', '') || 'Education',    emoji: '🎓', isCore: true },
-  { id: 'hand',      label: t?.quiz?.questions?.hand?.title?.replace('?', '') || 'Handedness',   emoji: '✋', isOptional: true },
-  { id: 'blood',     label: t?.quiz?.questions?.blood?.title?.replace('?', '') || 'Blood Type',   emoji: '🩸', isOptional: true },
-  { id: 'traits',    label: t?.quiz?.questions?.traits?.title || 'Eye & Hair Color',       emoji: '👁️', isOptional: true },
-  { id: 'skills',    label: t?.quiz?.questions?.skills?.title?.split(' ')[0] || 'Skills',       emoji: '⚡', isOptional: true },
-  { id: 'birthday',  label: t?.quiz?.questions?.birthday?.title?.replace('?', '') || 'Birthday',     emoji: '🎉', isOptional: true },
+  { id: 'age',         label: t?.quiz?.questions?.start?.title?.replace('.', '') || 'Start',        emoji: '🎂', isCore: true },
+  { id: 'nameInitial', label: 'Name Initial',                                                       emoji: '🔠', isOptional: true },
+  { id: 'gender',      label: t?.quiz?.questions?.gender?.title?.replace('?', '') || 'Gender',      emoji: '🧬', isCore: true },
+  { id: 'country',     label: t?.quiz?.questions?.country?.title?.replace('?', '') || 'Country',    emoji: '🌍', isCore: true },
+  { id: 'education',   label: t?.quiz?.questions?.education?.title?.replace('?', '') || 'Education',emoji: '🎓', isCore: true },
+  { id: 'hand',        label: t?.quiz?.questions?.hand?.title?.replace('?', '') || 'Handedness',   emoji: '✋', isOptional: true },
+  { id: 'blood',       label: t?.quiz?.questions?.blood?.title?.replace('?', '') || 'Blood Type',  emoji: '🩸', isOptional: true },
+  { id: 'traits',      label: t?.quiz?.questions?.traits?.title || 'Eye & Hair Color',             emoji: '👁️', isOptional: true },
+  { id: 'skills',      label: t?.quiz?.questions?.skills?.title?.split(' ')[0] || 'Skills',        emoji: '⚡', isOptional: true },
+  { id: 'birthday',    label: t?.quiz?.questions?.birthday?.title?.replace('?', '') || 'Birthday', emoji: '🎉', isOptional: true },
+  { id: 'mole',        label: 'Mole',                                                               emoji: '🖤', isOptional: true, isBonus: true },
 ];
 
 /* ─── Main Component ──────────────────────────────────────────────── */
@@ -231,9 +250,10 @@ export default function Quiz() {
   }, []);
   const [animKey, setAnimKey] = useState(0);
   const [answers, setAnswers] = useState({
-    name: '', age: '', gender: '', country: '', education: '',
+    userName: '', name: '', age: '', gender: '', country: '', education: '',
     bDay: '', bMonth: '', bYear: '',
     hand: '', blood: '', eyeColor: '', hairColor: '',
+    nameInitial: '', moles: [],
     skills: []
   });
   const [errors, setErrors] = useState({});
@@ -258,7 +278,8 @@ export default function Quiz() {
     return Object.keys(e).length === 0;
   }
 
-  // Check if we are doing core validation (steps 0-3) vs optional
+  // new step indices: 0=age, 1=nameInitial, 2=gender, 3=country, 4=education,
+  //                   5=hand, 6=blood, 7=traits, 8=skills, 9=birthday, 10=mole
   function validateStep(currentStep) {
     const e = {};
     if (currentStep === 0) {
@@ -266,17 +287,18 @@ export default function Quiz() {
       if (!answers.age) e.age = t.quiz.errors.ageReq;
       else if (age < 13 || age > 100) e.age = t.quiz.errors.ageRange;
     }
-    if (currentStep === 1 && !answers.gender)   e.gender    = t.quiz.errors.req;
-    if (currentStep === 2 && !answers.country)  e.country   = t.quiz.errors.countryReq;
-    if (currentStep === 3 && !answers.education) e.education = t.quiz.errors.eduReq;
-    
-    // If they fill out parts of a step but leave others blank, prompt them. Otherwise, let them skip via the skip button.
-    if (currentStep === 6 && (answers.eyeColor || answers.hairColor) && !(answers.eyeColor && answers.hairColor)) {
+    if (currentStep === 2 && !answers.gender)   e.gender    = t.quiz.errors.req;
+    if (currentStep === 3 && !answers.country)  e.country   = t.quiz.errors.countryReq;
+    if (currentStep === 4 && !answers.education) e.education = t.quiz.errors.eduReq;
+
+    // Partial eye/hair — step 7 (was 6)
+    if (currentStep === 7 && (answers.eyeColor || answers.hairColor) && !(answers.eyeColor && answers.hairColor)) {
       if (!answers.eyeColor) e.eyeColor = t.quiz.errors.eyeReq;
       if (!answers.hairColor) e.hairColor = t.quiz.errors.hairReq;
     }
-    
-    if (currentStep === 8 && (answers.bDay || answers.bMonth || answers.bYear)) {
+
+    // Partial birthday — step 9 (was 8)
+    if (currentStep === 9 && (answers.bDay || answers.bMonth || answers.bYear)) {
       if (!answers.bDay || !answers.bMonth || !answers.bYear) e.birthday = t.quiz.errors.bdayReq;
     }
     setErrors(e);
@@ -388,6 +410,16 @@ export default function Quiz() {
               <p  className="quiz-hint">{t.quiz.questions.start.hint}</p>
               
               <div className="flex flex-col gap-4">
+                <div className="name-input-wrap">
+                  <input
+                    type="text"
+                    className="styled-input"
+                    style={{ padding: '0.8rem 1rem', width: '100%', borderRadius: '0.5rem', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', color: 'white' }}
+                    placeholder="Your name (optional)"
+                    value={answers.userName}
+                    onChange={e => set('userName', e.target.value)}
+                  />
+                </div>
                 <div className="age-input-wrap">
                   <input
                     type="number"
@@ -405,8 +437,29 @@ export default function Quiz() {
             </div>
           )}
 
-          {/* Step 2 — Gender */}
+          {/* Step 1.5 — Name Initial (new optional step 1) */}
           {step === 1 && (
+            <div className="quiz-field">
+              <h2 className="quiz-question">What's the first letter of your name?</h2>
+              <p className="quiz-hint">Pick the letter your first name starts with — we'll calculate how common it is globally.</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(52px, 1fr))', gap: '0.5rem', marginTop: '0.5rem' }}>
+                {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(letter => (
+                  <button
+                    key={letter}
+                    type="button"
+                    className={`option-btn${answers.nameInitial === letter ? ' option-btn--active' : ''}`}
+                    style={{ minHeight: 52, padding: '0.5rem', fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.1rem' }}
+                    onClick={() => { set('nameInitial', letter); setTimeout(handleNext, 180); }}
+                  >
+                    {letter}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Step 2 — Gender (was step 1) */}
+          {step === 2 && (
             <div className="quiz-field">
               <h2 className="quiz-question">{t.quiz.questions.gender.title}</h2>
               <p  className="quiz-hint">{t.quiz.questions.gender.hint}</p>
@@ -415,8 +468,8 @@ export default function Quiz() {
             </div>
           )}
 
-          {/* Step 3 — Country */}
-          {step === 2 && (
+          {/* Step 3 — Country (was step 2) */}
+          {step === 3 && (
             <div className="quiz-field">
               <h2 className="quiz-question">{t.quiz.questions.country.title}</h2>
               <p  className="quiz-hint">{t.quiz.questions.country.hint}</p>
@@ -425,8 +478,8 @@ export default function Quiz() {
             </div>
           )}
 
-          {/* Step 4 — Education */}
-          {step === 3 && (
+          {/* Step 4 — Education (was step 3) */}
+          {step === 4 && (
             <div className="quiz-field">
               <h2 className="quiz-question">{t.quiz.questions.education.title}</h2>
               <p  className="quiz-hint">{t.quiz.questions.education.hint}</p>
@@ -445,8 +498,8 @@ export default function Quiz() {
             </div>
           )}
 
-          {/* Step 5 — Handedness */}
-          {step === 4 && (
+          {/* Step 5 — Handedness (was step 4) */}
+          {step === 5 && (
             <div className="quiz-field">
               <h2 className="quiz-question">{t.quiz.questions.hand.title}</h2>
               <p  className="quiz-hint">{t.quiz.questions.hand.hint}</p>
@@ -455,8 +508,8 @@ export default function Quiz() {
             </div>
           )}
 
-          {/* Step 6 — Blood type */}
-          {step === 5 && (
+          {/* Step 6 — Blood type (was step 5) */}
+          {step === 6 && (
             <div className="quiz-field">
               <h2 className="quiz-question">{t.quiz.questions.blood.title}</h2>
               <p  className="quiz-hint">{t.quiz.questions.blood.hint}</p>
@@ -465,8 +518,8 @@ export default function Quiz() {
             </div>
           )}
 
-          {/* Step 7 — Eye + Hair color */}
-          {step === 6 && (
+          {/* Step 7 — Eye + Hair color (was step 6) */}
+          {step === 7 && (
             <div className="quiz-field">
               <h2 className="quiz-question">{t.quiz.questions.traits.title}</h2>
               <p  className="quiz-hint">{t.quiz.questions.traits.hint}</p>
@@ -485,8 +538,8 @@ export default function Quiz() {
             </div>
           )}
 
-          {/* Step 8 — Skills */}
-          {step === 7 && (
+          {/* Step 8 — Skills (was step 7) */}
+          {step === 8 && (
             <div className="quiz-field">
               <h2 className="quiz-question">{t.quiz.questions.skills.title}</h2>
               <p  className="quiz-hint">{t.quiz.questions.skills.hint}</p>
@@ -495,8 +548,8 @@ export default function Quiz() {
             </div>
           )}
 
-          {/* Step 9 — Birthday */}
-          {step === 8 && (
+          {/* Step 9 — Birthday (was step 8) */}
+          {step === 9 && (
             <div className="quiz-field">
               <h2 className="quiz-question text-[1.5rem]">{t.quiz.questions.birthday.title}</h2>
               <p className="quiz-hint">{t.quiz.questions.birthday.hint}</p>
@@ -530,18 +583,58 @@ export default function Quiz() {
             </div>
           )}
 
+          {/* Step 10 — Mole (new fun bonus step) */}
+          {step === 10 && (
+            <div className="quiz-field">
+              <div className="mb-3 px-3 py-1.5 rounded-full text-center text-xs font-bold uppercase tracking-widest" style={{ background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.25)', color: '#FF6B6B', width: 'fit-content', margin: '0 auto 1rem' }}>
+                🎉 Fun Bonus — Does not affect main rarity score
+              </div>
+              <h2 className="quiz-question">Do you have a mole? 🖤</h2>
+              <p className="quiz-hint">Select all that apply — this is just for fun!</p>
+              <div className="skills-grid" style={{ marginTop: '0.75rem' }}>
+                {['Face', 'Hand', 'Neck', 'Back', 'None'].map(loc => {
+                  const isSelected = answers.moles.includes(loc);
+                  return (
+                    <button
+                      key={loc}
+                      type="button"
+                      className={`skill-chip ${isSelected ? 'selected' : ''}`}
+                      onClick={() => {
+                        if (loc === 'None') {
+                          set('moles', isSelected ? [] : ['None']);
+                        } else {
+                          const next = isSelected
+                            ? answers.moles.filter(m => m !== loc)
+                            : [...answers.moles.filter(m => m !== 'None'), loc];
+                          set('moles', next);
+                        }
+                      }}
+                    >
+                      <span className="skill-chip-text">
+                        {loc === 'Face' ? '😊' : loc === 'Hand' ? '✋' : loc === 'Neck' ? '🦒' : loc === 'Back' ? '🔙' : '❌'} {loc}
+                      </span>
+                      {isSelected && <span className="skill-chip-check">✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* ── Optional Step Additions ─────────────────────── */}
-          {STEPS[step].isOptional && step !== 3 && (
+          {STEPS[step].isOptional && step !== 4 && (
             <div className="mt-4 text-center">
               <button onClick={skip} className="text-xs text-white/40 hover:text-white/80 transition-colors uppercase tracking-wider">
-                {t.quiz.skipStep}
+                {STEPS[step].isBonus ? '🎲 Skip this fun bonus' : t.quiz.skipStep}
               </button>
-              <p className="text-[0.7rem] text-[#6C47FF]/70 mt-2 font-medium">{t.quiz.accurateNote}</p>
+              {!STEPS[step].isBonus && (
+                <p className="text-[0.7rem] text-[#6C47FF]/70 mt-2 font-medium">{t.quiz.accurateNote}</p>
+              )}
             </div>
           )}
 
           {/* ── Nav buttons ─────────────────────────────────── */}
-          {step === 3 ? (
+          {step === 4 ? (
             <div className="flex flex-col gap-3 mt-8">
               <button type="button" className="w-full py-4 rounded-xl bg-white/10 text-white font-bold text-[1.05rem] border border-white/20 hover:bg-white/20 transition-all flex items-center justify-center gap-2" onClick={finish}>
                 {t.quiz.quickResults}

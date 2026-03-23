@@ -222,12 +222,17 @@ export default function Home() {
       </section>
 
       {/* ── TIER BADGES ─────────────────────────────────────────────── */}
-      <section className="section section--alt">
-        <div className="section-inner">
+      <section className="section section--alt" style={{ position: 'relative', overflow: 'hidden' }}>
+        {/* Additional decorative elements for this section to prevent flatness */}
+        <div className="glow-blob glow-blob--purple" style={{ top: '-100px', left: '-20%', filter: 'blur(120px)', opacity: 0.1 }} aria-hidden="true" />
+        <div className="glow-blob glow-blob--coral"  style={{ bottom: '-100px', right: '-20%', filter: 'blur(120px)', opacity: 0.1 }} aria-hidden="true" />
+        <Particles />
+        
+        <div className="section-inner" style={{ position: 'relative', zIndex: 1 }}>
           <div className="section-header">
             <span className="section-eyebrow">{t.home.tiersTitle}</span>
             <h2 className="section-title">{t.home.tiersSub}</h2>
-            <p className="section-sub">Each tier represents how rare your combination of traits is among all 8.28 billion humans.</p>
+            <p className="section-sub">Each tier represents how rare your combination of traits is among all 8.28 billion humans. Where will you stand?</p>
           </div>
 
           <div className="tiers-grid">
@@ -241,7 +246,7 @@ export default function Home() {
           </div>
 
           {/* CTA */}
-          <div className="tiers-cta">
+          <div className="tiers-cta mt-8">
             <Link to="/quiz" className="cta-btn cta-btn--sm">
               <span className="cta-btn__shimmer" aria-hidden="true" />
               Take the Quiz — It's Free

@@ -12,6 +12,7 @@ export const TRAITS = {
   },
 
   eyeColor: {
+    Black: 0.55,
     Brown: 0.79,
     Blue: 0.08,
     Green: 0.02,
@@ -150,7 +151,26 @@ export const TRAITS = {
     'Female': 0.495,
     'Non-binary': 0.004,
     'Prefer not to say': 0.001
-  }
+  },
+
+  // First letter of name — based on global name frequency data
+  nameInitial: {
+    A: 0.12, B: 0.06, C: 0.07, D: 0.06, E: 0.05,
+    F: 0.04, G: 0.04, H: 0.05, I: 0.03, J: 0.08,
+    K: 0.06, L: 0.05, M: 0.10, N: 0.05, O: 0.03,
+    P: 0.06, Q: 0.002, R: 0.08, S: 0.11, T: 0.05,
+    U: 0.01, V: 0.03, W: 0.03, X: 0.001, Y: 0.005,
+    Z: 0.003,
+  },
+
+  // Mole location — fraction of people with a mole there
+  moleLocations: {
+    Face: 0.20,
+    Hand: 0.15,
+    Neck: 0.10,
+    Back: 0.25,
+    None: 0.40,
+  },
 };
 
 // ─────────────────────────────────────────────
