@@ -240,6 +240,27 @@ export default function Quiz() {
   const { t } = useTranslation();
   const [step, setStep]     = useState(0);
   const [dir,  setDir]      = useState('forward'); // for animation direction
+  const [showScrollHint, setShowScrollHint] = useState(false);
+
+  // Scroll hint logic
+  useEffect(() => {
+    const checkScroll = () => {
+      // Check if the scrollable height is significantly more than the viewport
+      const isScrollable = document.documentElement.scrollHeight > window.innerHeight + 60;
+      const hasNotScrolled = window.scrollY < 30;
+      setShowScrollHint(isScrollable && hasNotScrolled);
+    };
+
+    // Small delay to ensure DOM has updated for the current step
+    const timer = setTimeout(checkScroll, 100);
+    window.addEventListener('scroll', checkScroll);
+    window.addEventListener('resize', checkScroll);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [step]); // Re-check on each step
   
   // Generate sessionId on quiz start
   useEffect(() => {
@@ -383,19 +404,19 @@ export default function Quiz() {
 
       {/* ── Card ────────────────────────────────────────────── */}
       <div className="quiz-card-wrap">
-        {/* Scroll hint for mobile (only if content is long) */}
-        <button 
-          className="scroll-hint cursor-pointer md:hidden" 
-          aria-label="Scroll down"
-          style={{ position: 'fixed', bottom: '1.5rem', zIndex: 100 }}
-          onClick={() => {
-            const next = document.getElementById('next-section');
-            if (next) next.scrollIntoView({ behavior: 'smooth' });
-            else window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-          }}
-        >
-          <div className="scroll-hint__dot" />
-        </button>
+        {/* Scroll hint for mobile (only if content is long and user hasn't scrolled) */}
+        {showScrollHint && (
+          <button 
+            className="scroll-hint cursor-pointer md:hidden" 
+            aria-label="Scroll down"
+            style={{ position: 'fixed', bottom: '1.5rem', left: '50%', transform: 'translateX(-50%)', zIndex: 100 }}
+            onClick={() => {
+              window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }}
+          >
+            <div className="scroll-hint__dot" />
+          </button>
+        )}
         <form 
           id="next-section"
           key={animKey} 

@@ -200,7 +200,15 @@ export default function Home() {
         <button 
           className="scroll-hint cursor-pointer" 
           aria-label="Scroll down"
-          onClick={() => document.getElementById('next-section')?.scrollIntoView({ behavior: 'smooth' })}
+          style={{ position: 'absolute', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}
+          onClick={() => {
+            const next = document.getElementById('next-section');
+            if (next) {
+              const rect = next.getBoundingClientRect();
+              const offset = window.pageYOffset + rect.top;
+              window.scrollTo({ top: offset, behavior: 'smooth' });
+            }
+          }}
         >
           <div className="scroll-hint__dot" />
         </button>
