@@ -61,9 +61,9 @@ function AdminPanelInner() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [query_, setQuery_] = useState('');
-  const [confirmId, setConfirmId] = useState(null); // doc id pending delete
+  const [confirmId, setConfirmId] = useState(null);
   const [deleting, setDeleting] = useState(false);
-  const [notification, setNotification] = useState('');
+  const [notification, setNotification] = useState({ msg: '', type: '' });
 
   useEffect(() => {
     if (!db) {
@@ -97,10 +97,12 @@ function AdminPanelInner() {
     setDeleting(true);
     try {
       await deleteDoc(doc(db, 'leaderboard', confirmId));
-      setNotification(`Deleted entry "${pendingEntry?.displayName || confirmId}"`);
-      setTimeout(() => setNotification(''), 3000);
+      setNotification({ msg: `✓ Deleted "${pendingEntry?.displayName || confirmId}"`, type: 'success' });
+      setTimeout(() => setNotification({ msg: '', type: '' }), 4000);
     } catch (err) {
-      setNotification(`Error: ${err.message}`);
+      console.error('DELETE ERROR:', err);
+      // Keep error visible until user dismisses
+      setNotification({ msg: `❌ Delete failed: ${err.message}`, type: 'error' });
     } finally {
       setDeleting(false);
       setConfirmId(null);
@@ -130,7 +132,18 @@ function AdminPanelInner() {
       </div>
 
       {/* Notification */}
-      {notification && <div style={styles.notification}>{notification}</div>}
+      {notification.msg && (
+        <div style={{
+          ...styles.notification,
+          background: notification.type === 'error' ? '#450a0a' : '#14532d',
+          border: `1px solid ${notification.type === 'error' ? '#7f1d1d' : '#166534'}`,
+          color: notification.type === 'error' ? '#f87171' : '#4ade80',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+        }}>
+          <span>{notification.msg}</span>
+          <button onClick={() => setNotification({ msg: '', type: '' })} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontSize: '1rem', marginLeft: '1rem' }}>×</button>
+        </div>
+      )}
 
       {/* Search */}
       <input
