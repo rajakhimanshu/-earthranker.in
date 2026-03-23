@@ -674,6 +674,8 @@ export default function Result() {
         bloodType:    rawAnswers.blood         || '',
         education:    rawAnswers.education     || '',
         nameInitial:  rawAnswers.nameInitial   || '',
+        birthDay:     rawAnswers.bDay          || '',
+        birthMonth:   rawAnswers.bMonth        || '',
         topSkills: [...skillTraits].sort((a, b) => a.fraction - b.fraction).slice(0, 3).map(s => s.value),
         allSkills: (rawAnswers.skills || []),
         timestamp: Date.now(),

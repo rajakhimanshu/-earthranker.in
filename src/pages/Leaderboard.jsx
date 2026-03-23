@@ -99,20 +99,32 @@ function getTierVisuals(tierName) {
   return match || { color: '#a0aec0', emoji: '✨' };
 }
 
+/* ── helpers ─────────────────────────────────────────────────────── */
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function formatBirthday(day, month) {
+  if (!day && !month) return null;
+  const m = MONTH_NAMES[(parseInt(month, 10) || 1) - 1] || '';
+  return day ? `${day} ${m}` : m;
+}
+
 /* ── Profile Modal ───────────────────────────────────────────────── */
 function ProfileModal({ entry, onClose }) {
   const { color, emoji } = getTierVisuals(entry.tier);
 
-  // Trait rows to display — only non-empty ones
+  const birthday = formatBirthday(entry.birthDay, entry.birthMonth);
+
+  // Trait rows — only non-empty ones shown
   const traits = [
-    entry.gender      && { icon: entry.gender === 'Male' ? '♂️' : entry.gender === 'Female' ? '♀️' : '⚧️', label: 'Gender',      value: entry.gender },
+    entry.country     && { icon: '🌍',  label: 'Country',      value: entry.country },
+    entry.gender      && { icon: entry.gender === 'Male' ? '♂️' : entry.gender === 'Female' ? '♀️' : '⚧️', label: 'Gender', value: entry.gender },
+    birthday          && { icon: '🎂',  label: 'Birthday',     value: birthday },
+    entry.nameInitial && { icon: '🔠',  label: 'Name Starts With', value: entry.nameInitial },
+    entry.education   && { icon: '🎓',  label: 'Education',    value: entry.education },
+    entry.bloodType   && { icon: '🩸',  label: 'Blood Type',   value: entry.bloodType },
     entry.eyeColor    && { icon: '👁️',  label: 'Eye Color',    value: entry.eyeColor },
     entry.hairColor   && { icon: '💇',  label: 'Hair Color',   value: entry.hairColor },
-    entry.handedness  && { icon: '✋',  label: 'Handedness',   value: entry.handedness },
-    entry.bloodType   && { icon: '🩸',  label: 'Blood Type',   value: entry.bloodType },
-    entry.education   && { icon: '🎓',  label: 'Education',    value: entry.education },
-    entry.country     && { icon: '🌍',  label: 'Country',      value: entry.country },
-    entry.nameInitial && { icon: '🔠',  label: 'Name Initial', value: `"${entry.nameInitial}"` },
+    entry.handedness  && { icon: '✋',  label: 'Hand Usage',   value: entry.handedness },
   ].filter(Boolean);
 
   const allSkills = entry.allSkills?.length > 0 ? entry.allSkills : entry.topSkills || [];
@@ -150,33 +162,36 @@ function ProfileModal({ entry, onClose }) {
           </div>
         </div>
 
-        {/* Traits */}
-        {traits.length > 0 && (
-          <div className="lb-modal-section">
-            <div className="lb-modal-section-title">🧬 Traits</div>
-            <div className="lb-modal-traits">
-              {traits.map(({ icon, label, value }) => (
-                <div key={label} className="lb-trait-row">
-                  <span className="lb-trait-icon">{icon}</span>
-                  <span className="lb-trait-label">{label}</span>
-                  <span className="lb-trait-value">{value}</span>
-                </div>
-              ))}
+        {/* Scrollable body */}
+        <div className="lb-modal-body">
+          {/* Traits */}
+          {traits.length > 0 && (
+            <div className="lb-modal-section">
+              <div className="lb-modal-section-title">🧬 Traits</div>
+              <div className="lb-modal-traits">
+                {traits.map(({ icon, label, value }) => (
+                  <div key={label} className="lb-trait-row">
+                    <span className="lb-trait-icon">{icon}</span>
+                    <span className="lb-trait-label">{label}</span>
+                    <span className="lb-trait-value">{value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Skills */}
-        {allSkills.length > 0 && (
-          <div className="lb-modal-section">
-            <div className="lb-modal-section-title">⚡ Skills</div>
-            <div className="lb-skills-wrap">
-              {allSkills.map(sk => (
-                <span key={sk} className="lb-skill-chip">{sk}</span>
-              ))}
+          {/* Skills — ALL of them, no cap */}
+          {allSkills.length > 0 && (
+            <div className="lb-modal-section">
+              <div className="lb-modal-section-title">⚡ Skills <span className="lb-skills-count">({allSkills.length})</span></div>
+              <div className="lb-skills-wrap">
+                {allSkills.map(sk => (
+                  <span key={sk} className="lb-skill-chip">{sk}</span>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         <div className="lb-modal-joined">
           Joined {formatTimeAgo(entry.timestamp)}
