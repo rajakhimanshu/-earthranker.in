@@ -385,7 +385,7 @@ export default function Leaderboard() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
             <div>
-              <h1 className="font-heading text-4xl font-bold mb-2">
+              <h1 className="font-heading text-2xl sm:text-4xl font-bold mb-2">
                 {t.leaderboard.title.split('Leader')[0]} <span className="text-gradient">Leaderboard</span>
               </h1>
               <p style={{ color: 'var(--color-subtext)' }}>{t.leaderboard.subtitle}</p>
@@ -397,7 +397,7 @@ export default function Leaderboard() {
           </div>
 
           {/* Search */}
-          <div className="mb-8 w-full max-w-sm">
+          <div className="mb-8 w-full">
             <input
               type="text"
               placeholder="Search by country (e.g., India)"
@@ -410,7 +410,7 @@ export default function Leaderboard() {
           {loading ? (
             <div className="text-center py-20 text-gray-500 animate-pulse">{t.leaderboard.loading}</div>
           ) : (
-            <div className="space-y-3 pb-32 w-full">
+            <div className="space-y-3 pb-32 sm:pb-24 w-full">
               {filtered.map((entry, idx) => {
                 const isMe = entry.id === myLeaderboardDocId;
                 return (

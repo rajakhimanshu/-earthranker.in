@@ -334,14 +334,4 @@ export function calculateScore(answers) {
   };
 }
 
-// Test case for typical person
-console.log("TEST CASE RESULT:", calculateScore({
-  handedness: 'Right',
-  eyeColor: 'Brown',
-  bloodType: 'O+',
-  education: 'High school',
-  ageGroup: '25–34',
-  country: 'India',
-  hairColor: 'Black',
-  gender: 'Male'
-}));
+

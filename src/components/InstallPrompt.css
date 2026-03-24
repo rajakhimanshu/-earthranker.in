@@ -85,13 +85,18 @@
 }
 
 .install-prompt__btn {
-  padding: 0.45rem 0.9rem;
+  /* FIX: 44px minimum touch target */
+  min-height: 44px;
+  padding: 0 0.9rem;
   border-radius: 8px;
   font-family: var(--font-heading);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.15s, opacity 0.15s;
 }
 
@@ -107,8 +112,11 @@
 .install-prompt__btn--dismiss {
   background: rgba(255, 255, 255, 0.07);
   color: var(--color-subtext);
-  padding: 0.45rem 0.6rem;
+  /* FIX: 44×44 square touch target for the ✕ close button */
+  min-width: 44px;
+  padding: 0;
   border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
 }
 
 .install-prompt__btn--dismiss:hover { color: var(--color-text); }

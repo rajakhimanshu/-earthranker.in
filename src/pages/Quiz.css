@@ -5,14 +5,16 @@
 /* ─── Page layout ────────────────────────────────────────────────── */
 .quiz-page {
   position: relative;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: calc(100vh - 56px);
+  min-height: calc(100dvh - 56px);
   display: flex;
   flex-direction: column;
   background: var(--color-bg);
   overflow-x: hidden;
   overflow-y: auto; /* Enable page-level scrolling */
   width: 100%;
+  /* CRITICAL: prevent any child from causing horizontal scroll */
+  overflow-x: hidden;
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
 }
@@ -191,12 +193,19 @@
 }
 
 /* ─── Card container ─────────────────────────────────────────────── */
+/*
+ * ROOT FIX for mobile centering:
+ * Use align-items:STRETCH (not center) so the child fills the full
+ * padded width evenly. The card then uses max-width + margin:auto.
+ * This guarantees equal left/right spacing on ALL screen sizes.
+ */
 .quiz-card-wrap {
   position: relative;
   z-index: 1;
   flex: 1;
   display: flex;
   flex-direction: column;
+<<<<<<< Updated upstream
   align-items: center;    /* Center horizontally */
   justify-content: center; /* Center vertically */
   padding: 1.5rem 1rem;
@@ -205,19 +214,42 @@
   margin: 0;
   box-sizing: border-box;
   overflow-x: hidden;
+=======
+  align-items: stretch;      /* KEY: fills padded area symmetrically */
+  justify-content: center;
+  padding: 1rem;             /* 16px each side on mobile */
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;          /* clip any blob overflow inside wrap */
+>>>>>>> Stashed changes
 }
 
-@media (min-width: 640px) {
+@media (min-width: 480px) {
   .quiz-card-wrap {
     padding: 2rem 1.5rem;
+<<<<<<< Updated upstream
+=======
+  }
+}
+
+@media (min-width: 768px) {
+  .quiz-card-wrap {
+    padding: 2.5rem 2rem;
+>>>>>>> Stashed changes
   }
 }
 
 /* ─── Quiz card ──────────────────────────────────────────────────── */
+/*
+ * With align-items:stretch on parent, the card fills the padded
+ * container. max-width + margin:auto then centers it perfectly.
+ */
 .quiz-card {
-  width: 100%;
-  max-width: 100%;
+  width: 100%;              /* fill the padded container */
+  max-width: 640px;         /* cap on larger screens */
+  margin: 0 auto;           /* center within stretched container */
   background: rgba(22,33,62,0.75);
+<<<<<<< Updated upstream
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(108,71,255,0.18);
@@ -225,14 +257,35 @@
   padding: 1.5rem 1rem 2rem;
   box-shadow: 0 24px 80px rgba(0,0,0,0.4);
   margin: 0 auto;
+=======
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(108,71,255,0.22);
+  border-radius: 1.25rem;
+  padding: 1.25rem 1rem 1.75rem;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.45);
+>>>>>>> Stashed changes
   box-sizing: border-box;
+  word-break: break-word;
+  overflow-x: hidden;       /* never let card content scroll */
 }
 
-@media (min-width: 640px) {
+@media (min-width: 480px) {
   .quiz-card {
+<<<<<<< Updated upstream
     max-width: 600px;
     border-radius: 1.5rem;
     padding: 2.5rem 2.25rem;
+=======
+    border-radius: 2rem;
+    padding: 2rem 1.75rem 2.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .quiz-card {
+    padding: 3rem 2.5rem;
+>>>>>>> Stashed changes
   }
 }
 
