@@ -12,9 +12,6 @@
   background: var(--color-bg);
   width: 100%;
   box-sizing: border-box;
-  overflow-x: hidden;
-  /* Allow page to scroll naturally */
-  overflow-y: auto; 
 }
 
 .quiz-page--embed {
@@ -173,7 +170,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   /* FIXED: Do NOT use justify-content: center in a flex column when content
      can overflow — it clips the top and prevents scrolling to it.
      Use padding instead to achieve visual centering. */
@@ -184,9 +181,6 @@
   margin: 0 auto;
   box-sizing: border-box;
   overflow: visible;
-  /* FIXED: Prevent horizontal jitter/drag on touch */
-  touch-action: pan-y;
-  user-select: none;
 }
 
 /* On large screens with plenty of space, re-center visually */
@@ -211,12 +205,10 @@
   box-shadow: 0 24px 80px rgba(0,0,0,0.45);
   margin: 0 auto;
   box-sizing: border-box;
+  /* Fix Safari scroll trap bug with backdrop-filter */
+  transform: translate3d(0,0,0);
   /* CRITICAL: No internal scroll on card. Mouse wheel will pass to page. */
-  overflow: visible; 
   height: auto;
-  /* FIXED: Prevent horizontal jitter/drag on touch */
-  touch-action: pan-y;
-  user-select: none;
 }
 
 @media (min-width: 640px) {
@@ -237,13 +229,13 @@
 }
 
 @keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(48px); }
-  to   { opacity: 1; transform: translateX(0);    }
+  from { opacity: 0; transform: translate3d(48px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0);    }
 }
 
 @keyframes slide-in-left {
-  from { opacity: 0; transform: translateX(-48px); }
-  to   { opacity: 1; transform: translateX(0);     }
+  from { opacity: 0; transform: translate3d(-48px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0);     }
 }
 
 /* ─── Step eyebrow ───────────────────────────────────────────────── */
@@ -516,8 +508,6 @@
   appearance: none;
   cursor: pointer;
   transition: all 0.2s;
-  /* FIXED: Prevent horizontal jitter/drag on touch */
-  touch-action: pan-y;
 }
 
 @media (min-width: 640px) {
