@@ -636,8 +636,12 @@ export default function Result() {
   const currentTierData = isUniverse ? getCosmicTier(rarityTier) : { name: t.tiers[rarityTier] || rarityTier, emoji: tierEmoji };
 
   const hasBirthday = !!rawAnswers.bDay && !!rawAnswers.bMonth && !!rawAnswers.bYear;
+  
+  // Real stats: ~385,000 born per day globally. 
+  // "Birthday Twins" (alive today): Population / 365.25
   const birthdayTwinMonth = hasBirthday ? Math.round((isUniverse ? 10000000000000 : 8280000000) / 365.25) : 0;
-  const birthdayTwinExact = hasBirthday ? Math.round((isUniverse ? 10000000000000 : 8280000000) / 365.25 / 60) : 0;
+  // "Exact Birth Cohort" (born same day): ~385k per day on Earth.
+  const birthdayTwinExact = hasBirthday ? Math.round((isUniverse ? 385000 * 1250000 : 385000)) : 0;
 
   // Staggered reveal & Modal popup
   useEffect(() => {
@@ -660,18 +664,26 @@ export default function Result() {
         sessionStorage.setItem('sessionId', crypto.randomUUID());
       }
       const sessionId = sessionStorage.getItem('sessionId');
-      const entryId = crypto.randomUUID(); // Unique ID for THIS specific attempt
+      const entryId = crypto.randomUUID(); 
+
+      // ── Ranking Logic Update ───────────────────────────────────────────
+      // We use a high-precision weight to decide who is "actually better"
+      // base: oneInRaw (the raw mathematical rarity)
+      // bonus: number of skills (+10% per skill)
+      const skillBonus = (rawAnswers.skills || []).length * 0.1;
+      const rarityWeight = oneInRaw * (1 + skillBonus);
 
       await upsertEntry({
         id: entryId,
         sessionId,
         displayName: modalName.trim(),
         score,
+        rarityWeight, // Precision sorting field
         tier: rarityTier,
         tierEmoji: tierEmoji || '',
         oneIn: baseOneIn,
         country: rawAnswers.country || 'Global',
-        // Public trait showcase — no personal/identifying data
+        // Public trait showcase
         gender:       rawAnswers.gender       || '',
         handedness:   rawAnswers.hand         || '',
         eyeColor:     rawAnswers.eyeColor      || '',
