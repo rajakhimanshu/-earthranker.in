@@ -81,7 +81,7 @@ export const EDUCATION = [
 /* ─── Sub-components ──────────────────────────────────────────────── */
 export function OptionGrid({ options, value, onChange, cols = 2 }) {
   return (
-    <div className="option-grid" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+    <div className={`grid grid-cols-2 sm:grid-cols-${cols} gap-3`}>
       {options.map((opt) => {
         const label = typeof opt === 'string' ? opt : opt.label;
         const icon  = typeof opt === 'string' ? null : opt.icon;
@@ -178,7 +178,7 @@ export function SkillsSelection({ selected = [], onChange }) {
   const toggleSkill = (skill) => {
     if (selected.includes(skill)) {
       onChange(selected.filter(s => s !== skill));
-    } else {
+    } else if (selected.length < 3) {
       onChange([...selected, skill]);
     }
   };
@@ -242,6 +242,11 @@ export default function Quiz() {
   const [dir,  setDir]      = useState('forward'); // for animation direction
   const [showScrollHint, setShowScrollHint] = useState(false);
 
+  // Scroll to top on step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
+
   // Scroll hint logic
   useEffect(() => {
     const checkScroll = () => {
@@ -295,8 +300,18 @@ export default function Quiz() {
     else if (age < 13 || age > 100) e.age = t.quiz.errors.ageRange;
     if (!answers.gender) e.gender = t.quiz.errors.req;
     if (!answers.country) e.country = t.quiz.errors.countryReq;
-    if (!answers.education) e.education = t.quiz.errors.eduReq;
-    return Object.keys(e).length === 0;
+    
+    // education is required for the full quiz flow but optional for "Quick Results"
+    // However, if we are at step 4 and they haven't filled it, we can still proceed.
+    
+    if (Object.keys(e).length > 0) {
+      setErrors(e);
+      if (e.age) setStep(0);
+      else if (e.gender) setStep(2);
+      else if (e.country) setStep(3);
+      return false;
+    }
+    return true;
   }
 
   // new step indices: 0=age, 1=nameInitial, 2=gender, 3=country, 4=education,
@@ -381,7 +396,7 @@ export default function Quiz() {
 
   return (
     <>
-      <div className={`quiz-page ${isEmbed ? 'quiz-page--embed' : ''}`}>
+      <div className={`min-h-screen w-full flex flex-col items-center quiz-page ${isEmbed ? 'quiz-page--embed' : ''}`}>
       {/* ── Top bar ───────── */}
       {!isEmbed && (
         <header className="quiz-header">
@@ -403,7 +418,7 @@ export default function Quiz() {
       </div>
 
       {/* ── Card ────────────────────────────────────────────── */}
-      <div className="quiz-card-wrap">
+      <div className="quiz-card-wrap w-full max-w-2xl mx-auto px-4 flex flex-col gap-4">
         {/* Scroll hint for mobile (only if content is long and user hasn't scrolled) */}
         {showScrollHint && (
           <button 

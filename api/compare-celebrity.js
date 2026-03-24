@@ -19,7 +19,7 @@ export default async function handler(req) {
   }
 
   try {
-    const { userName, userTraits, celebrityName } = await req.json();
+    const { userName, userTraits, celebrityName, rarityScore, rarityNumber } = await req.json();
 
     if (!celebrityName) {
       return new Response(JSON.stringify({ error: 'Missing celebrityName in request body' }), {
@@ -34,18 +34,12 @@ export default async function handler(req) {
     const cleanCelebrityName = sanitize(celebrityName);
     const cleanTraits = (userTraits || []).map(t => sanitize(t)).join(', ');
 
-    const promptText = `You are a personality data expert. The user wants to compare themselves with ${cleanCelebrityName}. 
-Based on publicly known information about ${cleanCelebrityName}, generate a trait comparison. 
-Return ONLY valid JSON, no extra text:
-{
-  "celebrityName": "${cleanCelebrityName}",
-  "celebrityEmoji": "one relevant emoji",
-  "matchScore": number between 15 and 85,
-  "sharedTraits": ["trait1", "trait2", "trait3"],
-  "keyDifferences": ["difference1", "difference2"],
-  "funFact": "one interesting comparison sentence",
-  "rarityNote": "how their rarity compares to the user"
-}
+    const promptText = `You are a fun human rarity comparison engine. 
+The user scored ${rarityScore}/100 on a human rarity quiz and is ranked 1 in ${rarityNumber} people on Earth.
+Compare their rarity with ${cleanCelebrityName}.
+Write exactly 3-4 sentences. Be creative, fun, and engaging.
+Talk about how rare each person is in terms of traits, birth circumstances, and uniqueness.
+End with a fun conclusion about who is rarer.
 
 User Context:
 Name: ${cleanUserName}
@@ -60,8 +54,7 @@ Traits: ${cleanTraits}`;
         }
       ],
       max_tokens: 400,
-      temperature: 0.7,
-      response_format: { type: "json_object" }
+      temperature: 0.7
     };
 
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -75,10 +68,10 @@ Traits: ${cleanTraits}`;
 
     const data = await response.json();
     
-    // Extract the JSON content from Groq response
-    const content = data.choices[0].message.content;
+    // Extract the text content from Groq response
+    const content = data.choices[0].message.content.trim();
     
-    return new Response(content, {
+    return new Response(JSON.stringify({ text: content }), {
       status: 200,
       headers: { 
         'Content-Type': 'application/json',

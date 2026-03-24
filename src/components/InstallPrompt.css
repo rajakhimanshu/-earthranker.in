@@ -1,26 +1,39 @@
-/* ── InstallPrompt banner ────────────────────────────────────────────── */
+/* ── InstallPrompt banner (Mobile-First) ────────────────────────────────────────────── */
 .install-prompt {
   position: fixed;
-  bottom: 1rem;
-  left: 1rem;
-  right: 1rem;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 9999;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.9rem 1rem;
-  border-radius: 1rem;
+  padding: 16px;
+  border-radius: 0; /* Full width on bottom mobile */
   background: rgba(22, 33, 62, 0.96);
-  border: 1px solid rgba(108, 71, 255, 0.45);
+  border-top: 1px solid rgba(108, 71, 255, 0.45);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(108, 71, 255, 0.2),
+    0 -8px 32px rgba(0, 0, 0, 0.5),
     0 0 24px rgba(108, 71, 255, 0.2);
   /* slide up in */
   opacity: 0;
   transform: translateY(20px);
+}
+
+@media (min-width: 640px) {
+  .install-prompt {
+    bottom: 1rem;
+    left: 1rem;
+    right: 1rem;
+    border-radius: 12px;
+    border: 1px solid rgba(108, 71, 255, 0.45);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(108, 71, 255, 0.2),
+      0 0 24px rgba(108, 71, 255, 0.2);
+  }
 }
 
 .install-prompt--in {

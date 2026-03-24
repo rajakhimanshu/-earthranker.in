@@ -122,9 +122,9 @@ Find out how rare you are at ${window.location.origin}`;
     const tierEmoji = data.tierEmoji || TIERS.find(t => t.name === (data.tier || data.rarityTier))?.emoji || '💎';
     
     return (
-      <div className="flex-1 flex flex-col gap-4 animate-fade-in w-full max-w-full overflow-hidden">
+      <div className="flex-1 flex flex-col gap-4 animate-fade-in w-full max-w-full">
         <div className="text-xs uppercase tracking-widest text-white/40 font-bold text-center">{label}</div>
-        <div className="glass-card p-4 sm:p-8 flex flex-col items-center relative border-white/10 overflow-hidden w-full">
+        <div className="glass-card p-4 sm:p-8 flex flex-col items-center relative border-white/10 w-full">
           <div className="absolute top-0 left-0 w-full h-1" style={{ backgroundColor: tierColor }} />
           
           <h3 className="text-xl font-heading font-bold mb-6">{isChallenger ? data.displayName : (t.HI ? 'आप' : 'You')}</h3>
@@ -201,16 +201,16 @@ Find out how rare you are at ${window.location.origin}`;
               </div>
             </div>
           ) : (
-            <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start w-full overflow-x-hidden">
+            <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start w-full">
               {/* Challenger View */}
-              <div className="w-full lg:w-[400px] lg:sticky top-12 overflow-hidden">
+              <div className="w-full lg:w-[400px] lg:sticky top-12">
                 {renderCard(challenger, "👤 Their Result", true)}
               </div>
 
               {/* Your Turn Mini-Quiz */}
-              <div className="flex-1 w-full space-y-6 sm:space-y-8 overflow-hidden">
+              <div className="flex-1 w-full space-y-6 sm:space-y-8">
                 <div className="text-xs uppercase tracking-widest text-purple-400 font-bold text-center lg:text-left">👤 Your Turn</div>
-                <div className="glass-card p-4 sm:p-8 md:p-12 border-purple-500/20 shadow-[0_0_50px_rgba(108,71,255,0.1)] w-full overflow-hidden">
+                <div className="glass-card p-4 sm:p-8 md:p-12 border-purple-500/20 shadow-[0_0_50px_rgba(108,71,255,0.1)] w-full">
                   <div className="flex gap-2 mb-12">
                     {[1,2,3,4,5].map(i => (
                       <div key={i} className={`h-1 flex-1 rounded-full ${step >= i ? 'bg-purple-500' : 'bg-white/10'}`} />

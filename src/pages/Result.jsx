@@ -5,7 +5,7 @@ import { calculateScore, TIERS } from '../data/rarityData';
 import { famousProfiles } from '../data/famousProfiles';
 import { upsertEntry } from './Leaderboard';
 import { generateStoryKey } from '../utils/storyGenerator';
-import { generateAIStory } from '../utils/groqStory';
+import { generateAIStory, compareCelebrity } from '../utils/groqStory';
 import { trackEvent } from '../utils/analytics';
 import DailyFact from '../components/DailyFact';
 import Footer from '../components/Footer';
@@ -320,280 +320,180 @@ function downloadScoreCard({ oneIn, rarityTier, tierEmoji, tierColor, score, t }
 
 /* Canvas Certificate generator */
 function downloadCertificate({ name, oneIn, rarityTier, tierColor, t, traitBreakdown }) {
-  const W = 1920;
-  const H = 1080;
+  const S = 1440; // 1:1 Aspect Ratio for Social Sharing
   const canvas = document.createElement('canvas');
-  canvas.width = W;
-  canvas.height = H;
+  canvas.width = S;
+  canvas.height = S;
   const ctx = canvas.getContext('2d');
 
-  // 1. Background: Deep navy with subtle star particles
-  ctx.fillStyle = '#0F0A2E';
-  ctx.fillRect(0, 0, W, H);
+  // 1. Background
+  ctx.fillStyle = '#050505';
+  ctx.fillRect(0, 0, S, S);
 
-  // Draw star particles
-  ctx.fillStyle = '#FFFFFF';
-  for (let i = 0; i < 200; i++) {
-    const x = Math.random() * W;
-    const y = Math.random() * H;
-    const size = Math.random() * 2;
-    const opacity = Math.random() * 0.8;
-    ctx.globalAlpha = opacity;
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.globalAlpha = 1.0;
+  // Gradient Glow
+  const bgGrad = ctx.createRadialGradient(S/2, S/2, 0, S/2, S/2, S/0.8);
+  bgGrad.addColorStop(0, `${tierColor}20`);
+  bgGrad.addColorStop(1, '#050505');
+  ctx.fillStyle = bgGrad;
+  ctx.fillRect(0, 0, S, S);
 
-  // 2. Watermark: Rotated 45 degrees, very transparent
-  ctx.save();
-  ctx.translate(W / 2, H / 2);
-  ctx.rotate(-Math.PI / 4);
-  ctx.font = 'bold 200px "Space Grotesk", sans-serif';
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.03)';
+  // 2. Borders
+  const pad = 80;
+  ctx.strokeStyle = tierColor;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(pad, pad, S - pad*2, S - pad*2);
+
+  ctx.strokeStyle = '#ffffff20';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(pad+20, pad+20, S - (pad+20)*2, S - (pad+20)*2);
+
+  // 3. Header
   ctx.textAlign = 'center';
-  ctx.fillText('EARTH RANKER', 0, 0);
-  ctx.restore();
+  ctx.textBaseline = 'middle';
 
-  // 3. Outer border: Double line gold
-  const pad = 60;
-  ctx.strokeStyle = '#FFD700';
-  ctx.lineWidth = 4;
-  // Outer rectangle
-  ctx.strokeRect(pad, pad, W - pad * 2, H - pad * 2);
-  // Inner rectangle
-  ctx.strokeRect(pad + 15, pad + 15, W - pad * 2 - 30, H - pad * 2 - 30);
+  ctx.font = 'bold 40px "Space Grotesk"';
+  ctx.fillStyle = '#ffffff60';
+  ctx.fillText('EARTH RANKER', S/2, pad + 100);
 
-  // 4. Header
-  ctx.textAlign = 'center';
-  ctx.font = 'bold 80px "Space Grotesk", sans-serif';
-  ctx.fillStyle = '#FFFFFF';
-  ctx.letterSpacing = '10px';
-  ctx.fillText('🌍 EARTH RANKER', W / 2, 180);
+  ctx.font = 'bold 80px "Space Grotesk"';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('CERTIFICATE OF RARITY', S/2, pad + 200);
 
-  // Subtitle
-  ctx.font = 'italic 42px "Space Grotesk", sans-serif';
-  ctx.fillStyle = '#A78BFA';
-  ctx.letterSpacing = '2px';
-  ctx.fillText('Certificate of Global Rarity', W / 2, 245);
+  // 4. Main Content
+  ctx.font = '40px "Inter"';
+  ctx.fillStyle = '#ffffff80';
+  ctx.fillText('This is to certify that', S/2, S/2 - 180);
 
-  // Divider line: Gradient purple-to-pink
-  const grad = ctx.createLinearGradient(W / 2 - 300, 0, W / 2 + 300, 0);
-  grad.addColorStop(0, '#A78BFA');
+  ctx.font = '900 120px "Space Grotesk"';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText((name || 'Unique Soul').toUpperCase(), S/2, S/2 - 60);
+
+  ctx.font = '40px "Inter"';
+  ctx.fillStyle = '#ffffff80';
+  ctx.fillText('is statistically ranked', S/2, S/2 + 40);
+
+  // Big Number
+  ctx.font = '900 160px "Space Grotesk"';
+  const grad = ctx.createLinearGradient(S/2 - 300, 0, S/2 + 300, 0);
+  grad.addColorStop(0, '#A855F7');
   grad.addColorStop(1, '#FF6B6B');
   ctx.fillStyle = grad;
-  ctx.fillRect(W / 2 - 300, 280, 600, 4);
+  ctx.fillText(`1 in ${oneIn.toLocaleString()}`, S/2, S/2 + 180);
 
-  // 5. Body Text
-  ctx.font = '400 32px "Inter", sans-serif';
-  ctx.fillStyle = '#94A3B8'; // Gray
-  ctx.letterSpacing = 'normal';
-  ctx.fillText('This certifies that', W / 2, 380);
+  ctx.font = 'bold 50px "Space Grotesk"';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('PEOPLE ON EARTH', S/2, S/2 + 280);
 
-  // USER NAME
-  ctx.font = 'bold 110px "Space Grotesk", sans-serif';
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillText((name || 'A Unique Soul').toUpperCase(), W / 2, 510);
-
-  // Rarity Statement
-  ctx.font = 'bold 64px "Space Grotesk", sans-serif';
-  const rarityText = `is ranked 1 in ${oneIn.toLocaleString('en-US')} Billion`;
-  const rarityGrad = ctx.createLinearGradient(W/2 - 400, 0, W/2 + 400, 0);
-  rarityGrad.addColorStop(0, '#A78BFA');
-  rarityGrad.addColorStop(1, '#FF6B6B');
-  ctx.fillStyle = rarityGrad;
-  ctx.fillText(rarityText, W / 2, 620);
-
-  // 6. Tier Badge Box
-  const badgeW = 600;
-  const badgeH = 100;
-  const badgeX = W / 2 - badgeW / 2;
-  const badgeY = 680;
+  // 5. Tier Badge
+  const bW = 400;
+  const bH = 80;
+  const bX = S/2 - bW/2;
+  const bY = S/2 + 360;
   ctx.fillStyle = tierColor;
-  // Rounded rectangle
-  const r = 20;
-  ctx.beginPath();
-  ctx.moveTo(badgeX + r, badgeY);
-  ctx.lineTo(badgeX + badgeW - r, badgeY);
-  ctx.quadraticCurveTo(badgeX + badgeW, badgeY, badgeX + badgeW, badgeY + r);
-  ctx.lineTo(badgeX + badgeW, badgeY + badgeH - r);
-  ctx.quadraticCurveTo(badgeX + badgeW, badgeY + badgeH, badgeX + badgeW - r, badgeY + badgeH);
-  ctx.lineTo(badgeX + r, badgeY + badgeH);
-  ctx.quadraticCurveTo(badgeX, badgeY + badgeH, badgeX, badgeY + badgeH - r);
-  ctx.lineTo(badgeX, badgeY + r);
-  ctx.quadraticCurveTo(badgeX, badgeY, badgeX + r, badgeY);
-  ctx.closePath();
+  ctx.roundRect ? ctx.roundRect(bX, bY, bW, bH, 40) : ctx.fillRect(bX, bY, bW, bH);
   ctx.fill();
 
-  ctx.font = 'bold 48px "Space Grotesk", sans-serif';
-  ctx.fillStyle = '#FFFFFF';
-  ctx.letterSpacing = '4px';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(`✨ ${rarityTier.toUpperCase()}`, W / 2, badgeY + badgeH / 2);
-  ctx.textBaseline = 'alphabetic';
+  ctx.font = 'bold 40px "Space Grotesk"';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(rarityTier.toUpperCase(), S/2, bY + bH/2);
 
-  // 7. Top Rarest Traits
-  const traits = (traitBreakdown || []).slice(0, 3);
-  if (traits.length > 0) {
-    ctx.font = '500 28px "Inter", sans-serif';
-    ctx.fillStyle = '#A78BFA';
-    ctx.textAlign = 'left';
-    const startY = 850;
-    traits.forEach((t, i) => {
-      ctx.fillText(`• ${t.value} (${t.percentage} population)`, W / 2 - 250, startY + (i * 45));
-    });
-  }
-
-  // 8. Footer Info
-  ctx.font = '400 22px "Inter", sans-serif';
-  ctx.fillStyle = '#64748B';
-  ctx.textAlign = 'left';
-  
-  // Certificate ID
-  const certId = `ER-2026-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-  ctx.fillText(`ID: ${certId}`, pad + 60, H - pad - 60);
-
-  // Date
-  ctx.textAlign = 'right';
+  // 6. Footer
+  ctx.font = '30px "Inter"';
+  ctx.fillStyle = '#ffffff40';
   const dateStr = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-  ctx.fillText(`Certified: ${dateStr}`, W - pad - 60, H - pad - 60);
+  ctx.fillText(`Issued on: ${dateStr}`, S/2, S - pad - 120);
 
-  // Branding
-  ctx.textAlign = 'center';
-  ctx.font = '500 24px "Inter", sans-serif';
-  ctx.fillStyle = 'rgba(167, 139, 250, 0.6)';
-  ctx.fillText('earthranker.himanshurajak.in', W / 2, H - pad - 60);
+  ctx.font = 'bold 32px "Inter"';
+  ctx.fillStyle = tierColor;
+  ctx.fillText('earthranker.himanshurajak.in', S/2, S - pad - 60);
 
-  // 9. Download
+  // 7. Download
   const link = document.createElement('a');
-  link.download = `EarthRanker-Certificate-${certId}.png`;
+  const certId = `ER-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+  link.download = `EarthRanker-${name || 'Result'}-${certId}.png`;
   link.href = canvas.toDataURL('image/png', 1.0);
   link.click();
 }
-
 /* Famous Compare Section */
-function FamousCompareSection({ userName, userTraits, score, tier, oneIn, tierEmoji, tierColor }) {
-  const { t } = useTranslation();
-  const [query, setQuery] = useState('');
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
+function FamousCompareSection({ userName, userTraits, score, rarityNumber, tierColor }) {
+  const [inputName, setInputName] = useState('');
+  const [compareResult, setCompareResult] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  async function handleSearch(e) {
-    if (e) e.preventDefault();
-    if (!query.trim()) return;
-    
-    setLoading(true);
+  const handleCompare = async () => {
+    if (!inputName.trim()) return;
+    setIsLoading(true);
+    setCompareResult('');
     setError('');
-    setResult(null);
-    
+
     try {
-      const data = await compareCelebrity({ 
-        userName: userName || 'You', 
+      const text = await compareCelebrity({
+        userName: userName || 'You',
         userTraits: userTraits.map(t => t.value),
-        celebrityName: query 
+        celebrityName: inputName,
+        rarityScore: score,
+        rarityNumber: rarityNumber
       });
-      setResult(data);
-      trackEvent('celebrity_compared', { name: query });
+      
+      if (text) {
+        setCompareResult(text);
+        if (typeof trackEvent === 'function') {
+          trackEvent('celebrity_compared', { name: inputName });
+        }
+      } else {
+        setError('Could not generate comparison. Please try again.');
+      }
     } catch (err) {
-      console.error(err);
-      setError('Try a more famous name or check your connection.');
+      console.error('Compare Error:', err);
+      setError('Something went wrong. Please check your connection.');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <section className="famous-section glass-card">
-      <h2 className="result-section-title">AI Personality Match</h2>
-      <p className="result-section-sub">Compare your rarity with any famous person in history.</p>
-      
-      <form onSubmit={handleSearch} className="flex gap-2 mb-8">
-        <input 
-          type="text" 
-          placeholder="Type any famous person's name..."
-          className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500/40"
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-        />
-        <button 
-          type="submit" 
-          disabled={loading || !query.trim()}
-          className="px-6 py-3 rounded-xl bg-purple-600 font-bold text-sm hover:bg-purple-500 transition-colors disabled:opacity-50"
-        >
-          {loading ? 'Analyzing...' : 'Compare'}
-        </button>
-      </form>
+      <div className="mb-6">
+        <h2 className="result-section-title">AI Personality Match</h2>
+        <p className="result-section-sub">Compare your rarity with any legend in history.</p>
+      </div>
 
-      {error && <p className="text-coral-400 text-sm mb-4">{error}</p>}
-
-      {loading && (
-        <div className="flex flex-col items-center gap-4 py-12 animate-pulse">
-          <div className="text-4xl">🧠</div>
-          <p className="text-sm text-white/40 uppercase tracking-widest font-bold">Analyzing {query}'s traits with AI...</p>
+      <div className="flex flex-col gap-3 w-full">
+        <div className="flex flex-col md:flex-row gap-3">
+          <input
+            type="text"
+            value={inputName}
+            onChange={(e) => setInputName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleCompare()}
+            placeholder="e.g. Abraham Lincoln, Elon Musk..."
+            className="w-full md:flex-1 px-4 py-3 rounded-xl bg-[#1a1a2e] text-white border border-purple-800 outline-none focus:border-purple-500"
+          />
+          <button
+            onClick={handleCompare}
+            disabled={isLoading}
+            className="w-full md:w-auto px-8 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold transition disabled:opacity-50"
+          >
+            {isLoading ? 'Analyzing...' : 'Compare'}
+          </button>
         </div>
-      )}
 
-      {result && !loading && (
-        <div className="famous-compare-grid animate-fade-in">
-          <div className="compare-card side-user">
-            <div className="compare-header">
-              <span className="compare-emoji">{tierEmoji}</span>
-              <div>
-                <h4 className="compare-name">{userName || 'You'}</h4>
-                <span className="compare-tier" style={{ color: tierColor }}>{tier}</span>
-              </div>
-            </div>
-            <div className="compare-score-box">
-              <span className="compare-score-label">Rarity Score</span>
-              <span className="compare-score-value">{score}</span>
-            </div>
+        {isLoading && (
+          <div className="text-purple-400 text-sm animate-pulse">
+            🔍 Comparing your rarity with {inputName}...
           </div>
+        )}
 
-          <div className="compare-divider">
-            <div className="match-circle">
-              <span className="match-val">{result.matchScore}%</span>
-              <span className="match-label">Match</span>
-            </div>
-            <div className="match-bar-wrap">
-              <div className="match-bar-fill" style={{ width: `${result.matchScore}%` }} />
-            </div>
+        {compareResult && (
+          <div className="p-4 rounded-xl bg-[#1a1a2e] border border-purple-800 text-gray-200 text-sm leading-relaxed animate-fade-in">
+            {compareResult}
           </div>
+        )}
 
-          <div className="compare-card side-celeb">
-            <div className="compare-header">
-              <span className="compare-emoji">{result.celebrityEmoji}</span>
-              <div>
-                <h4 className="compare-name">{result.celebrityName}</h4>
-                <span className="compare-tier" style={{ color: '#FFD700' }}>Famous Figure</span>
-              </div>
-            </div>
-            <div className="compare-score-box">
-              <span className="compare-score-label">Global Impact</span>
-              <span className="compare-score-value">High</span>
-            </div>
-          </div>
-
-          <div className="compare-details-full">
-             <div className="details-box">
-                <h5>Shared Traits</h5>
-                <div className="details-tags">
-                  {result.sharedTraits.map(t => <span key={t} className="tag-shared">{t}</span>)}
-                </div>
-             </div>
-             <div className="details-box">
-                <h5>Key Differences</h5>
-                <div className="details-tags">
-                  {result.keyDifferences.map(t => <span key={t} className="tag-diff">{t}</span>)}
-                </div>
-             </div>
-             <div className="details-fact" style={{ borderColor: tierColor }}>
-                <p><strong>Fun Fact:</strong> {result.funFact}</p>
-                <p className="mt-2 text-xs text-white/40 italic">{result.rarityNote}</p>
-             </div>
-          </div>
-        </div>
-      )}
+        {error && (
+          <div className="text-red-400 text-sm">{error}</div>
+        )}
+      </div>
     </section>
   );
 }
@@ -618,7 +518,7 @@ export default function Result() {
   }
 
   const normAnswers = useMemo(() => normaliseAnswers(rawAnswers), [rawAnswers]);
-  const { score, rarityTier, tierColor, tierEmoji, oneIn: baseOneIn, traitBreakdown } =
+  const { score, rarityTier, tierColor, tierEmoji, oneIn: baseOneIn, oneInRaw, traitBreakdown } =
     useMemo(() => {
       const res = calculateScore(normAnswers);
       trackEvent('quiz_completed', { score: res.score, tier: res.rarityTier });
@@ -646,7 +546,7 @@ export default function Result() {
     try {
       const profile = {
         userName: rawAnswers.userName,
-        name: rawAnswers.userName, // Kept to not break anything else.
+        name: rawAnswers.userName, 
         country: rawAnswers.country,
         age: rawAnswers.age,
         education: rawAnswers.education,
@@ -659,13 +559,15 @@ export default function Result() {
       };
 
       const story = await generateAIStory(profile);
+      if (!story) throw new Error('Empty story');
       setAiStory(story);
       setIsTyping(true);
       trackEvent('ai_story_generated');
     } catch (error) {
-      console.error('Groq Story Fallback:', error);
-      // Fallback silently to rule-based story
+      console.error('AI Story Error:', error);
+      // Fallback to local rule-based story
       setAiStory('');
+      setIsTyping(false);
     } finally {
       setIsGenerating(false);
     }
@@ -691,15 +593,15 @@ export default function Result() {
   
   // Leaderboard Modal State
   const [showModal, setShowModal] = useState(false);
-  const [modalName, setModalName] = useState('');
+  const [modalName, setModalName] = useState(rawAnswers?.userName || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   
   // Cosmic Mode State
-  const [isCosmic, setIsCosmic] = useState(false);
+  const [isUniverse, setIsUniverse] = useState(false);
 
   const COSMIC_MULTIPLIER = 1250000;
-  const oneIn = isCosmic ? Math.round(baseOneIn * COSMIC_MULTIPLIER) : baseOneIn;
+  const oneIn = isUniverse ? Math.round(oneInRaw * COSMIC_MULTIPLIER) : baseOneIn;
 
   // Cosmic Tiers Mapping
   const getCosmicTier = (normalTier) => {
@@ -713,16 +615,21 @@ export default function Result() {
       default: return { name: normalTier, emoji: tierEmoji };
     }
   };
-  const currentTierData = isCosmic ? getCosmicTier(rarityTier) : { name: t.tiers[rarityTier] || rarityTier, emoji: tierEmoji };
+  const currentTierData = isUniverse ? getCosmicTier(rarityTier) : { name: t.tiers[rarityTier] || rarityTier, emoji: tierEmoji };
 
   const hasBirthday = !!rawAnswers.bDay && !!rawAnswers.bMonth && !!rawAnswers.bYear;
-  const birthdayTwinMonth = hasBirthday ? Math.round((isCosmic ? 10000000000000 : 8280000000) / 365.25) : 0;
-  const birthdayTwinExact = hasBirthday ? Math.round((isCosmic ? 10000000000000 : 8280000000) / 365.25 / 60) : 0;
+  const birthdayTwinMonth = hasBirthday ? Math.round((isUniverse ? 10000000000000 : 8280000000) / 365.25) : 0;
+  const birthdayTwinExact = hasBirthday ? Math.round((isUniverse ? 10000000000000 : 8280000000) / 365.25 / 60) : 0;
 
   // Staggered reveal & Modal popup
   useEffect(() => {
     const t = setTimeout(() => setRevealed(true), 400);
-    const m = setTimeout(() => { if (score > 0) setShowModal(true); }, 2800);
+    const m = setTimeout(() => { 
+      const alreadySubmitted = sessionStorage.getItem("myLeaderboardDocId");
+      if (score > 0 && !alreadySubmitted) {
+        setShowModal(true); 
+      }
+    }, 2800);
     return () => { clearTimeout(t); clearTimeout(m); };
   }, [score]);
 
@@ -773,10 +680,10 @@ export default function Result() {
 
   return (
     <>
-      <main className={`result-page ${isCosmic ? 'result-page--cosmic' : ''}`}>
+      <main className={`result-page ${isUniverse ? 'result-page--cosmic' : ''}`}>
 
       {/* ── Decorative Earth / Planetary System ────────────────────── */}
-      {!isCosmic ? (
+      {!isUniverse ? (
         <div className="planetary-system" aria-hidden>
           <div className="earth-orbit-ring" />
           <div className="moon-orbit-ring" />
@@ -798,69 +705,80 @@ export default function Result() {
           <div className="result-hero-premium-inner">
             <div className="hero-massive-row">
               <div className="hero-number-wrap">
-                <span className="hero-1in-label">{t.result.oneIn}</span>
-                <SlotCounter target={oneIn} className="hero-massive-count" />
+                <p className="text-sm sm:text-base tracking-widest text-gray-400 uppercase">{t.result.oneIn}</p>
+                <h1 className="text-4xl sm:text-6xl lg:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">
+                  <SlotCounter target={oneIn} />
+                </h1>
               </div>
               
               <div className="hero-badge-wrap">
-                <div className="floating-badge-premium" style={{ '--tierColor': tierColor }}>
+                <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 floating-badge-premium" style={{ '--tierColor': tierColor }}>
                   <div className="badge-glow-pulse" />
-                  <span className="badge-emoji-main">{currentTierData.emoji}</span>
-                  <span className="badge-tier-name">{currentTierData.name}</span>
+                  <span className="badge-emoji-main text-3xl sm:text-4xl lg:text-5xl">{currentTierData.emoji}</span>
+                  <span className="badge-tier-name text-[10px] sm:text-xs lg:text-sm">{currentTierData.name}</span>
                 </div>
               </div>
             </div>
 
-            <p className="hero-premium-subtitle">
-              {isCosmic ? t.result.oneInSubUniverse : t.result.oneInSubEarth}
+            <p className="hero-premium-subtitle text-sm sm:text-base">
+              {isUniverse ? t.result.oneInSubUniverse : t.result.oneInSubEarth}
             </p>
 
             {!isEmbed && (
-              <div className="scale-toggle-premium mt-8">
-                <span className={`scale-label ${!isCosmic ? 'active' : ''}`}>{t.result.scale.earth}</span>
-                <button 
-                  className={`scale-switch ${isCosmic ? 'active' : ''}`}
-                  onClick={() => {
-                    const newMode = !isCosmic;
-                    setIsCosmic(newMode);
-                    trackEvent('cosmic_mode_toggled', { mode: newMode ? 'cosmic' : 'earth' });
-                  }}
-                  aria-label="Toggle Cosmic Mode"
+              <div className="flex justify-center w-full mt-4">
+                <div
+                  onClick={() => setIsUniverse(!isUniverse)}
+                  className="relative flex items-center cursor-pointer select-none bg-[#1a1a2e] rounded-full p-1 w-56 h-12 mx-auto"
                 >
-                  <div className="scale-thumb"></div>
-                </button>
-                <span className={`scale-label ${isCosmic ? 'active' : ''}`}>{t.result.scale.universe}</span>
+                  {/* Sliding background knob */}
+                  <div
+                    className="absolute top-1 bottom-1 transition-all duration-300 ease-in-out bg-white rounded-full z-0"
+                    style={{
+                      left: isUniverse ? 'calc(50% + 2px)' : '4px',
+                      width: 'calc(50% - 6px)',
+                    }}
+                  />
+                  {/* Earth label */}
+                  <span
+                    className={`flex-1 text-center z-10 font-bold text-sm transition-colors duration-300 ${
+                      !isUniverse ? 'text-gray-900' : 'text-gray-400'
+                    }`}
+                  >
+                    Earth 🌍
+                  </span>
+                  {/* Universe label */}
+                  <span
+                    className={`flex-1 text-center z-10 font-bold text-sm transition-colors duration-300 ${
+                      isUniverse ? 'text-gray-900' : 'text-gray-400'
+                    }`}
+                  >
+                    Universe 🔭
+                  </span>
+                </div>
               </div>
             )}
           </div>
         </section>
 
         {/* ── STATS PILLS ROW ─────────────────────────────────────────────────── */}
-        <section className="result-stats-pills">
-           <div className="stat-pill-card" style={{ '--accentColor': tierColor }}>
-              <div className="pill-accent-bar" />
-              <div className="pill-content">
-                <span className="pill-label">{t.result.rarityScore}</span>
-                <span className="pill-value">{score}<span className="pill-max">/100</span></span>
-              </div>
-           </div>
-           <div className="stat-pill-card" style={{ '--accentColor': tierColor }}>
-              <div className="pill-accent-bar" />
-              <div className="pill-content">
-                <span className="pill-label">{t.result.topPercent}</span>
-                <span className="pill-value">
-                  {(1 / baseOneIn * 100) < 0.0001 ? '<0.0001%' : parseFloat((1 / baseOneIn * 100).toFixed(4)) + '%'}
-                </span>
-              </div>
-           </div>
-           <div className="stat-pill-card" style={{ '--accentColor': tierColor }}>
-              <div className="pill-accent-bar" />
-              <div className="pill-content">
-                <span className="pill-label">{t.result.tierLabel}</span>
-                <span className="pill-value tier-pill-name" style={{ color: tierColor }}>{currentTierData.name}</span>
-              </div>
-           </div>
-        </section>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full px-4 mt-6">
+          <div className="w-full rounded-2xl border border-teal-500/30 bg-[#0d1117] p-5">
+            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Rarity Score</p>
+            <p className="text-3xl font-bold text-white">{score}/100</p>
+          </div>
+
+          <div className="w-full rounded-2xl border border-teal-500/30 bg-[#0d1117] p-5">
+            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Top % of Humans</p>
+            <p className="text-3xl font-bold text-white">
+              {(1 / baseOneIn * 100) < 0.0001 ? '<0.0001%' : parseFloat((1 / baseOneIn * 100).toFixed(4)) + '%'}
+            </p>
+          </div>
+
+          <div className="w-full rounded-2xl border border-purple-500/30 bg-[#0d1117] p-5">
+            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Tier</p>
+            <p className="text-3xl font-bold text-purple-400">{currentTierData.name}</p>
+          </div>
+        </div>
 
         {/* ── Trait Breakdown (Premium Table) ──────────────────────────────────────── */}
         {normalTraits.length > 0 && (
@@ -927,17 +845,19 @@ export default function Result() {
                     aiStory
                   )
                 ) : (
-                  /* Fallback Rule-based Story */
-                  t.result.story.messages[fallbackStoryKey] && t.result.story.messages[fallbackStoryKey].split('{name}').map((part, i) => (
-                    <span key={i}>
-                      {part}
-                      {i === 0 && t.result.story.messages[fallbackStoryKey].includes('{name}') && (
-                        <strong className="story-name-highlight" style={{ color: tierColor }}>
-                          {rawAnswers.name || (t.HI ? 'आप' : 'You')}
-                        </strong>
-                      )}
-                    </span>
-                  ))
+                  <div className="flex flex-col gap-4">
+                    <p className="text-white/40 text-sm uppercase tracking-tighter mb-2">AI Story unavailable in local mode</p>
+                    {t.result.story.messages[fallbackStoryKey] && t.result.story.messages[fallbackStoryKey].split('{name}').map((part, i) => (
+                      <span key={i}>
+                        {part}
+                        {i === 0 && t.result.story.messages[fallbackStoryKey].includes('{name}') && (
+                          <strong className="story-name-highlight" style={{ color: tierColor }}>
+                            {rawAnswers.name || (t.HI ? 'आप' : 'You')}
+                          </strong>
+                        )}
+                      </span>
+                    ))}
+                  </div>
                 )}
               </div>
               
@@ -1023,15 +943,15 @@ export default function Result() {
         {hasBirthday && (
           <section className="result-birthday glass-card">
             <h2 className="result-section-title">{t.result.birthday.title}</h2>
-            <p className="result-section-sub">{isCosmic ? t.result.birthday.subUniverse : t.result.birthday.subEarth}</p>
+            <p className="result-section-sub">{isUniverse ? t.result.birthday.subUniverse : t.result.birthday.subEarth}</p>
             <div className="birthday-stats-row">
               <div className="birthday-stat-pill teal">
                 <span className="bday-num"><SlotCounter target={birthdayTwinMonth} className="bday-slot" /></span>
-                <span className="bday-label">{isCosmic ? t.result.birthday.monthShareUniverse : t.result.birthday.monthShareEarth} {t.result.birthday.monthShareText}</span>
+                <span className="bday-label">{isUniverse ? t.result.birthday.monthShareUniverse : t.result.birthday.monthShareEarth} {t.result.birthday.monthShareText}</span>
               </div>
               <div className="birthday-stat-pill coral">
                 <span className="bday-num"><SlotCounter target={birthdayTwinExact} className="bday-slot" /></span>
-                <span className="bday-label">{isCosmic ? t.result.birthday.exactShareUniverse : t.result.birthday.exactShareEarth} {t.result.birthday.exactShareText}</span>
+                <span className="bday-label">{isUniverse ? t.result.birthday.exactShareUniverse : t.result.birthday.exactShareEarth} {t.result.birthday.exactShareText}</span>
               </div>
             </div>
           </section>
@@ -1049,17 +969,19 @@ export default function Result() {
             ? `${(worldCount / 1_000_000).toFixed(0)}M`
             : `${(worldCount / 1_000).toFixed(0)}K`;
           return (
-            <section className="glass-card" style={{ width: '100%', padding: '1.75rem 2rem', display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-              <div style={{ fontSize: '3rem', lineHeight: 1, background: 'linear-gradient(135deg,#A855F7,#FF6B6B)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', fontFamily:'var(--font-heading)', fontWeight: 900 }}>{letter}</div>
+            <div className="w-full flex items-center gap-4 p-4 sm:p-6 rounded-2xl bg-[#1a1a2e] border border-purple-900">
+              <span className="text-4xl sm:text-6xl font-bold text-purple-400 shrink-0">
+                {letter}
+              </span>
               <div>
-                <p style={{ fontFamily:'var(--font-heading)', fontWeight: 700, color: '#fff', fontSize: '1.05rem', marginBottom: '0.3rem' }}>
-                  🔠 Your name initial <span style={{ color:'#A855F7' }}>({letter})</span>
+                <p className="font-semibold text-white text-sm sm:text-base">
+                  🔡 Your name initial (<span className="text-purple-400">{letter}</span>)
                 </p>
-                <p style={{ fontFamily:'var(--font-body)', color:'rgba(255,255,255,0.55)', fontSize:'0.9rem' }}>
-                  Shared by approximately <strong style={{ color:'#fff' }}>{countStr}</strong> people on Earth — {(frac * 100).toFixed(1)}% of the population.
+                <p className="text-gray-400 text-xs sm:text-sm mt-1">
+                  Shared by approximately <strong>{countStr}</strong> people on Earth — {(frac * 100).toFixed(1)}% of the population.
                 </p>
               </div>
-            </section>
+            </div>
           );
         })()}
 
@@ -1094,9 +1016,7 @@ export default function Result() {
           userName={rawAnswers.userName}
           userTraits={traitBreakdown}
           score={score}
-          tier={rarityTier}
-          oneIn={baseOneIn}
-          tierEmoji={tierEmoji}
+          rarityNumber={oneIn.toLocaleString()}
           tierColor={tierColor}
         />
 
@@ -1104,9 +1024,9 @@ export default function Result() {
         <DailyFact />
 
         {/* ── Action Buttons (Equal Width Row) ────────────────────── */}
-        <section className="result-actions-row">
+        <section className="flex flex-col sm:flex-row gap-3 w-full">
           <button
-            className={`action-btn action-btn-secondary ${downloading ? 'busy' : ''}`}
+            className={`w-full sm:w-auto flex-1 action-btn action-btn-secondary ${downloading ? 'busy' : ''}`}
             onClick={async () => {
               setDownloading(true);
               await document.fonts.ready;
@@ -1120,7 +1040,7 @@ export default function Result() {
           </button>
 
           <button
-            className="action-btn action-btn-secondary"
+            className="w-full sm:w-auto flex-1 action-btn action-btn-secondary"
             onClick={async () => {
               await document.fonts.ready;
               downloadCertificate({ 
@@ -1139,7 +1059,7 @@ export default function Result() {
 
           {!isEmbed && (
             <button
-              className="action-btn action-btn-primary"
+              className="w-full sm:w-auto flex-1 action-btn action-btn-primary"
               onClick={() => {
                 try {
                   const challengerData = {
@@ -1172,12 +1092,12 @@ export default function Result() {
               }}
             >
               <div className="action-btn-glow" style={{ background: tierColor }} />
-              <span className="relative z-10">{copiedChallenge ? '✅ ' + (t.HI ? 'लिंक कॉपी हो गया!' : 'Link copied!') : '⚔️ ' + t.result.actions.challenge}</span>
+              <span className="relative z-10">{copiedChallenge ? '✅ ' + (t.HI ? 'लिंक कॉपी हो गया!' : 'Link copied!') : '🤝 ' + t.result.actions.challenge}</span>
             </button>
           )}
 
           {!isEmbed && (
-            <Link to="/leaderboard" className="action-btn action-btn-secondary">
+            <Link to="/leaderboard" className="w-full sm:w-auto flex-1 action-btn action-btn-secondary flex items-center justify-center">
               🏆 {t.nav.leaderboard.split(' ')[1]}
             </Link>
           )}
@@ -1194,7 +1114,7 @@ export default function Result() {
           )}
         </div>
 
-        {isCosmic && !isEmbed && (
+        {isUniverse && !isEmbed && (
           <div className="cosmic-disclaimer">
             <p>{t.result.cosmicDisclaimer}</p>
           </div>

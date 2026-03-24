@@ -1,18 +1,24 @@
-/* ── DailyFact card ─────────────────────────────────────────────────── */
+/* ── DailyFact card (Mobile-First) ─────────────────────────────────────────────────── */
 .daily-fact {
   width: 100%;
-  padding: 1.1rem 1.4rem;
-  border-radius: 1rem;
+  padding: 16px;
+  border-radius: 12px;
   background: rgba(108, 71, 255, 0.10);
   border: 1px solid rgba(108, 71, 255, 0.28);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   position: relative;
   overflow: hidden;
-  /* subtle inner glow on the top-left */
   box-shadow:
     inset 0 1px 0 rgba(167, 139, 250, 0.15),
     0 4px 24px rgba(108, 71, 255, 0.12);
+}
+
+@media (min-width: 640px) {
+  .daily-fact {
+    padding: 1.1rem 1.4rem;
+    border-radius: 1rem;
+  }
 }
 
 /* animated shimmer ribbon */

@@ -193,7 +193,7 @@ function AdminPanelInner() {
                   <td style={styles.td}>{e.tier || '—'}</td>
                   <td style={styles.td}>{e.country || '—'}</td>
                   <td style={{ ...styles.td, fontSize: '0.75rem', color: '#9ca3af' }}>{formatTs(e.timestamp)}</td>
-                  <td style={{ ...styles.td, fontSize: '0.7rem', color: '#6b7280', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <td style={{ ...styles.td, fontSize: '0.7rem', color: '#6b7280', maxWidth: 120, wordBreak: 'break-all' }}>
                     {e._docId}
                   </td>
                   <td style={styles.td}>

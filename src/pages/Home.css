@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
-   Home.css  —  scoped styles for the Home page
+   Home.css  —  scoped styles for the Home page (Mobile-First)
    Uses CSS custom properties from globals.css
    ═══════════════════════════════════════════════════════════════════ */
 
@@ -33,7 +33,7 @@
 .glow-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(140px);
+  filter: blur(80px); /* Reduced blur for mobile */
   pointer-events: none;
   z-index: 0;
   opacity: 0.15;
@@ -41,8 +41,8 @@
 }
 
 .glow-blob--purple {
-  width: 600px;
-  height: 600px;
+  width: 300px;
+  height: 300px;
   background: radial-gradient(circle, rgba(108,71,255,0.4) 0%, transparent 70%);
   top: -150px;
   left: -100px;
@@ -50,12 +50,26 @@
 }
 
 .glow-blob--coral {
-  width: 500px;
-  height: 500px;
+  width: 240px;
+  height: 240px;
   background: radial-gradient(circle, rgba(255,107,107,0.25) 0%, transparent 70%);
   bottom: -100px;
   right: -50px;
   animation-delay: 4s;
+}
+
+@media (min-width: 1024px) {
+  .glow-blob {
+    filter: blur(140px);
+  }
+  .glow-blob--purple {
+    width: 600px;
+    height: 600px;
+  }
+  .glow-blob--coral {
+    width: 500px;
+    height: 500px;
+  }
 }
 
 @keyframes pulse-blob {
@@ -72,11 +86,16 @@
   justify-content: center;
   overflow: hidden;
   background: #0a0a1a;
-  /* subtle grid overlay */
   background-image:
     linear-gradient(rgba(108,71,255,0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(108,71,255,0.04) 1px, transparent 1px);
-  background-size: 60px 60px;
+  background-size: 40px 40px;
+}
+
+@media (min-width: 640px) {
+  .hero {
+    background-size: 60px 60px;
+  }
 }
 
 .hero__content {
@@ -86,58 +105,22 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 2rem 1.5rem;
+  padding: 1rem; /* Base 16px padding */
+  width: 100%;
   max-width: 860px;
   margin: 0 auto;
   animation: fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+@media (min-width: 640px) {
+  .hero__content {
+    padding: 2rem 1.5rem;
+  }
+}
+
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(32px); }
   to   { opacity: 1; transform: translateY(0);    }
-}
-
-/* Badge */
-.hero__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 2rem;
-  background: rgba(108,71,255,0.12);
-  border: 1px solid rgba(108,71,255,0.35);
-  color: #a78bff;
-  animation: fade-up 0.9s 0.1s cubic-bezier(0.22,1,0.36,1) both;
-}
-
-.hero__badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--color-teal);
-  box-shadow: 0 0 6px var(--color-teal);
-  animation: blink 2s ease-in-out infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.3; }
-}
-
-/* Headline */
-.hero__headline {
-  font-family: var(--font-heading);
-  font-size: clamp(2rem, 6vw, 5rem);
-  font-weight: 700;
-  line-height: 1.1;
-  color: #fff;
-  margin-bottom: 1.5rem;
-  animation: fade-up 0.9s 0.18s cubic-bezier(0.22,1,0.36,1) both;
 }
 
 /* Trending Badge */
@@ -170,6 +153,23 @@
   0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4); }
   70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+}
+
+/* Headline */
+.hero__headline {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 5vw, 3.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  color: #fff;
+  margin-bottom: 1.5rem;
+  animation: fade-up 0.9s 0.18s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+@media (max-width: 768px) {
+  .hero__headline {
+    font-size: clamp(2rem, 8vw, 3rem);
+  }
 }
 
 /* Headline Shifting Gradient */
@@ -216,6 +216,17 @@
   font-weight: 700;
 }
 
+@media (max-width: 768px) {
+  .live-counter {
+    white-space: nowrap;
+    font-size: 0.75rem;
+    padding: 8px 12px;
+  }
+  .live-counter__number {
+    font-size: 0.75rem;
+  }
+}
+
 .hero__subtitle {
   font-size: clamp(1rem, 2vw, 1.25rem);
   color: #fff;
@@ -224,6 +235,15 @@
   line-height: 1.6;
   opacity: 0.9;
   animation: fade-up 0.9s 0.28s both;
+}
+
+@media (max-width: 768px) {
+  .hero__subtitle {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    max-width: 85%;
+    margin: 0 auto 2.5rem;
+  }
 }
 
 /* Base CTA Button */
@@ -250,10 +270,18 @@
 
 /* Enhanced CTA */
 .cta-btn--hero {
-  padding: 18px 48px;
-  min-width: 280px;
+  padding: 16px 32px;
+  width: 100%;
   font-size: 1.15rem;
   border-radius: 16px;
+}
+
+@media (min-width: 640px) {
+  .cta-btn--hero {
+    padding: 18px 48px;
+    width: auto;
+    min-width: 280px;
+  }
 }
 
 .cta-btn__shimmer {
@@ -279,8 +307,15 @@
 .marquee-track {
   display: flex;
   width: fit-content;
-  gap: 20px;
-  animation: marquee 45s linear infinite;
+  gap: 16px;
+  animation: marquee 30s linear infinite;
+}
+
+@media (min-width: 640px) {
+  .marquee-track {
+    gap: 20px;
+    animation-duration: 45s;
+  }
 }
 
 .marquee-section:hover .marquee-track {
@@ -293,16 +328,24 @@
 }
 
 .testimonial-card {
-  flex: 0 0 280px;
-  width: 280px;
+  flex: 0 0 260px;
+  width: 260px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
-  padding: 20px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 8px;
   transition: transform 0.3s ease;
+}
+
+@media (min-width: 640px) {
+  .testimonial-card {
+    flex: 0 0 280px;
+    width: 280px;
+    padding: 20px;
+  }
 }
 
 .testimonial-card:hover {
@@ -346,27 +389,6 @@
   margin-top: 4px;
 }
 
-@media (max-width: 640px) {
-  .hero__headline {
-    font-size: clamp(2.2rem, 10vw, 3.5rem);
-  }
-  
-  .marquee__content {
-    animation-duration: 30s;
-  }
-  
-  .testimonial-card {
-    flex: 0 0 260px;
-    width: 260px;
-  }
-  
-  .trending-badge {
-    top: 1rem;
-    left: 1rem;
-  }
-}
-
-
 .cta-btn--sm {
   padding: 0.8rem 1.8rem;
   font-size: 0.95rem;
@@ -397,8 +419,10 @@
 /* ─── Hero Stats ──────────────────────────────────────────────────── */
 .hero__stats {
   display: flex;
-  gap: 2.5rem;
+  flex-direction: column;
+  gap: 1.5rem;
   margin-top: 3.5rem;
+  width: 100%;
   animation: fade-up 0.9s 0.42s cubic-bezier(0.22,1,0.36,1) both;
 }
 
@@ -407,6 +431,25 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
+}
+
+.hero__stat + .hero__stat {
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+@media (min-width: 640px) {
+  .hero__stats {
+    flex-direction: row;
+    gap: 2.5rem;
+    width: auto;
+  }
+  .hero__stat + .hero__stat {
+    padding-top: 0;
+    border-top: none;
+    border-left: 1px solid rgba(255,255,255,0.08);
+    padding-left: 2.5rem;
+  }
 }
 
 .hero__stat-value {
@@ -423,12 +466,6 @@
   font-size: 0.78rem;
   color: rgba(255, 255, 255, 0.7);
   letter-spacing: 0.04em;
-}
-
-/* Divider between stats */
-.hero__stat + .hero__stat {
-  border-left: 1px solid rgba(255,255,255,0.08);
-  padding-left: 2.5rem;
 }
 
 /* ─── Scroll hint ─────────────────────────────────────────────────── */
@@ -460,8 +497,14 @@
 
 /* ─── Generic Section Layout ──────────────────────────────────────── */
 .section {
-  padding: 6rem 1.5rem;
+  padding: 4rem 1rem;
   background: var(--color-bg);
+}
+
+@media (min-width: 640px) {
+  .section {
+    padding: 6rem 1.5rem;
+  }
 }
 
 .section--alt {
@@ -477,7 +520,13 @@
 
 .section-header {
   text-align: center;
-  margin-bottom: 3.5rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (min-width: 640px) {
+  .section-header {
+    margin-bottom: 3.5rem;
+  }
 }
 
 .section-eyebrow {
@@ -492,7 +541,7 @@
 
 .section-title {
   font-family: var(--font-heading);
-  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  font-size: clamp(1.5rem, 5vw, 2.8rem);
   font-weight: 700;
   color: var(--color-text);
   line-height: 1.2;
@@ -510,8 +559,20 @@
 /* ─── Feature Cards ───────────────────────────────────────────────── */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .cards-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .feature-card {
@@ -519,10 +580,18 @@
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 1.25rem;
-  padding: 2rem 1.75rem;
+  border-radius: 12px;
+  padding: 1.5rem;
   transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   overflow: hidden;
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .feature-card {
+    border-radius: 1.25rem;
+    padding: 2rem 1.75rem;
+  }
 }
 
 .feature-card::before {
@@ -585,9 +654,27 @@
 /* ─── Tier Badges ─────────────────────────────────────────────────── */
 .tiers-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1rem;
   margin-bottom: 3rem;
+}
+
+@media (min-width: 480px) {
+  .tiers-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .tiers-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .tiers-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
 }
 
 .tier-badge {
@@ -671,56 +758,14 @@
 /* Tiers CTA row */
 .tiers-cta {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 1rem;
   justify-content: center;
   align-items: center;
 }
 
-/* ─── Mobile Responsive ───────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .hero__headline {
-    font-size: clamp(2rem, 6vw, 5rem);
-  }
-
-  .hero__stats {
-    flex-direction: column;
-    gap: 1.5rem;
-    width: 100%;
-  }
-
-  .hero__stat + .hero__stat {
-    padding-left: 0;
-    border-left: none;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(255,255,255,0.08);
-  }
-
-  .cta-btn--hero {
-    width: 100%;
-    min-width: unset;
-  }
-
-  .marquee__content {
-    grid-template-columns: 1fr;
-  }
-
-  .tiers-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .cta-btn {
-    font-size: 0.95rem;
-    padding: 0.9rem 1.8rem;
-  }
-
-  .glow-blob--purple {
-    width: 300px;
-    height: 300px;
-  }
-
-  .glow-blob--coral {
-    width: 240px;
-    height: 240px;
+@media (min-width: 640px) {
+  .tiers-cta {
+    flex-direction: row;
   }
 }

@@ -210,17 +210,18 @@ export const TIERS = [
 
 export function calculateScore(answers) {
   const traitBreakdown = [];
-  let combinedProbability = 1;
+  let rawProduct = 1;
+  let traitCount = 0;
 
   for (const [trait, value] of Object.entries(answers)) {
     const traitMap = TRAITS[trait];
     
-    // Handle special case: birthday (not in TRAITS map but used for score if present)
+    // Handle special case: birthday
     if (trait === 'bDay' || trait === 'bMonth' || trait === 'bYear') {
-      // We only count birthday as a single probability event once
       if (!traitBreakdown.some(t => t.trait === 'birthday')) {
         const fraction = 1 / 365.25;
-        combinedProbability *= fraction;
+        rawProduct *= fraction;
+        traitCount++;
         traitBreakdown.push({
           trait: 'birthday',
           value: `${answers.bDay} ${answers.bMonth} ${answers.bYear}`,
@@ -239,7 +240,8 @@ export function calculateScore(answers) {
       for (const v of value) {
         const fraction = traitMap ? traitMap[v] : null;
         if (fraction != null) {
-          combinedProbability *= fraction;
+          rawProduct *= fraction;
+          traitCount++;
           traitBreakdown.push({
             trait,
             value: v,
@@ -263,7 +265,8 @@ export function calculateScore(answers) {
       }
     }
 
-    combinedProbability *= fraction;
+    rawProduct *= fraction;
+    traitCount++;
 
     traitBreakdown.push({
       trait,
@@ -275,49 +278,47 @@ export function calculateScore(answers) {
     });
   }
 
-  // Guard against edge-case (no recognised answers)
-  if (combinedProbability <= 0 || traitBreakdown.length === 0) {
+  // Guard against edge-case
+  if (rawProduct <= 0 || traitBreakdown.length === 0) {
     return {
       score: 0,
       rarityTier: 'Common',
       tierColor: TIERS[TIERS.length - 1].color,
       tierEmoji: TIERS[TIERS.length - 1].emoji,
       oneIn: 1,
+      oneInRaw: 1,
       traitBreakdown,
     };
   }
 
-  // ── Logarithmic scoring — calibrated to real trait probability ranges ───
-  //
-  //  Combined probability with real inputs:
-  //    Core only (4 required steps, all avg values):  prob ≈ 4e-3  negLog≈2.4  → score~16
-  //    All steps filled, all average values:          prob ≈ 1e-5  negLog≈4.8  → score~32
-  //    1-2 rare traits + common skills:               prob ≈ 1e-8  negLog≈8    → score~53
-  //    Rare traits (PhD+AB-+Ambidextrous+Gray):       prob ≈ 1e-9  negLog≈9    → score~60
-  //    Rare traits + 3 rare skills (Flying+AI+Scuba): prob ≈ 1e-14 negLog≈14   → score~93
-  //    Most extreme combo possible:                   prob ≈ 1e-20 negLog≈20   → score~100
-  //
-  //  Formula: score = clamp((negLog / 15) * 100, 0, 100)
-  //    negLog=0  → score=0   (prob=1 — impossible in practice with any trait selected)
-  //    negLog=7.5→ score=50  (1 in 300M range — genuinely rare)
-  //    negLog=15 → score=100 (prob=1e-15 — extreme rarity)
-  //
-  //  Tier distribution with real inputs:
-  //    Common     (0–30):  core-only fills, all very average traits
-  //    Uncommon  (30–50):  average person who completes all steps with common traits
-  //    Rare      (50–65):  someone with 1-2 rare traits + some skills
-  //    Epic      (65–80):  multiple rare traits + moderate skills
-  //    Legendary (80–92):  very rare combos + several rare skills
-  //    Mythic    (92–100): extreme rarity — rare traits + many rare skills
+  // ── Correlation / Coupling Factor ──────────────────────────────────────
+  //  In reality, traits are not perfectly independent. 
+  //  Using a power factor (0.82) to "pull back" the extreme rarity 
+  //  caused by multiplying many independent fractions.
+  //  This makes it harder to hit the 8.28B cap too early.
   // ────────────────────────────────────────────────────────────────────────
+  const couplingFactor = 0.82;
+  const combinedProbability = Math.pow(rawProduct, couplingFactor);
 
   // oneIn: realistic "1 in X people" on Earth (8.28B cap for display clarity)
+  const oneInRaw = 1 / combinedProbability;
   const oneIn = Math.min(
-    Math.round(1 / combinedProbability),
+    Math.round(oneInRaw),
     8_280_000_000
   );
 
-  const score = Math.round((Math.log10(oneIn) / Math.log10(8280000000)) * 100);
+  // ── Logarithmic scoring — calibrated to real trait probability ranges ───
+  //
+  //  Calibration (log10(1/prob) / base * 100):
+  //    Core (4 steps avg):      negLog ≈ 2.2   / 12 * 100 ≈ 18  (Common)
+  //    Full (all avg):          negLog ≈ 4.5   / 12 * 100 ≈ 37  (Rare)
+  //    Rare physical traits:    negLog ≈ 7.5   / 12 * 100 ≈ 62  (Epic)
+  //    Unique on Earth (8.28B): negLog ≈ 9.9   / 12 * 100 ≈ 82  (Legendary)
+  //    Historically Unique:     negLog ≈ 11.0  / 12 * 100 ≈ 91  (Mythic)
+  // ────────────────────────────────────────────────────────────────────────
+  
+  const negLog = Math.log10(oneInRaw);
+  const score = Math.min(100, Math.max(0, Math.round((negLog / 12) * 100)));
 
   // Determine tier (TIERS ordered highest minScore first)
   const tier = TIERS.find((t) => score >= t.minScore) ?? TIERS[TIERS.length - 1];
@@ -328,6 +329,7 @@ export function calculateScore(answers) {
     tierColor: tier.color,
     tierEmoji: tier.emoji,
     oneIn,
+    oneInRaw, // return raw for cosmic mode
     traitBreakdown,
   };
 }

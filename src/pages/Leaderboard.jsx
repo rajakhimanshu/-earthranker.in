@@ -194,9 +194,11 @@ function ProfileModal({ entry, onClose }) {
           {allSkills.length > 0 && (
             <div className="lb-modal-section">
               <div className="lb-modal-section-title">⚡ Skills <span className="lb-skills-count">({allSkills.length})</span></div>
-              <div className="lb-skills-wrap">
+              <div className="lb-skills-wrap flex flex-wrap gap-2 mt-2">
                 {allSkills.map(sk => (
-                  <span key={sk} className="lb-skill-chip">{sk}</span>
+                  <span key={sk} className="lb-skill-chip whitespace-nowrap text-xs px-2 py-1 rounded-full bg-purple-900/50 text-purple-300">
+                    {sk}
+                  </span>
                 ))}
               </div>
             </div>
@@ -221,7 +223,7 @@ function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSki
 
   return (
     <div
-      className="glass-card px-4 py-4 sm:px-5 flex flex-col gap-3 transition-all hover:scale-[1.01] w-full max-w-full overflow-hidden cursor-pointer"
+      className="glass-card px-4 py-4 sm:px-5 flex flex-col gap-3 transition-all hover:scale-[1.01] w-full max-w-full cursor-pointer"
       style={isTop3 ? { borderColor: `${rankColor}50`, background: `linear-gradient(90deg, ${rankColor}10, transparent)` }
         : isMe ? { borderColor: '#A855F750', background: 'rgba(168,85,247,0.07)' } : {}}
       onClick={(e) => {
@@ -239,7 +241,7 @@ function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSki
         {/* Info */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
           <div className="flex items-center gap-2">
-            <span className="font-heading font-semibold text-white truncate text-base sm:text-lg">{displayName}</span>
+            <span className="font-heading font-semibold text-white text-base sm:text-lg">{displayName}</span>
             {isMe && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">YOU</span>}
             <span className="text-sm" title={country}>{flag}</span>
           </div>
@@ -278,11 +280,18 @@ function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSki
       )}
 
       {topSkills && topSkills.length > 0 && (
-        <div className="flex items-center gap-1 mt-1 pl-9 sm:pl-12 flex-wrap">
+        <div className="flex items-center gap-2 mt-2 pl-9 sm:pl-12 flex-wrap">
           {topSkills.map((sk, i) => {
             const name = sk.split(' ').slice(1).join(' ') || sk;
             const icon = sk.split(' ')[0] || '';
-            return <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/70">{icon} {name}</span>;
+            return (
+              <span 
+                key={i} 
+                className="text-[10px] px-2 py-1 rounded-full bg-purple-900/30 border border-purple-500/20 text-purple-200/80 whitespace-nowrap"
+              >
+                {icon} {name}
+              </span>
+            );
           })}
         </div>
       )}
@@ -401,7 +410,7 @@ export default function Leaderboard() {
           {loading ? (
             <div className="text-center py-20 text-gray-500 animate-pulse">{t.leaderboard.loading}</div>
           ) : (
-            <div className="space-y-3 pb-32 w-full overflow-hidden">
+            <div className="space-y-3 pb-32 w-full">
               {filtered.map((entry, idx) => {
                 const isMe = entry.id === myLeaderboardDocId;
                 return (

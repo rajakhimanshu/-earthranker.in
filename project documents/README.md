@@ -8,6 +8,7 @@
 ---
 
 ## 🚀 Key Features
+*Status: Final testing complete. Live and ready for users.*
 
 *   **Personality Rarity Quiz**: A deep dive into your traits to calculate your global rank.
 *   **AI Rarity Stories**: Get a personalized, AI-generated narrative about your uniqueness.
