@@ -178,7 +178,7 @@ export function SkillsSelection({ selected = [], onChange }) {
   const toggleSkill = (skill) => {
     if (selected.includes(skill)) {
       onChange(selected.filter(s => s !== skill));
-    } else if (selected.length < 3) {
+    } else {
       onChange([...selected, skill]);
     }
   };

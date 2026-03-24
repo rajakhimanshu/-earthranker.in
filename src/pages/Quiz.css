@@ -14,7 +14,7 @@
   box-sizing: border-box;
   overflow-x: hidden;
   /* Allow page to scroll naturally */
-  overflow-y: visible; 
+  overflow-y: auto; 
 }
 
 .quiz-page--embed {

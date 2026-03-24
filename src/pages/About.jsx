@@ -111,8 +111,8 @@ export default function About() {
                   <a href="https://github.com/rajakhimanshu" target="_blank" rel="noopener noreferrer" className="px-4 py-2 md:px-5 md:py-2 rounded-full text-[10px] md:text-xs font-bold bg-white/10 text-white hover:bg-white/20 transition-all border border-white/10">
                     GitHub
                   </a>
-                  <a href="https://x.com/Himansh01625929" target="_blank" rel="noopener noreferrer" className="px-4 py-2 md:px-5 md:py-2 rounded-full text-[10px] md:text-xs font-bold bg-white/10 text-white hover:bg-white/20 transition-all border border-white/10">
-                    𝕏 Twitter
+                  <a href="https://www.instagram.com/himanshu.rajak22/" target="_blank" rel="noopener noreferrer" className="px-4 py-2 md:px-5 md:py-2 rounded-full text-[10px] md:text-xs font-bold bg-white/10 text-white hover:bg-white/20 transition-all border border-white/10">
+                    📸 Instagram
                   </a>
                 </div>
               </div>
