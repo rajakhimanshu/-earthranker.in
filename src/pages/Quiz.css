@@ -10,41 +10,11 @@
   display: flex;
   flex-direction: column;
   background: var(--color-bg);
-  overflow-x: hidden;
-  overflow-y: auto; /* Enable page-level scrolling */
   width: 100%;
   box-sizing: border-box;
-  -webkit-overflow-scrolling: touch;
-}
-
-@media (max-width: 768px) {
-  .quiz-page {
-    overflow-x: hidden;
-  }
-  
-  .quiz-card-wrap {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    padding: 16px;
-    box-sizing: border-box;
-    display: block; /* Change from flex to allow natural height growth */
-  }
-
-  .quiz-card {
-    width: 100%;
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 16px;
-    box-sizing: border-box;
-    border-radius: 12px;
-    height: auto; /* Ensure it grows */
-  }
 }
 
 .quiz-page--embed {
-  min-height: 100vh;
-  min-height: 100dvh;
   background: transparent;
 }
 .quiz-page--embed .quiz-card-wrap {
@@ -58,7 +28,7 @@
 .quiz-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px); /* Reduced for mobile */
+  filter: blur(80px);
   pointer-events: none;
   z-index: 0;
 }
@@ -197,19 +167,18 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;    /* Center horizontally */
-  justify-content: center; /* Center vertically */
+  align-items: center;    
+  justify-content: center; 
   padding: 1.5rem 1rem;
   width: 100%;
   max-width: 100%;
-  margin: 0;
+  margin: 0 auto;
   box-sizing: border-box;
-  overflow-x: hidden;
 }
 
 @media (min-width: 640px) {
   .quiz-card-wrap {
-    padding: 2rem 1.5rem;
+    padding: 2.5rem 1.5rem;
   }
 }
 
@@ -218,12 +187,12 @@
   width: 100%;
   max-width: 100%;
   background: rgba(22,33,62,0.75);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(108,71,255,0.18);
-  border-radius: 12px;
-  padding: 1.5rem 1rem 2rem;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(108,71,255,0.22);
+  border-radius: 1.25rem;
+  padding: 1.75rem 1.25rem 2.25rem;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.45);
   margin: 0 auto;
   box-sizing: border-box;
 }
@@ -231,8 +200,8 @@
 @media (min-width: 640px) {
   .quiz-card {
     max-width: 600px;
-    border-radius: 1.5rem;
-    padding: 2.5rem 2.25rem;
+    border-radius: 2rem;
+    padding: 3rem 2.5rem;
   }
 }
 
