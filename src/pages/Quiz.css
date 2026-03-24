@@ -187,9 +187,10 @@
 }
 
 /* On large screens with plenty of space, re-center visually */
-@media (min-width: 640px) and (min-height: 700px) {
+@media (min-width: 640px) and (min-height: 750px) {
   .quiz-card-wrap {
     justify-content: center;
+    align-items: center;
     padding: 2.5rem 1.5rem;
   }
 }
@@ -692,10 +693,10 @@
 }
 .skills-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  overflow-x: auto;
+  justify-content: flex-start;
   padding-bottom: 0.5rem;
-  scrollbar-width: none;
 }
 .skills-tabs::-webkit-scrollbar {
   display: none;
