@@ -120,6 +120,9 @@ video {
     radial-gradient(circle at 50% 80%, rgba(0, 212, 170, 0.3), transparent 50%);
   background-size: 200% 200%;
   animation: gradientMesh 20s ease infinite;
+  /* GPU layer promotion: isolates this animation from scroll compositing */
+  will-change: background-position;
+  transform: translateZ(0);
 }
 
 /* ─── Global Typography ────────────────────────────────────────────── */

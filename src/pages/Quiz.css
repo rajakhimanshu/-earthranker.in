@@ -34,6 +34,9 @@
   filter: blur(80px);
   pointer-events: none;
   z-index: 0;
+  /* GPU layer promotion: prevents blob animation from interfering with scroll */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 @media (min-width: 640px) {
@@ -170,19 +173,23 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;    
-  justify-content: center; 
-  padding: 1.5rem 1rem;
+  align-items: center;
+  /* FIXED: Do NOT use justify-content: center in a flex column when content
+     can overflow — it clips the top and prevents scrolling to it.
+     Use padding instead to achieve visual centering. */
+  justify-content: flex-start;
+  padding: 2rem 1rem 3rem;
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
-  /* CRITICAL: No internal scroll on wrap */
-  overflow: visible; 
+  overflow: visible;
 }
 
-@media (min-width: 640px) {
+/* On large screens with plenty of space, re-center visually */
+@media (min-width: 640px) and (min-height: 700px) {
   .quiz-card-wrap {
+    justify-content: center;
     padding: 2.5rem 1.5rem;
   }
 }
