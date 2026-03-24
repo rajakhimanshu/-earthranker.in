@@ -12,6 +12,9 @@
   background: var(--color-bg);
   width: 100%;
   box-sizing: border-box;
+  overflow-x: hidden;
+  /* Allow page to scroll naturally */
+  overflow-y: visible; 
 }
 
 .quiz-page--embed {
@@ -174,6 +177,8 @@
   max-width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
+  /* CRITICAL: No internal scroll on wrap */
+  overflow: visible; 
 }
 
 @media (min-width: 640px) {
@@ -195,6 +200,9 @@
   box-shadow: 0 24px 80px rgba(0,0,0,0.45);
   margin: 0 auto;
   box-sizing: border-box;
+  /* CRITICAL: No internal scroll on card. Mouse wheel will pass to page. */
+  overflow: visible; 
+  height: auto;
 }
 
 @media (min-width: 640px) {

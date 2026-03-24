@@ -6,48 +6,55 @@ export async function generateAIStory(userProfile) {
   try {
     const response = await fetch('/api/generate-story', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userProfile })
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API Proxy Error:', errorText);
-      throw new Error(`Failed to generate story: ${response.status}`);
+      throw new Error(`Story API error: ${response.status}`);
     }
 
     const data = await response.json();
-    return data.choices[0].message.content.trim();
-  } catch (error) {
-    console.error('Failed to generate AI story:', error);
-    throw error;
+
+    // Guard against malformed response
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content) throw new Error('Empty story response');
+
+    return content.trim();
+  } catch {
+    // Caller (Result.jsx) handles fallback — no console.error in production
+    throw new Error('Failed to generate AI story');
   }
 }
 
 /**
  * Calls internal Vercel API proxy to compare user with a celebrity.
+ * FIX: was reading data.text but API returns data.choices[0].message.content
  */
 export async function compareCelebrity({ userName, userTraits, celebrityName, rarityScore, rarityNumber }) {
   try {
     const response = await fetch('/api/compare-celebrity', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userName, userTraits, celebrityName, rarityScore, rarityNumber })
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Celebrity search failed: ${response.status}`);
+      throw new Error(`Compare API error: ${response.status}`);
     }
 
     const data = await response.json();
-    return data.text; // Return the text string
-  } catch (error) {
-    console.error('Failed to compare celebrity:', error);
-    throw error;
+
+    // FIX: Support both response shapes (data.text legacy OR data.choices[0].message.content)
+    const content =
+      data?.choices?.[0]?.message?.content ||
+      data?.text ||
+      null;
+
+    if (!content) throw new Error('Empty compare response');
+
+    return content.trim();
+  } catch {
+    throw new Error('Failed to compare celebrity');
   }
 }

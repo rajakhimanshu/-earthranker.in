@@ -5,14 +5,17 @@
 /* ── Page shell ─────────────────────────────────────────────────────── */
 .result-page {
   position: relative;
-  min-height: 100vh;
+  /* FIX: subtract navbar height */
+  min-height: calc(100vh - 56px);
   width: 100%;
+  max-width: 100vw;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0 0 4rem;
   background-color: #050505;
+  box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
@@ -32,13 +35,14 @@
 .planetary-system {
   position: absolute;
   top: 10%;
-  right: -100px;
-  width: 300px;
-  height: 300px;
+  right: -60px;
+  width: 220px;
+  height: 220px;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.3;
+  opacity: 0.25;
   filter: blur(1px);
+  overflow: hidden;
 }
 
 @media (min-width: 768px) {
@@ -389,7 +393,7 @@
   gap: 1rem;
   width: 100%;
   max-width: 1000px;
-  margin-top: -2rem;
+  margin-top: 1rem;
   z-index: 10;
   position: relative;
   padding: 0 1rem;
@@ -620,10 +624,13 @@
 .premium-story-card {
   background: #08080c;
   border-radius: 18px;
-  padding: 2.5rem 1.5rem;
+  /* FIX: tighter padding on mobile */
+  padding: 1.5rem 1rem;
   position: relative;
   overflow: hidden;
   text-align: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (min-width: 640px) {
@@ -660,6 +667,10 @@
   color: #f0f4f8;
   position: relative;
   z-index: 2;
+  /* FIX: prevent long AI-generated text from overflowing on 375px */
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 @media (min-width: 640px) {

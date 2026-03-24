@@ -4,20 +4,16 @@ import Footer from '../components/Footer';
 import { useTranslation } from '../contexts/LanguageContext';
 import './Home.css';
 
-/* ─── Components ─────────────────────────────────────────────────────── */
+/* ─── Live Counter ──────────────────────────────────────────────────── */
 function LiveCounter() {
   const { t } = useTranslation();
-  
+
   const getDailyUserCount = () => {
     const now = new Date();
-    // Seed based on today's date (same for ALL users on same day)
     const seed = now.getFullYear() * 10000 + (now.getMonth()+1) * 100 + now.getDate();
-    // Base count between 850-1050, deterministic per day
     const base = 850 + (seed % 200);
-    // Add time-based increment: grows slowly through the day (0 to ~120 extra)
     const minutesIntoDay = now.getHours() * 60 + now.getMinutes();
     const timeIncrement = Math.floor((minutesIntoDay / 1440) * 120);
-    // Small pseudo-random wobble (same for everyone, changes every 5 minutes)
     const wobbleSeed = Math.floor(minutesIntoDay / 5);
     const wobble = (wobbleSeed * 13 + seed) % 17;
     return base + timeIncrement + wobble;
@@ -26,20 +22,20 @@ function LiveCounter() {
   const [count, setCount] = useState(getDailyUserCount);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCount(getDailyUserCount());
-    }, 60000); // Update every minute to reflect timeIncrement
+    const timer = setInterval(() => setCount(getDailyUserCount()), 60000);
     return () => clearInterval(timer);
   }, []);
 
   return (
     <div className="live-counter">
       <span className="live-counter__dot" />
-      <span className="live-counter__number">{count.toLocaleString('en-US')}</span> {t.home.liveCounter}
+      <span className="live-counter__number">{count.toLocaleString('en-US')}</span>{' '}
+      {t.home.liveCounter}
     </div>
   );
 }
 
+/* ─── Testimonial Card ──────────────────────────────────────────────── */
 function TestimonialCard({ name, country, tier, tierColor, quote }) {
   return (
     <div className="testimonial-card">
@@ -47,24 +43,22 @@ function TestimonialCard({ name, country, tier, tierColor, quote }) {
         <span className="testimonial-card__name">{name}</span>
         <span className="testimonial-card__country">{country}</span>
       </div>
-      <div className="testimonial-card__tier" style={{ color: tierColor }}>
-        {tier}
-      </div>
+      <div className="testimonial-card__tier" style={{ color: tierColor }}>{tier}</div>
       <p className="testimonial-card__quote"><em>"{quote}"</em></p>
     </div>
   );
 }
 
-/* ─── Data ─────────────────────────────────────────────────────────── */
+/* ─── Data ──────────────────────────────────────────────────────────── */
 const TESTIMONIALS = [
-  { name: "Priya S.", country: "India", tier: "MYTHIC", tierColor: "#FF1744", quote: "I never knew my blood type made me this rare!" },
-  { name: "Arjun M.", country: "India", tier: "LEGENDARY", tierColor: "#FFB347", quote: "My combination of skills put me in the top 0.5%. Mind blown." },
-  { name: "James L.", country: "UK", tier: "LEGENDARY", tierColor: "#FFB347", quote: "The statistics are fascinating. Shared it with my whole office." },
-  { name: "Elena R.", country: "Brazil", tier: "EPIC", tierColor: "#9C27B0", quote: "Finally a quiz that uses real data. My score was shocking!" },
-  { name: "Mohammed A.", country: "UAE", tier: "RARE", tierColor: "#2196F3", quote: "Being left-handed AND having green eyes made me rarer than I thought." },
-  { name: "Sarah K.", country: "Canada", tier: "MYTHIC", tierColor: "#FF1744", quote: "Showed my friends and now we are all comparing scores." },
-  { name: "Kavya R.", country: "India", tier: "EPIC", tierColor: "#9C27B0", quote: "The AI story it wrote about me gave me chills. So personal." },
-  { name: "Rohan T.", country: "India", tier: "LEGENDARY", tierColor: "#FFB347", quote: "1 in 340 million. I screenshot this and posted it everywhere." }
+  { name: "Priya S.", country: "India", tier: "MYTHIC", tierColor: "#FF6B6B", quote: "I never knew my blood type made me this rare!" },
+  { name: "Arjun M.", country: "India", tier: "LEGENDARY", tierColor: "#FFD700", quote: "My combination of skills put me in the top 0.5%. Mind blown." },
+  { name: "James L.", country: "UK", tier: "LEGENDARY", tierColor: "#FFD700", quote: "The statistics are fascinating. Shared it with my whole office." },
+  { name: "Elena R.", country: "Brazil", tier: "EPIC", tierColor: "#A855F7", quote: "Finally a quiz that uses real data. My score was shocking!" },
+  { name: "Mohammed A.", country: "UAE", tier: "RARE", tierColor: "#3B82F6", quote: "Being left-handed AND having green eyes made me rarer than I thought." },
+  { name: "Sarah K.", country: "Canada", tier: "MYTHIC", tierColor: "#FF6B6B", quote: "Showed my friends and now we're all comparing scores." },
+  { name: "Kavya R.", country: "India", tier: "EPIC", tierColor: "#A855F7", quote: "The AI story it wrote about me gave me chills. So personal." },
+  { name: "Rohan T.", country: "India", tier: "LEGENDARY", tierColor: "#FFD700", quote: "1 in 340 million. I screenshot this and posted it everywhere." }
 ];
 
 const HOW_IT_WORKS = [
@@ -72,62 +66,58 @@ const HOW_IT_WORKS = [
     step: '01',
     icon: '🧬',
     title: 'Enter Your Traits',
-    body: 'Answer quick questions about your biology, habits, and quirks. Each answer is matched against real-world statistical data.',
+    body: 'Answer 8 quick questions about biology, skills, and demographics — each mapped to real global statistics.',
     accent: 'var(--color-primary)',
     glow: 'rgba(108,71,255,0.25)',
   },
   {
     step: '02',
     icon: '⚡',
-    title: 'Calculate Rarity',
-    body: 'Our probability engine multiplies the likelihood of each trait combination across all 8.2 billion people on Earth.',
+    title: 'Probability Engine',
+    body: 'We multiply the independent likelihood of every trait across 8.28 billion people — the same math used by geneticists.',
     accent: 'var(--color-coral)',
     glow: 'rgba(255,107,107,0.25)',
   },
   {
     step: '03',
     icon: '🌍',
-    title: 'Share Your Score',
-    body: 'Get a personalized rarity badge, compare with friends, and see where you rank on the global leaderboard.',
+    title: 'Claim Your Rank',
+    body: 'Get a rarity badge, a personalised AI story, and see exactly where you stand on the global leaderboard.',
     accent: 'var(--color-teal)',
     glow: 'rgba(0,212,170,0.25)',
   },
 ];
 
 const TIERS = [
-  { name: 'Common',    range: 'Top 50%',    color: '#9BA3B8', bg: 'rgba(155,163,184,0.12)', border: 'rgba(155,163,184,0.3)', icon: '⚪' },
-  { name: 'Uncommon',  range: 'Top 25%',    color: '#4ADE80', bg: 'rgba(74,222,128,0.12)',  border: 'rgba(74,222,128,0.3)',  icon: '🟢' },
-  { name: 'Rare',      range: 'Top 10%',    color: '#60A5FA', bg: 'rgba(96,165,250,0.12)',  border: 'rgba(96,165,250,0.3)',  icon: '🔵' },
-  { name: 'Epic',      range: 'Top 3%',     color: '#A78BFA', bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.3)', icon: '🟣' },
-  { name: 'Legendary', range: 'Top 0.5%',   color: '#FBBF24', bg: 'rgba(251,191,36,0.12)',  border: 'rgba(251,191,36,0.3)',  icon: '🟡' },
-  { name: 'Mythic',    range: 'Top 0.01%',  color: '#FF6B6B', bg: 'rgba(255,107,107,0.12)', border: 'rgba(255,107,107,0.3)', icon: '🔴' },
+  { name: 'Common',    range: 'Top 50%',   color: '#9BA3B8', bg: 'rgba(155,163,184,0.12)', border: 'rgba(155,163,184,0.3)', icon: '⚪' },
+  { name: 'Uncommon',  range: 'Top 25%',   color: '#4ADE80', bg: 'rgba(74,222,128,0.12)',  border: 'rgba(74,222,128,0.3)',  icon: '🟢' },
+  { name: 'Rare',      range: 'Top 10%',   color: '#60A5FA', bg: 'rgba(96,165,250,0.12)',  border: 'rgba(96,165,250,0.3)',  icon: '🔵' },
+  { name: 'Epic',      range: 'Top 3%',    color: '#A78BFA', bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.3)', icon: '🟣' },
+  { name: 'Legendary', range: 'Top 0.5%',  color: '#FBBF24', bg: 'rgba(251,191,36,0.12)',  border: 'rgba(251,191,36,0.3)',  icon: '🟡' },
+  { name: 'Mythic',    range: 'Top 0.01%', color: '#FF6B6B', bg: 'rgba(255,107,107,0.12)', border: 'rgba(255,107,107,0.3)', icon: '🔴' },
 ];
 
-/* ─── Particle dots ─────────────────────────────────────────────── */
+/* ─── Particles ─────────────────────────────────────────────────────── */
 function Particles() {
-  const particles = Array.from({ length: 40 }, (_, i) => ({
+  const particles = Array.from({ length: 30 }, (_, i) => ({
     id: i,
     size:  Math.random() * 3 + 1,
     x:     Math.random() * 100,
     y:     Math.random() * 100,
     delay: Math.random() * 8,
     dur:   Math.random() * 10 + 8,
-    opacity: Math.random() * 0.4 + 0.1,
+    opacity: Math.random() * 0.3 + 0.08,
   }));
 
   return (
     <div className="particles-container" aria-hidden="true">
       {particles.map(p => (
-        <span
-          key={p.id}
-          className="particle"
+        <span key={p.id} className="particle"
           style={{
-            width:  p.size,
-            height: p.size,
-            left:   `${p.x}%`,
-            top:    `${p.y}%`,
+            width: p.size, height: p.size,
+            left: `${p.x}%`, top: `${p.y}%`,
             opacity: p.opacity,
-            animationDelay:    `${p.delay}s`,
+            animationDelay: `${p.delay}s`,
             animationDuration: `${p.dur}s`,
           }}
         />
@@ -143,148 +133,174 @@ export default function Home() {
   return (
     <>
       <main>
-      <section className="hero">
-        <Particles />
 
-        {/* Radial glow blobs */}
-        <div className="glow-blob glow-blob--purple" aria-hidden="true" />
-        <div className="glow-blob glow-blob--coral"  aria-hidden="true" />
+        {/* ══ HERO ═══════════════════════════════════════════════════════ */}
+        <section className="hero">
+          <Particles />
+          <div className="glow-blob glow-blob--purple" aria-hidden="true" />
+          <div className="glow-blob glow-blob--coral"  aria-hidden="true" />
 
-        <div className="hero__content">
-          {/* Trending Badge */}
-          <div className="trending-badge">
-            <span className="trending-badge__pulse" />
-            🔥 Trending
-          </div>
+          <div className="hero__content">
 
-          {/* Headline */}
-          <h1 className="hero__headline">
-            {t.home.heroTitle.split(' 1 in ')[0]}
-            <span className="hero__headline--gradient"> 1 in 8.28 Billion</span>
-          </h1>
+            {/* Badge */}
+            <div className="trending-badge">
+              <span className="trending-badge__pulse" />
+              🔥 Trending Globally
+            </div>
 
-          {/* Live Counter */}
-          <LiveCounter />
+            {/* Headline */}
+            <h1 className="hero__headline">
+              How rare are you<br />
+              <span className="hero__headline--gradient">among 8.28 billion?</span>
+            </h1>
 
-          {/* Subtitle */}
-          <p className="hero__subtitle">
-            {t.home.heroSub}
-          </p>
+            {/* Subtitle */}
+            <p className="hero__subtitle">
+              A 2-minute science-backed quiz that calculates the exact statistical
+              probability of your unique combination of human traits.
+            </p>
 
-          {/* CTA */}
-          <Link to="/quiz" className="cta-btn cta-btn--hero">
-            <span className="cta-btn__shimmer" aria-hidden="true" />
-            {t.home.startBtn.replace(' →', '')}
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5"
-                    strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </Link>
+            {/* Live counter */}
+            <LiveCounter />
 
-          {/* Supporting micro-stats */}
-          <div className="hero__stats">
-            {[
-              { value: '8.28B', label: 'People on Earth' },
-              { value: '50+', label: 'Traits Analyzed' },
-              { value: '6',   label: 'Rarity Tiers' },
-            ].map(({ value, label }) => (
-              <div key={label} className="hero__stat">
-                <strong className="hero__stat-value">{value}</strong>
-                <span  className="hero__stat-label">{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Scroll hint */}
-        <button 
-          className="scroll-hint cursor-pointer" 
-          aria-label="Scroll down"
-          style={{ position: 'absolute', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}
-          onClick={() => {
-            const next = document.getElementById('next-section');
-            if (next) {
-              const rect = next.getBoundingClientRect();
-              const offset = window.pageYOffset + rect.top;
-              window.scrollTo({ top: offset, behavior: 'smooth' });
-            }
-          }}
-        >
-          <div className="scroll-hint__dot" />
-        </button>
-      </section>
-
-      {/* ── TESTIMONIALS MARQUEE ───────────────────────────────────── */}
-      <section id="next-section" className="marquee-section">
-        <div className="marquee-track">
-          {TESTIMONIALS.map((testi, i) => (
-            <TestimonialCard key={i} {...testi} />
-          ))}
-          {/* Duplicate for seamless loop */}
-          {TESTIMONIALS.map((testi, i) => (
-            <TestimonialCard key={`dup-${i}`} {...testi} />
-          ))}
-        </div>
-      </section>
-
-      {/* ── HOW IT WORKS ────────────────────────────────────────────── */}
-      <section className="section">
-        <div className="section-inner">
-          <div className="section-header">
-            <span className="section-eyebrow">How It Works</span>
-            <h2 className="section-title">Three steps to your<br /><span className="text-gradient">rarity score</span></h2>
-          </div>
-
-          <div className="cards-grid">
-            {HOW_IT_WORKS.map(({ step, icon, title, body, accent, glow }) => (
-              <div key={step} className="feature-card" style={{ '--accent': accent, '--glow': glow }}>
-                <div className="feature-card__step">{step}</div>
-                <div className="feature-card__icon">{icon}</div>
-                <h3 className="feature-card__title">{title}</h3>
-                <p  className="feature-card__body">{body}</p>
-                <div className="feature-card__line" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── TIER BADGES ─────────────────────────────────────────────── */}
-      <section className="section section--alt" style={{ position: 'relative', overflow: 'hidden' }}>
-        {/* Additional decorative elements for this section to prevent flatness */}
-        <div className="glow-blob glow-blob--purple" style={{ top: '-100px', left: '-20%', filter: 'blur(120px)', opacity: 0.1 }} aria-hidden="true" />
-        <div className="glow-blob glow-blob--coral"  style={{ bottom: '-100px', right: '-20%', filter: 'blur(120px)', opacity: 0.1 }} aria-hidden="true" />
-        <Particles />
-        
-        <div className="section-inner" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="section-header">
-            <span className="section-eyebrow">{t.home.tiersTitle}</span>
-            <h2 className="section-title">{t.home.tiersSub}</h2>
-            <p className="section-sub">Each tier represents how rare your combination of traits is among all 8.28 billion humans. Where will you stand?</p>
-          </div>
-
-          <div className="tiers-grid">
-            {TIERS.map(({ name, range, color, bg, border, icon }) => (
-              <div key={name} className="tier-badge" style={{ '--tier-color': color, '--tier-bg': bg, '--tier-border': border }}>
-                <span className="tier-badge__icon">{icon}</span>
-                <strong className="tier-badge__name">{t.tiers[name] || name}</strong>
-                <span  className="tier-badge__range">{range}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* CTA */}
-          <div className="tiers-cta mt-8">
-            <Link to="/quiz" className="cta-btn cta-btn--sm">
+            {/* Single primary CTA */}
+            <Link to="/quiz" className="cta-btn cta-btn--hero" id="hero-cta">
               <span className="cta-btn__shimmer" aria-hidden="true" />
-              Take the Quiz — It's Free
+              Discover My Rarity
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5"
+                      strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </Link>
-            <Link to="/leaderboard" className="ghost-btn">View Leaderboard →</Link>
+
+            {/* Trust line under CTA */}
+            <p className="hero__trust">
+              Free · Anonymous · No sign-up required
+            </p>
+
+            {/* Mini stats — 3 col grid on mobile */}
+            <div className="hero__stats">
+              {[
+                { value: '8.28B', label: 'People on Earth' },
+                { value: '50+',   label: 'Traits Analysed' },
+                { value: '6',     label: 'Rarity Tiers' },
+              ].map(({ value, label }) => (
+                <div key={label} className="hero__stat">
+                  <strong className="hero__stat-value">{value}</strong>
+                  <span  className="hero__stat-label">{label}</span>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
-    </main>
-    <Footer />
+
+          {/* Scroll hint */}
+          <button
+            className="scroll-hint cursor-pointer"
+            aria-label="Scroll down"
+            style={{ position: 'absolute', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}
+            onClick={() => {
+              const next = document.getElementById('how-it-works');
+              if (next) next.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            <div className="scroll-hint__dot" />
+          </button>
+        </section>
+
+        {/* ══ TESTIMONIALS MARQUEE ════════════════════════════════════════ */}
+        <section className="marquee-section" aria-label="What people are saying">
+          <div className="marquee-track">
+            {TESTIMONIALS.map((testi, i) => <TestimonialCard key={i} {...testi} />)}
+            {TESTIMONIALS.map((testi, i) => <TestimonialCard key={`d-${i}`} {...testi} />)}
+          </div>
+        </section>
+
+        {/* ══ HOW IT WORKS ════════════════════════════════════════════════ */}
+        <section className="section" id="how-it-works">
+          <div className="section-inner">
+            <div className="section-header">
+              <span className="section-eyebrow">The Science</span>
+              <h2 className="section-title">
+                Three steps to your<br />
+                <span className="text-gradient">rarity score</span>
+              </h2>
+              <p className="section-sub">
+                Every answer feeds a real probability engine — not a personality quiz. Your score is a genuine statistical calculation.
+              </p>
+            </div>
+
+            <div className="cards-grid">
+              {HOW_IT_WORKS.map(({ step, icon, title, body, accent, glow }) => (
+                <div key={step} className="feature-card" style={{ '--accent': accent, '--glow': glow }}>
+                  <div className="feature-card__step">{step}</div>
+                  <div className="feature-card__icon">{icon}</div>
+                  <h3 className="feature-card__title">{title}</h3>
+                  <p  className="feature-card__body">{body}</p>
+                  <div className="feature-card__line" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ══ RARITY TIERS ════════════════════════════════════════════════ */}
+        <section className="section section--alt" style={{ position: 'relative', overflow: 'hidden' }}>
+          <div className="glow-blob glow-blob--purple" style={{ top: '-100px', left: '-20%', filter: 'blur(120px)', opacity: 0.08 }} aria-hidden="true" />
+          <div className="glow-blob glow-blob--coral"  style={{ bottom: '-100px', right: '-20%', filter: 'blur(120px)', opacity: 0.08 }} aria-hidden="true" />
+
+          <div className="section-inner" style={{ position: 'relative', zIndex: 1 }}>
+            <div className="section-header">
+              <span className="section-eyebrow">{t.home.tiersTitle}</span>
+              <h2 className="section-title">{t.home.tiersSub}</h2>
+              <p className="section-sub">
+                Your score unlocks one of six tiers based on how rare your exact
+                combination of traits is across all of humanity.
+              </p>
+            </div>
+
+            <div className="tiers-grid">
+              {TIERS.map(({ name, range, color, bg, border, icon }) => (
+                <div key={name} className="tier-badge" style={{ '--tier-color': color, '--tier-bg': bg, '--tier-border': border }}>
+                  <span className="tier-badge__icon">{icon}</span>
+                  <strong className="tier-badge__name">{t.tiers[name] || name}</strong>
+                  <span  className="tier-badge__range">{range}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Single CTA at bottom of tiers — clear call to action */}
+            <div className="tiers-cta mt-8">
+              <Link to="/quiz" className="cta-btn cta-btn--sm" id="tiers-cta">
+                <span className="cta-btn__shimmer" aria-hidden="true" />
+                Find Your Tier — Free
+              </Link>
+              <Link to="/leaderboard" className="ghost-btn">View Global Rankings →</Link>
+            </div>
+          </div>
+        </section>
+
+        {/* ══ SOCIAL PROOF STRIP ══════════════════════════════════════════ */}
+        <section className="section" style={{ paddingTop: '3rem', paddingBottom: '4rem' }}>
+          <div className="section-inner">
+            <div className="proof-strip">
+              {[
+                { icon: '🔬', stat: '12 categories', sub: 'of human traits measured' },
+                { icon: '🌍', stat: '180+ countries', sub: 'represented in our data' },
+                { icon: '⚡', stat: '45 seconds',     sub: 'average completion time' },
+                { icon: '🔒', stat: '100% private',   sub: 'nothing stored, no login' },
+              ].map(({ icon, stat, sub }) => (
+                <div key={stat} className="proof-item">
+                  <span className="proof-item__icon" aria-hidden="true">{icon}</span>
+                  <strong className="proof-item__stat">{stat}</strong>
+                  <span className="proof-item__sub">{sub}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+      </main>
+      <Footer />
     </>
   );
 }

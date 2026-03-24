@@ -5,7 +5,6 @@
 export function trackEvent(name, params = {}) {
   if (typeof window.gtag === 'function') {
     window.gtag('event', name, params);
-  } else {
-    console.warn(`Analytics: [${name}] could not be tracked because gtag is missing.`);
   }
+  // Silent no-op when gtag is not loaded (dev, adblockers, etc.)
 }
