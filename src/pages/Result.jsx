@@ -79,6 +79,29 @@ export function normaliseAnswers(raw) {
   return out;
 }
 
+/* Shorthand for astronomical numbers */
+function formatLargeNumber(num) {
+  if (num < 1000000) return num.toLocaleString('en-US');
+  
+  const units = [
+    { value: 1e18, label: 'Quintillion' },
+    { value: 1e15, label: 'Quadrillion' },
+    { value: 1e12, label: 'Trillion' },
+    { value: 1e9,  label: 'Billion' },
+    { value: 1e6,  label: 'Million' },
+  ];
+
+  for (const unit of units) {
+    if (num >= unit.value) {
+      const val = num / unit.value;
+      // If it's a clean integer, don't show .00
+      const formatted = Number.isInteger(val) ? val.toString() : val.toFixed(2);
+      return `${formatted} ${unit.label}`;
+    }
+  }
+  return num.toLocaleString('en-US');
+}
+
 /* Slot machine counter */
 function SlotCounter({ target, className = '' }) {
   const [display, setDisplay] = useState(1);
@@ -87,7 +110,6 @@ function SlotCounter({ target, className = '' }) {
   useEffect(() => {
     if (!target || target <= 1) { setDisplay(target || 1); return; }
 
-    // easeOutExpo – fast at start, crawls near the end
     const DURATION = 3200; // ms
     const start = performance.now();
     const log10Target = Math.log10(target);
@@ -95,9 +117,7 @@ function SlotCounter({ target, className = '' }) {
     function tick(now) {
       const elapsed = now - start;
       const t = Math.min(elapsed / DURATION, 1);
-      // easeInExpo – starts slow, speeds up dramatically at the end
       const eased = t === 0 ? 0 : Math.pow(2, 10 * (t - 1));
-      // interpolate in log-space so it doesn't rush through small numbers
       const logVal = eased * log10Target;
       const val = Math.round(Math.pow(10, logVal));
       setDisplay(Math.max(1, Math.min(val, target)));
@@ -115,7 +135,7 @@ function SlotCounter({ target, className = '' }) {
 
   return (
     <span className={`slot-number ${className}`}>
-      {display.toLocaleString('en-US')}
+      {formatLargeNumber(display)}
     </span>
   );
 }
@@ -594,7 +614,12 @@ export default function Result() {
   const [isUniverse, setIsUniverse] = useState(false);
 
   const COSMIC_MULTIPLIER = 1250000;
-  const oneIn = isUniverse ? Math.round(oneInRaw * COSMIC_MULTIPLIER) : baseOneIn;
+  let oneIn = isUniverse ? Math.round(oneInRaw * COSMIC_MULTIPLIER) : baseOneIn;
+  
+  // Cap at 100 Quintillion to prevent display breakdown
+  if (isUniverse && oneIn > 1e20) {
+    oneIn = 1e20;
+  }
 
   // Cosmic Tiers Mapping
   const getCosmicTier = (normalTier) => {
