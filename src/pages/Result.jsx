@@ -123,7 +123,7 @@ function SlotCounter({ target, className = '' }) {
 // Old TraitBar and HexBadge were removed for the redesign.
 
 /* Canvas score card generator */
-function downloadScoreCard({ oneIn, rarityTier, tierEmoji, tierColor, score, t }) {
+function downloadScoreCard({ name, oneIn, rarityTier, tierEmoji, tierColor, score, t }) {
   const SIZE   = 1080;
   const canvas = document.createElement('canvas');
   canvas.width  = SIZE;
@@ -206,23 +206,32 @@ function downloadScoreCard({ oneIn, rarityTier, tierEmoji, tierColor, score, t }
   ctx.fillText('EARTH RANKER', SIZE/2, 130);
   ctx.shadowBlur   = 0;
 
-  // ── Thin divider under logo ─────────────────────────────────────────
+  // ── User Name (Professional addition) ──────────────────────────────
+  if (name) {
+    ctx.font = '500 32px "Inter", "Arial", sans-serif';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.globalAlpha = 0.8;
+    ctx.fillText(name.toUpperCase(), SIZE/2, 185);
+    ctx.globalAlpha = 1.0;
+  }
+
+  // ── Thin divider under name ─────────────────────────────────────────
   ctx.strokeStyle = 'rgba(139,92,246,0.3)';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(SIZE/2 - 180, 155);
-  ctx.lineTo(SIZE/2 + 180, 155);
+  ctx.moveTo(SIZE/2 - 180, 205);
+  ctx.lineTo(SIZE/2 + 180, 205);
   ctx.stroke();
 
   // ── "You are" label ─────────────────────────────────────────────────
   ctx.font      = '400 36px "Inter", "Arial", sans-serif';
   ctx.fillStyle = 'rgba(200,200,230,0.7)';
-  ctx.fillText(t.result.youAre, SIZE/2, 240);
+  ctx.fillText(t.result.youAre, SIZE/2, 280);
 
   // ── '1 in' prefix ───────────────────────────────────────────────────
   ctx.font      = '700 68px "Space Grotesk", "Arial", sans-serif';
   ctx.fillStyle = '#E2E8F0';
-  ctx.fillText(t.result.oneIn, SIZE/2, 330);
+  ctx.fillText(t.result.oneIn, SIZE/2, 370);
 
   // ── Giant gold 1-in-X number ─────────────────────────────────────────
   const numStr = oneIn.toLocaleString('en-US');
@@ -243,7 +252,7 @@ function downloadScoreCard({ oneIn, rarityTier, tierEmoji, tierColor, score, t }
   ctx.shadowColor  = '#FFD70066';
   ctx.shadowBlur   = 40;
   ctx.fillStyle    = goldGrad;
-  ctx.fillText(numStr, SIZE/2, 530);
+  ctx.fillText(numStr, SIZE/2, 570);
   ctx.shadowBlur   = 0;
 
   // ── Tier emoji (drawn as text) ───────────────────────────────────────
@@ -252,11 +261,11 @@ function downloadScoreCard({ oneIn, rarityTier, tierEmoji, tierColor, score, t }
   ctx.fillStyle    = '#ffffff';
   ctx.shadowColor  = tierColor;
   ctx.shadowBlur   = 30;
-  ctx.fillText(tierEmoji, SIZE/2, 680);
+  ctx.fillText(tierEmoji, SIZE/2, 720);
   ctx.shadowBlur   = 0;
 
   // ── Tier name pill background ────────────────────────────────────────
-  const pillW = 320, pillH = 72, pillX = SIZE/2 - pillW/2, pillY = 710;
+  const pillW = 320, pillH = 72, pillX = SIZE/2 - pillW/2, pillY = 750;
   const pillGrad = ctx.createLinearGradient(pillX, 0, pillX + pillW, 0);
   pillGrad.addColorStop(0, tierColor + 'CC');
   pillGrad.addColorStop(1, tierColor + '88');
@@ -291,21 +300,21 @@ function downloadScoreCard({ oneIn, rarityTier, tierEmoji, tierColor, score, t }
   ctx.fillStyle    = 'rgba(200,200,230,0.6)';
   ctx.textBaseline = 'alphabetic';
   ctx.letterSpacing = '0px';
-  ctx.fillText(`${t.result.rarityScore}: ${score} / 100`, SIZE/2, 850);
+  ctx.fillText(`${t.result.rarityScore}: ${score} / 100`, SIZE/2, 890);
 
   // ── Bottom divider ───────────────────────────────────────────────────
   ctx.strokeStyle = 'rgba(139,92,246,0.25)';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(SIZE/2 - 200, 890);
-  ctx.lineTo(SIZE/2 + 200, 890);
+  ctx.moveTo(SIZE/2 - 200, 930);
+  ctx.lineTo(SIZE/2 + 200, 930);
   ctx.stroke();
 
   // ── Website URL ──────────────────────────────────────────────────────
   ctx.font      = '500 32px "Inter", "Arial", sans-serif';
   ctx.fillStyle = 'rgba(167,139,250,0.85)';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('earthranker.himanshurajak.in', SIZE/2, 960);
+  ctx.fillText('earthranker.himanshurajak.in', SIZE/2, 1000);
 
   // ── Bottom color stripe ──────────────────────────────────────────────
   ctx.fillStyle = stripe;
@@ -319,7 +328,7 @@ function downloadScoreCard({ oneIn, rarityTier, tierEmoji, tierColor, score, t }
 }
 
 /* Canvas Certificate generator */
-function downloadCertificate({ name, oneIn, rarityTier, tierColor, t, traitBreakdown }) {
+function downloadCertificate({ name, age, oneIn, rarityTier, tierColor, t, traitBreakdown }) {
   const S = 1440; // 1:1 Aspect Ratio for Social Sharing
   const canvas = document.createElement('canvas');
   canvas.width = S;
@@ -332,7 +341,7 @@ function downloadCertificate({ name, oneIn, rarityTier, tierColor, t, traitBreak
 
   // Gradient Glow
   const bgGrad = ctx.createRadialGradient(S/2, S/2, 0, S/2, S/2, S/0.8);
-  bgGrad.addColorStop(0, `${tierColor}20`);
+  bgGrad.addColorStop(0, `${tierColor}25`);
   bgGrad.addColorStop(1, '#050505');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, S, S);
@@ -340,77 +349,93 @@ function downloadCertificate({ name, oneIn, rarityTier, tierColor, t, traitBreak
   // 2. Borders
   const pad = 80;
   ctx.strokeStyle = tierColor;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 4;
   ctx.strokeRect(pad, pad, S - pad*2, S - pad*2);
 
-  ctx.strokeStyle = '#ffffff20';
+  ctx.strokeStyle = '#ffffff15';
   ctx.lineWidth = 1;
-  ctx.strokeRect(pad+20, pad+20, S - (pad+20)*2, S - (pad+20)*2);
+  ctx.strokeRect(pad+25, pad+25, S - (pad+25)*2, S - (pad+25)*2);
 
   // 3. Header
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
-  ctx.font = 'bold 40px "Space Grotesk"';
-  ctx.fillStyle = '#ffffff60';
-  ctx.fillText('EARTH RANKER', S/2, pad + 100);
+  ctx.font = 'bold 44px "Space Grotesk"';
+  ctx.fillStyle = '#ffffff50';
+  ctx.letterSpacing = '8px';
+  ctx.fillText('EARTH RANKER', S/2, pad + 120);
 
-  ctx.font = 'bold 80px "Space Grotesk"';
+  ctx.font = 'bold 90px "Space Grotesk"';
   ctx.fillStyle = '#ffffff';
-  ctx.fillText('CERTIFICATE OF RARITY', S/2, pad + 200);
+  ctx.letterSpacing = '2px';
+  ctx.fillText('CERTIFICATE OF RARITY', S/2, pad + 240);
 
   // 4. Main Content
-  ctx.font = '40px "Inter"';
-  ctx.fillStyle = '#ffffff80';
+  ctx.font = '400 42px "Inter"';
+  ctx.fillStyle = '#ffffff70';
   ctx.fillText('This is to certify that', S/2, S/2 - 180);
 
-  ctx.font = '900 120px "Space Grotesk"';
+  // Name
+  ctx.font = '900 130px "Space Grotesk"';
   ctx.fillStyle = '#ffffff';
   ctx.fillText((name || 'Unique Soul').toUpperCase(), S/2, S/2 - 60);
 
-  ctx.font = '40px "Inter"';
-  ctx.fillStyle = '#ffffff80';
-  ctx.fillText('is statistically ranked', S/2, S/2 + 40);
+  // Age (New addition)
+  if (age) {
+    ctx.font = '600 36px "Inter"';
+    ctx.fillStyle = tierColor;
+    ctx.fillText(`AGE: ${age} YEARS`, S/2, S/2 + 10);
+  }
+
+  ctx.font = '400 42px "Inter"';
+  ctx.fillStyle = '#ffffff70';
+  ctx.fillText('is statistically ranked', S/2, S/2 + 80);
 
   // Big Number
-  ctx.font = '900 160px "Space Grotesk"';
-  const grad = ctx.createLinearGradient(S/2 - 300, 0, S/2 + 300, 0);
+  ctx.font = '900 180px "Space Grotesk"';
+  const grad = ctx.createLinearGradient(S/2 - 400, 0, S/2 + 400, 0);
   grad.addColorStop(0, '#A855F7');
-  grad.addColorStop(1, '#FF6B6B');
+  grad.addColorStop(0.5, '#FF6B6B');
+  grad.addColorStop(1, '#A855F7');
   ctx.fillStyle = grad;
-  ctx.fillText(`1 in ${oneIn.toLocaleString()}`, S/2, S/2 + 180);
+  ctx.fillText(`1 in ${oneIn.toLocaleString()}`, S/2, S/2 + 240);
 
-  ctx.font = 'bold 50px "Space Grotesk"';
+  ctx.font = 'bold 55px "Space Grotesk"';
   ctx.fillStyle = '#ffffff';
-  ctx.fillText('PEOPLE ON EARTH', S/2, S/2 + 280);
+  ctx.fillText('PEOPLE ON EARTH', S/2, S/2 + 360);
 
   // 5. Tier Badge
-  const bW = 400;
-  const bH = 80;
+  const bW = 450;
+  const bH = 90;
   const bX = S/2 - bW/2;
-  const bY = S/2 + 360;
+  const bY = S/2 + 450;
   ctx.fillStyle = tierColor;
-  ctx.roundRect ? ctx.roundRect(bX, bY, bW, bH, 40) : ctx.fillRect(bX, bY, bW, bH);
-  ctx.fill();
+  if (ctx.roundRect) {
+    ctx.beginPath();
+    ctx.roundRect(bX, bY, bW, bH, 45);
+    ctx.fill();
+  } else {
+    ctx.fillRect(bX, bY, bW, bH);
+  }
 
-  ctx.font = 'bold 40px "Space Grotesk"';
+  ctx.font = 'bold 45px "Space Grotesk"';
   ctx.fillStyle = '#ffffff';
   ctx.fillText(rarityTier.toUpperCase(), S/2, bY + bH/2);
 
   // 6. Footer
-  ctx.font = '30px "Inter"';
-  ctx.fillStyle = '#ffffff40';
+  ctx.font = '32px "Inter"';
+  ctx.fillStyle = '#ffffff30';
   const dateStr = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
   ctx.fillText(`Issued on: ${dateStr}`, S/2, S - pad - 120);
 
-  ctx.font = 'bold 32px "Inter"';
+  ctx.font = 'bold 34px "Inter"';
   ctx.fillStyle = tierColor;
   ctx.fillText('earthranker.himanshurajak.in', S/2, S - pad - 60);
 
   // 7. Download
   const link = document.createElement('a');
   const certId = `ER-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
-  link.download = `EarthRanker-${name || 'Result'}-${certId}.png`;
+  link.download = `EarthRanker-Certificate-${name || 'Result'}.png`;
   link.href = canvas.toDataURL('image/png', 1.0);
   link.click();
 }
@@ -420,9 +445,15 @@ function FamousCompareSection({ userName, userTraits, score, rarityNumber, tierC
   const [compareResult, setCompareResult] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [compareCount, setCompareCount] = useState(0);
 
   const handleCompare = async () => {
     if (!inputName.trim()) return;
+    if (compareCount >= 3) {
+      setError('Comparison limit reached (max 3).');
+      return;
+    }
+    
     setIsLoading(true);
     setCompareResult('');
     setError('');
@@ -438,6 +469,7 @@ function FamousCompareSection({ userName, userTraits, score, rarityNumber, tierC
       
       if (text) {
         setCompareResult(text);
+        setCompareCount(prev => prev + 1);
         if (typeof trackEvent === 'function') {
           trackEvent('celebrity_compared', { name: inputName });
         }
@@ -457,6 +489,12 @@ function FamousCompareSection({ userName, userTraits, score, rarityNumber, tierC
       <div className="mb-6">
         <h2 className="result-section-title">AI Personality Match</h2>
         <p className="result-section-sub">Compare your rarity with any legend in history.</p>
+        <div className="mt-2 flex justify-center gap-1">
+          {[1, 2, 3].map(i => (
+            <div key={i} className={`w-2 h-2 rounded-full ${i <= compareCount ? 'bg-purple-500' : 'bg-white/10'}`} />
+          ))}
+          <span className="text-[10px] uppercase tracking-widest text-white/30 ml-2">{3 - compareCount} attempts left</span>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 w-full">
@@ -467,11 +505,12 @@ function FamousCompareSection({ userName, userTraits, score, rarityNumber, tierC
             onChange={(e) => setInputName(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleCompare()}
             placeholder="e.g. Abraham Lincoln, Elon Musk..."
-            className="w-full md:flex-1 px-4 py-3 rounded-xl bg-[#1a1a2e] text-white border border-purple-800 outline-none focus:border-purple-500"
+            disabled={compareCount >= 3}
+            className="w-full md:flex-1 px-4 py-3 rounded-xl bg-[#1a1a2e] text-white border border-purple-800 outline-none focus:border-purple-500 disabled:opacity-30 disabled:cursor-not-allowed"
           />
           <button
             onClick={handleCompare}
-            disabled={isLoading}
+            disabled={isLoading || compareCount >= 3}
             className="w-full md:w-auto px-8 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold transition disabled:opacity-50"
           >
             {isLoading ? 'Analyzing...' : 'Compare'}
@@ -1031,7 +1070,10 @@ export default function Result() {
               setDownloading(true);
               await document.fonts.ready;
               requestAnimationFrame(() => {
-                downloadScoreCard({ oneIn, rarityTier, tierEmoji, tierColor, score, t });
+                downloadScoreCard({ 
+                  name: rawAnswers.userName || rawAnswers.name,
+                  oneIn, rarityTier, tierEmoji, tierColor, score, t 
+                });
                 setDownloading(false);
               });
             }}
@@ -1045,6 +1087,7 @@ export default function Result() {
               await document.fonts.ready;
               downloadCertificate({ 
                 name: rawAnswers.userName || rawAnswers.name, 
+                age: rawAnswers.age,
                 oneIn, 
                 rarityTier, 
                 tierColor, 
