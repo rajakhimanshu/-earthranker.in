@@ -5,287 +5,65 @@
 /* ─── Page layout ────────────────────────────────────────────────── */
 .quiz-page {
   position: relative;
-  min-height: calc(100vh - 56px);
-  min-height: calc(100dvh - 56px);
+  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--color-bg);
-  overflow-x: hidden;
-  overflow-y: auto; /* Enable page-level scrolling */
-  width: 100%;
-  /* CRITICAL: prevent any child from causing horizontal scroll */
-  overflow-x: hidden;
-  box-sizing: border-box;
-  -webkit-overflow-scrolling: touch;
-}
-
-@media (max-width: 768px) {
-  .quiz-page {
-    overflow-x: hidden;
-  }
-  
-  .quiz-card-wrap {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    padding: 16px;
-    box-sizing: border-box;
-    display: block; /* Change from flex to allow natural height growth */
-  }
-
-  .quiz-card {
-    width: 100%;
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 16px;
-    box-sizing: border-box;
-    border-radius: 12px;
-    height: auto; /* Ensure it grows */
-  }
-}
-
-.quiz-page--embed {
-  min-height: 100vh;
-  min-height: 100dvh;
-  background: transparent;
-}
-.quiz-page--embed .quiz-card-wrap {
-  padding: 1rem 0.5rem;
-}
-.quiz-page--embed .quiz-blob {
-  opacity: 0.5;
-}
-
-/* ─── Background blobs ───────────────────────────────────────────── */
-.quiz-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px); /* Reduced for mobile */
-  pointer-events: none;
-  z-index: 0;
-}
-
-@media (min-width: 640px) {
-  .quiz-blob {
-    filter: blur(110px);
-  }
-}
-
-.quiz-blob--1 {
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(108,71,255,0.22) 0%, transparent 70%);
-  top: -60px;
-  right: -60px;
-  animation: blob-drift 12s ease-in-out infinite;
-}
-
-@media (min-width: 640px) {
-  .quiz-blob--1 {
-    width: 480px;
-    height: 480px;
-    top: -120px;
-    right: -120px;
-  }
-}
-
-.quiz-blob--2 {
-  width: 240px;
-  height: 240px;
-  background: radial-gradient(circle, rgba(0,212,170,0.14) 0%, transparent 70%);
-  bottom: -40px;
-  left: -40px;
-  animation: blob-drift 15s ease-in-out infinite reverse;
-}
-
-@media (min-width: 640px) {
-  .quiz-blob--2 {
-    width: 360px;
-    height: 360px;
-    bottom: -80px;
-    left: -80px;
-  }
-}
-
-@keyframes blob-drift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%       { transform: translate(30px, -20px) scale(1.08); }
-  66%       { transform: translate(-20px, 30px) scale(0.95); }
-}
-
-/* ─── Header ─────────────────────────────────────────────────────── */
-.quiz-header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
   width: 100%;
   box-sizing: border-box;
-}
-
-@media (min-width: 640px) {
-  .quiz-header {
-    padding: 1.25rem 2rem;
-  }
-}
-
-.quiz-back-link {
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--color-subtext);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.quiz-back-link:hover { color: var(--color-text); }
-
-.quiz-header-steps {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.quiz-step-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.14);
-  transition: all 0.3s ease;
-  cursor: default;
-}
-
-.quiz-step-dot.active {
-  width: 22px;
-  border-radius: 4px;
-  background: var(--color-primary);
-  box-shadow: 0 0 10px rgba(108,71,255,0.7);
-}
-
-.quiz-step-dot.done {
-  background: var(--color-teal);
-}
-
-.quiz-step-counter {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--color-subtext);
-  min-width: 48px;
-  text-align: right;
-}
-
-/* ── Progress bar ───────────────────────────────────────────────── */
-.quiz-progress-track {
-  position: relative;
-  z-index: 2;
-  height: 3px;
-  background: rgba(255,255,255,0.07);
-  width: 100%;
-}
-
-.quiz-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-teal) 100%);
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 10px rgba(108,71,255,0.55);
+  overflow-x: hidden;
+  /* Allow page to scroll naturally */
+  overflow-y: visible; 
 }
 
 /* ─── Card container ─────────────────────────────────────────────── */
-/*
- * ROOT FIX for mobile centering:
- * Use align-items:STRETCH (not center) so the child fills the full
- * padded width evenly. The card then uses max-width + margin:auto.
- * This guarantees equal left/right spacing on ALL screen sizes.
- */
 .quiz-card-wrap {
   position: relative;
   z-index: 1;
   flex: 1;
   display: flex;
   flex-direction: column;
-<<<<<<< Updated upstream
-  align-items: center;    /* Center horizontally */
-  justify-content: center; /* Center vertically */
+  align-items: center;    
+  justify-content: center; 
   padding: 1.5rem 1rem;
   width: 100%;
   max-width: 100%;
-  margin: 0;
+  margin: 0 auto;
   box-sizing: border-box;
-  overflow-x: hidden;
-=======
-  align-items: stretch;      /* KEY: fills padded area symmetrically */
-  justify-content: center;
-  padding: 1rem;             /* 16px each side on mobile */
-  width: 100%;
-  box-sizing: border-box;
-  overflow: hidden;          /* clip any blob overflow inside wrap */
->>>>>>> Stashed changes
+  /* CRITICAL: No internal scroll on wrap */
+  overflow: visible; 
 }
 
-@media (min-width: 480px) {
+@media (min-width: 640px) {
   .quiz-card-wrap {
-    padding: 2rem 1.5rem;
-<<<<<<< Updated upstream
-=======
-  }
-}
-
-@media (min-width: 768px) {
-  .quiz-card-wrap {
-    padding: 2.5rem 2rem;
->>>>>>> Stashed changes
+    padding: 2.5rem 1.5rem;
   }
 }
 
 /* ─── Quiz card ──────────────────────────────────────────────────── */
-/*
- * With align-items:stretch on parent, the card fills the padded
- * container. max-width + margin:auto then centers it perfectly.
- */
 .quiz-card {
-  width: 100%;              /* fill the padded container */
-  max-width: 640px;         /* cap on larger screens */
-  margin: 0 auto;           /* center within stretched container */
+  width: 100%;
+  max-width: 100%;
   background: rgba(22,33,62,0.75);
-<<<<<<< Updated upstream
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(108,71,255,0.18);
-  border-radius: 12px;
-  padding: 1.5rem 1rem 2rem;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.4);
-  margin: 0 auto;
-=======
-  -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(108,71,255,0.22);
   border-radius: 1.25rem;
-  padding: 1.25rem 1rem 1.75rem;
+  padding: 1.75rem 1.25rem 2.25rem;
   box-shadow: 0 24px 80px rgba(0,0,0,0.45);
->>>>>>> Stashed changes
+  margin: 0 auto;
   box-sizing: border-box;
-  word-break: break-word;
-  overflow-x: hidden;       /* never let card content scroll */
+  /* CRITICAL: No internal scroll on card. Mouse wheel will pass to page. */
+  overflow: visible; 
+  height: auto;
 }
 
-@media (min-width: 480px) {
+@media (min-width: 640px) {
   .quiz-card {
-<<<<<<< Updated upstream
     max-width: 600px;
-    border-radius: 1.5rem;
-    padding: 2.5rem 2.25rem;
-=======
     border-radius: 2rem;
-    padding: 2rem 1.75rem 2.5rem;
-  }
-}
-
-@media (min-width: 768px) {
-  .quiz-card {
     padding: 3rem 2.5rem;
->>>>>>> Stashed changes
   }
 }
 
