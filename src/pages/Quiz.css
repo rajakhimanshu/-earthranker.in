@@ -184,6 +184,9 @@
   margin: 0 auto;
   box-sizing: border-box;
   overflow: visible;
+  /* FIXED: Prevent horizontal jitter/drag on touch */
+  touch-action: pan-y;
+  user-select: none;
 }
 
 /* On large screens with plenty of space, re-center visually */
@@ -211,6 +214,9 @@
   /* CRITICAL: No internal scroll on card. Mouse wheel will pass to page. */
   overflow: visible; 
   height: auto;
+  /* FIXED: Prevent horizontal jitter/drag on touch */
+  touch-action: pan-y;
+  user-select: none;
 }
 
 @media (min-width: 640px) {
@@ -510,6 +516,8 @@
   appearance: none;
   cursor: pointer;
   transition: all 0.2s;
+  /* FIXED: Prevent horizontal jitter/drag on touch */
+  touch-action: pan-y;
 }
 
 @media (min-width: 640px) {
@@ -697,9 +705,6 @@
   gap: 0.5rem;
   justify-content: flex-start;
   padding-bottom: 0.5rem;
-}
-.skills-tabs::-webkit-scrollbar {
-  display: none;
 }
 .skills-tab {
   padding: 0.6rem 1rem;
