@@ -203,12 +203,12 @@ a {
 /* FIX: Centering fix for all screen sizes, 375px–desktop */
 .quiz-card-wrap {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100dvh;
+  align-items: flex-start;     /* FIXED: was center — caused flex overflow trap */
+  justify-content: flex-start; /* FIXED: was center — clipped top on tall steps */
   width: 100%;
   padding: 16px;
   box-sizing: border-box;
+  /* REMOVED: min-height: 100dvh — this is handled by .quiz-page min-height instead */
 }
 
 /* FIX: Card itself is always full-width up to 640px max */
