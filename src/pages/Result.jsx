@@ -130,285 +130,240 @@ function downloadScoreCard({ name, oneIn, rarityTier, tierEmoji, tierColor, scor
   canvas.height = SIZE;
   const ctx = canvas.getContext('2d');
 
-  // ── Background gradient ─────────────────────────────────────────────
-  const bg = ctx.createLinearGradient(0, 0, SIZE, SIZE);
-  bg.addColorStop(0,   '#0D0D1A');
-  bg.addColorStop(0.4, '#1A0E3D');
-  bg.addColorStop(1,   '#0F2040');
-  ctx.fillStyle = bg;
+  // Redesign tier color mapping
+  const tierColorsRedesign = {
+    'COMMON':    '#9CA3AF',
+    'UNCOMMON':  '#4ADE80',
+    'RARE':      '#60A5FA',
+    'EPIC':      '#A855F7',
+    'LEGENDARY': '#FBBF24',
+    'MYTHIC':    '#FF6B9D'
+  };
+  const activeColor = tierColorsRedesign[rarityTier.toUpperCase()] || tierColor;
+
+  // 1. Background (Radial Mesh)
+  ctx.fillStyle = '#0a0a1a';
   ctx.fillRect(0, 0, SIZE, SIZE);
 
-  // ── Geometric hex-grid pattern ──────────────────────────────────────
-  ctx.save();
-  ctx.globalAlpha = 0.055;
-  ctx.strokeStyle = '#8B5CF6';
-  ctx.lineWidth   = 1.5;
-  const HEX_R = 54;          // outer radius
-  const HW    = HEX_R * Math.sqrt(3);
-  const HH    = HEX_R * 1.5;
-  const cols  = Math.ceil(SIZE / HW) + 2;
-  const rows  = Math.ceil(SIZE / HH) + 2;
-  function hexPath(cx, cy, r) {
-    ctx.beginPath();
-    for (let i = 0; i < 6; i++) {
-      const a = (Math.PI / 180) * (60 * i - 30);
-      const x = cx + r * Math.cos(a);
-      const y = cy + r * Math.sin(a);
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    }
-    ctx.closePath();
-    ctx.stroke();
-  }
-  for (let row = -1; row < rows; row++) {
-    for (let col = -1; col < cols; col++) {
-      const cx = col * HW + (row % 2 === 0 ? 0 : HW / 2);
-      const cy = row * HH;
-      hexPath(cx, cy, HEX_R - 2);
-    }
-  }
-  ctx.restore();
-
-  // ── Radial glow at centre ───────────────────────────────────────────
-  const glow = ctx.createRadialGradient(SIZE/2, SIZE/2, 0, SIZE/2, SIZE/2, 480);
-  glow.addColorStop(0,   tierColor + '33');
-  glow.addColorStop(0.5, tierColor + '18');
-  glow.addColorStop(1,   'transparent');
-  ctx.fillStyle = glow;
+  const grad1 = ctx.createRadialGradient(SIZE * 0.3, SIZE * 0.4, 0, SIZE * 0.3, SIZE * 0.4, SIZE * 0.55);
+  grad1.addColorStop(0, 'rgba(108, 71, 255, 0.18)');
+  grad1.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad1;
   ctx.fillRect(0, 0, SIZE, SIZE);
 
-  // ── Corner accent circles ───────────────────────────────────────────
-  [[0,0],[SIZE,0],[0,SIZE],[SIZE,SIZE]].forEach(([x,y]) => {
-    const r = ctx.createRadialGradient(x, y, 0, x, y, 300);
-    r.addColorStop(0,   '#6C47FF22');
-    r.addColorStop(1,   'transparent');
-    ctx.fillStyle = r;
-    ctx.fillRect(0, 0, SIZE, SIZE);
-  });
+  const grad2 = ctx.createRadialGradient(SIZE * 0.7, SIZE * 0.7, 0, SIZE * 0.7, SIZE * 0.7, SIZE * 0.5);
+  grad2.addColorStop(0, 'rgba(0, 212, 170, 0.12)');
+  grad2.addColorStop(1, 'transparent');
+  ctx.fillStyle = grad2;
+  ctx.fillRect(0, 0, SIZE, SIZE);
 
-  // ── Top border stripe ───────────────────────────────────────────────
-  const stripe = ctx.createLinearGradient(0, 0, SIZE, 0);
-  stripe.addColorStop(0,   '#6C47FF00');
-  stripe.addColorStop(0.3, '#6C47FFCC');
-  stripe.addColorStop(0.7, '#FF6B6BCC');
-  stripe.addColorStop(1,   '#FF6B6B00');
-  ctx.fillStyle = stripe;
-  ctx.fillRect(0, 0, SIZE, 5);
-
-  // ── EARTH RANKER logo text ────────────────────────────────────────────
-  ctx.font         = 'bold 52px "Space Grotesk", "Arial", sans-serif';
-  ctx.letterSpacing = '6px';
-  ctx.textAlign    = 'center';
+  // 2. EARTH RANKER (Gradient Title)
+  ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  // Purple glow
-  ctx.shadowColor  = '#8B5CF6';
-  ctx.shadowBlur   = 24;
-  ctx.fillStyle    = '#A78BFA';
-  ctx.fillText('EARTH RANKER', SIZE/2, 130);
-  ctx.shadowBlur   = 0;
+  ctx.font = 'bold 52px "Space Grotesk"';
+  ctx.letterSpacing = '6px';
+  const titleGrad = ctx.createLinearGradient(SIZE / 2 - 200, 0, SIZE / 2 + 200, 0);
+  titleGrad.addColorStop(0, '#6C47FF');
+  titleGrad.addColorStop(1, '#FF6B6B');
+  ctx.fillStyle = titleGrad;
+  ctx.fillText('EARTH RANKER', SIZE / 2, 130);
 
-  // ── User Name (Professional addition) ──────────────────────────────
+  // 3. User Name
   if (name) {
-    ctx.font = '500 32px "Inter", "Arial", sans-serif';
-    ctx.fillStyle = '#FFFFFF';
-    ctx.globalAlpha = 0.8;
-    ctx.fillText(name.toUpperCase(), SIZE/2, 185);
-    ctx.globalAlpha = 1.0;
+    ctx.font = '500 32px "Inter"';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillText(name.toUpperCase(), SIZE / 2, 185);
   }
 
-  // ── Thin divider under name ─────────────────────────────────────────
-  ctx.strokeStyle = 'rgba(139,92,246,0.3)';
+  // Divider
+  ctx.strokeStyle = 'rgba(139, 92, 246, 0.3)';
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(SIZE/2 - 180, 205);
-  ctx.lineTo(SIZE/2 + 180, 205);
+  ctx.moveTo(SIZE / 2 - 180, 205);
+  ctx.lineTo(SIZE / 2 + 180, 205);
   ctx.stroke();
 
-  // ── "You are" label ─────────────────────────────────────────────────
-  ctx.font      = '400 36px "Inter", "Arial", sans-serif';
-  ctx.fillStyle = 'rgba(200,200,230,0.7)';
-  ctx.fillText(t.result.youAre, SIZE/2, 280);
+  // "You are" & "1 in"
+  ctx.font = '400 36px "Inter"';
+  ctx.fillStyle = 'rgba(200, 200, 230, 0.7)';
+  ctx.fillText(t.result.youAre, SIZE / 2, 280);
 
-  // ── '1 in' prefix ───────────────────────────────────────────────────
-  ctx.font      = '700 68px "Space Grotesk", "Arial", sans-serif';
+  ctx.font = '700 68px "Space Grotesk"';
   ctx.fillStyle = '#E2E8F0';
-  ctx.fillText(t.result.oneIn, SIZE/2, 370);
+  ctx.fillText(t.result.oneIn, SIZE / 2, 370);
 
-  // ── Giant gold 1-in-X number ─────────────────────────────────────────
+  // 4. Large Rarity Number (With Glow)
   const numStr = oneIn.toLocaleString('en-US');
-  // Scale font to fit
   let fontSize = 200;
-  ctx.font = `900 ${fontSize}px "Space Grotesk", "Arial", sans-serif`;
+  ctx.font = `900 ${fontSize}px "Space Grotesk"`;
   while (ctx.measureText(numStr).width > SIZE - 80 && fontSize > 60) {
     fontSize -= 4;
-    ctx.font = `900 ${fontSize}px "Space Grotesk", "Arial", sans-serif`;
+    ctx.font = `900 ${fontSize}px "Space Grotesk"`;
   }
-  // Gold gradient text
-  const goldGrad = ctx.createLinearGradient(SIZE/2 - 300, 0, SIZE/2 + 300, 0);
-  goldGrad.addColorStop(0,    '#B8860B');
-  goldGrad.addColorStop(0.25, '#FFD700');
-  goldGrad.addColorStop(0.5,  '#FFF8DC');
-  goldGrad.addColorStop(0.75, '#FFD700');
-  goldGrad.addColorStop(1,    '#B8860B');
-  ctx.shadowColor  = '#FFD70066';
-  ctx.shadowBlur   = 40;
-  ctx.fillStyle    = goldGrad;
-  ctx.fillText(numStr, SIZE/2, 570);
-  ctx.shadowBlur   = 0;
 
-  // ── Tier emoji (drawn as text) ───────────────────────────────────────
-  ctx.font         = '120px serif';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle    = '#ffffff';
-  ctx.shadowColor  = tierColor;
-  ctx.shadowBlur   = 30;
-  ctx.fillText(tierEmoji, SIZE/2, 720);
-  ctx.shadowBlur   = 0;
-
-  // ── Tier name pill background ────────────────────────────────────────
-  const pillW = 320, pillH = 72, pillX = SIZE/2 - pillW/2, pillY = 750;
-  const pillGrad = ctx.createLinearGradient(pillX, 0, pillX + pillW, 0);
-  pillGrad.addColorStop(0, tierColor + 'CC');
-  pillGrad.addColorStop(1, tierColor + '88');
   ctx.save();
-  ctx.shadowColor = tierColor;
-  ctx.shadowBlur  = 28;
-  ctx.fillStyle   = pillGrad;
-  const r = pillH / 2;
-  ctx.beginPath();
-  ctx.moveTo(pillX + r, pillY);
-  ctx.lineTo(pillX + pillW - r, pillY);
-  ctx.quadraticCurveTo(pillX + pillW, pillY, pillX + pillW, pillY + r);
-  ctx.lineTo(pillX + pillW, pillY + pillH - r);
-  ctx.quadraticCurveTo(pillX + pillW, pillY + pillH, pillX + pillW - r, pillY + pillH);
-  ctx.lineTo(pillX + r, pillY + pillH);
-  ctx.quadraticCurveTo(pillX, pillY + pillH, pillX, pillY + pillH - r);
-  ctx.lineTo(pillX, pillY + r);
-  ctx.quadraticCurveTo(pillX, pillY, pillX + r, pillY);
-  ctx.closePath();
-  ctx.fill();
+  ctx.shadowColor = activeColor + '99'; // ~0.6 opacity
+  ctx.shadowBlur = 40;
+  
+  const goldGrad = ctx.createLinearGradient(SIZE / 2 - 300, 0, SIZE / 2 + 300, 0);
+  goldGrad.addColorStop(0, '#B8860B');
+  goldGrad.addColorStop(0.25, '#FFD700');
+  goldGrad.addColorStop(0.5, '#FFF8DC');
+  goldGrad.addColorStop(0.75, '#FFD700');
+  goldGrad.addColorStop(1, '#B8860B');
+  ctx.fillStyle = goldGrad;
+  ctx.fillText(numStr, SIZE / 2, 570);
   ctx.restore();
 
-  // Tier name text in pill
-  ctx.font         = 'bold 44px "Space Grotesk", "Arial", sans-serif';
-  ctx.fillStyle    = '#FFFFFF';
+  // 5. Tier Emoji
+  ctx.font = '120px serif';
+  ctx.fillText(tierEmoji, SIZE / 2, 720);
+
+  // 6. Glowing Tier Pill
+  const pillW = 360, pillH = 80, pillX = SIZE / 2 - pillW / 2, pillY = 760;
+  ctx.save();
+  ctx.shadowColor = activeColor + '80'; // 0.5 opacity
+  ctx.shadowBlur = 24;
+  
+  const pillGrad = ctx.createLinearGradient(pillX, pillY, pillX + pillW, pillY + pillH);
+  pillGrad.addColorStop(0, activeColor + '88'); // Darker version
+  pillGrad.addColorStop(1, activeColor);
+  ctx.fillStyle = pillGrad;
+  
+  if (ctx.roundRect) {
+    ctx.beginPath();
+    ctx.roundRect(pillX, pillY, pillW, pillH, 40);
+    ctx.fill();
+    ctx.strokeStyle = activeColor + '66'; // 0.4 opacity
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  } else {
+    ctx.fillRect(pillX, pillY, pillW, pillH);
+  }
+  ctx.restore();
+
+  ctx.font = '800 44px "Space Grotesk"';
+  ctx.fillStyle = '#FFFFFF';
   ctx.textBaseline = 'middle';
-  ctx.letterSpacing = '3px';
-  ctx.fillText(rarityTier.toUpperCase(), SIZE/2, pillY + pillH / 2);
-
-  // ── Score line ───────────────────────────────────────────────────────
-  ctx.font         = '400 30px "Inter", "Arial", sans-serif';
-  ctx.fillStyle    = 'rgba(200,200,230,0.6)';
-  ctx.textBaseline = 'alphabetic';
+  ctx.letterSpacing = '0.12em';
+  ctx.fillText(rarityTier.toUpperCase(), SIZE / 2, pillY + pillH / 2);
   ctx.letterSpacing = '0px';
-  ctx.fillText(`${t.result.rarityScore}: ${score} / 100`, SIZE/2, 890);
 
-  // ── Bottom divider ───────────────────────────────────────────────────
-  ctx.strokeStyle = 'rgba(139,92,246,0.25)';
+  // 7. Rarity Score Pill
+  const sW = 300, sH = 44, sX = SIZE / 2 - sW / 2, sY = 865;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
   ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(SIZE/2 - 200, 930);
-  ctx.lineTo(SIZE/2 + 200, 930);
-  ctx.stroke();
+  if (ctx.roundRect) {
+    ctx.beginPath();
+    ctx.roundRect(sX, sY, sW, sH, 22);
+    ctx.stroke();
+  }
+  ctx.font = '400 24px "Inter"'; 
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+  ctx.fillText(`${t.result.rarityScore}: ${score} / 100`, SIZE / 2, sY + sH / 2 + 2);
 
-  // ── Website URL ──────────────────────────────────────────────────────
-  ctx.font      = '500 32px "Inter", "Arial", sans-serif';
-  ctx.fillStyle = 'rgba(167,139,250,0.85)';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText('earthranker.himanshurajak.in', SIZE/2, 1000);
+  // 8. Footer URL
+  ctx.font = '500 24px "Inter"';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+  ctx.fillText('earthranker.himanshurajak.in', SIZE / 2, 1000);
 
-  // ── Bottom color stripe ──────────────────────────────────────────────
-  ctx.fillStyle = stripe;
-  ctx.fillRect(0, SIZE - 5, SIZE, 5);
-
-  // ── Trigger download ─────────────────────────────────────────────────
+  // Trigger download
   const link = document.createElement('a');
   link.download = 'earthranker-score-card.png';
-  link.href     = canvas.toDataURL('image/png');
+  link.href = canvas.toDataURL('image/png');
   link.click();
 }
 
 /* Canvas Certificate generator */
 function downloadCertificate({ name, age, oneIn, rarityTier, tierColor, t, traitBreakdown }) {
-  const S = 1440; // 1:1 Aspect Ratio for Social Sharing
+  const S = 1440; 
   const canvas = document.createElement('canvas');
   canvas.width = S;
   canvas.height = S;
   const ctx = canvas.getContext('2d');
 
-  // 1. Background
+  // 1. Background & Radial Overlay
   ctx.fillStyle = '#050505';
   ctx.fillRect(0, 0, S, S);
 
-  // Gradient Glow
-  const bgGrad = ctx.createRadialGradient(S/2, S/2, 0, S/2, S/2, S/0.8);
-  bgGrad.addColorStop(0, `${tierColor}25`);
-  bgGrad.addColorStop(1, '#050505');
+  const bgGrad = ctx.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S * 0.7);
+  bgGrad.addColorStop(0, 'rgba(108, 71, 255, 0.08)');
+  bgGrad.addColorStop(1, 'transparent');
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, S, S);
 
-  // 2. Borders
+  // 2. Double-Layered Glow Border
   const pad = 80;
-  ctx.strokeStyle = tierColor;
-  ctx.lineWidth = 4;
-  ctx.strokeRect(pad, pad, S - pad*2, S - pad*2);
-
-  ctx.strokeStyle = '#ffffff15';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(pad+25, pad+25, S - (pad+25)*2, S - (pad+25)*2);
+  ctx.save();
+  ctx.strokeStyle = 'rgba(108, 71, 255, 0.6)';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = 'rgba(108, 71, 255, 0.25)';
+  ctx.shadowBlur = 60;
+  ctx.strokeRect(pad, pad, S - pad * 2, S - pad * 2);
+  
+  // Inner glow (simulated)
+  ctx.shadowColor = 'rgba(108, 71, 255, 0.08)';
+  ctx.shadowBlur = 40;
+  ctx.strokeRect(pad + 2, pad + 2, S - (pad + 2) * 2, S - (pad + 2) * 2);
+  ctx.restore();
 
   // 3. Header
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
   ctx.font = 'bold 44px "Space Grotesk"';
-  ctx.fillStyle = '#ffffff50';
-  ctx.letterSpacing = '8px';
-  ctx.fillText('EARTH RANKER', S/2, pad + 120);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+  ctx.letterSpacing = '0.25em';
+  ctx.fillText('EARTH RANKER', S / 2, pad + 120);
+  ctx.letterSpacing = '0px';
 
   ctx.font = 'bold 90px "Space Grotesk"';
   ctx.fillStyle = '#ffffff';
-  ctx.letterSpacing = '2px';
-  ctx.fillText('CERTIFICATE OF RARITY', S/2, pad + 240);
+  ctx.fillText('CERTIFICATE OF RARITY', S / 2, pad + 240);
 
   // 4. Main Content
   ctx.font = '400 42px "Inter"';
   ctx.fillStyle = '#ffffff70';
-  ctx.fillText('This is to certify that', S/2, S/2 - 180);
+  ctx.fillText('This is to certify that', S / 2, S / 2 - 180);
 
-  // Name
   ctx.font = '900 130px "Space Grotesk"';
   ctx.fillStyle = '#ffffff';
-  ctx.fillText((name || 'Unique Soul').toUpperCase(), S/2, S/2 - 60);
+  ctx.fillText((name || 'Unique Soul').toUpperCase(), S / 2, S / 2 - 60);
 
-  // Age (New addition)
   if (age) {
     ctx.font = '600 36px "Inter"';
     ctx.fillStyle = tierColor;
-    ctx.fillText(`AGE: ${age} YEARS`, S/2, S/2 + 10);
+    ctx.fillText(`AGE: ${age} YEARS`, S / 2, S / 2 + 10);
   }
 
   ctx.font = '400 42px "Inter"';
   ctx.fillStyle = '#ffffff70';
-  ctx.fillText('is statistically ranked', S/2, S/2 + 80);
+  ctx.fillText('is statistically ranked', S / 2, S / 2 + 80);
 
-  // Big Number
-  ctx.font = '900 180px "Space Grotesk"';
-  const grad = ctx.createLinearGradient(S/2 - 400, 0, S/2 + 400, 0);
+  // 5. Rarity Number (With Scaling - Clamp font size logic)
+  const numText = `1 in ${oneIn.toLocaleString()}`;
+  // Clamp(2.5rem, 10vw, 5rem) on 1440px canvas:
+  // min 40px, ideal 144px, max 80px. So 80px is the target.
+  let numFontSize = 80; 
+  ctx.font = `900 ${numFontSize}px "Space Grotesk"`;
+  while (ctx.measureText(numText).width > S - pad * 2 - 64 && numFontSize > 40) {
+    numFontSize -= 2;
+    ctx.font = `900 ${numFontSize}px "Space Grotesk"`;
+  }
+
+  const grad = ctx.createLinearGradient(S / 2 - 400, 0, S / 2 + 400, 0);
   grad.addColorStop(0, '#A855F7');
   grad.addColorStop(0.5, '#FF6B6B');
   grad.addColorStop(1, '#A855F7');
   ctx.fillStyle = grad;
-  ctx.fillText(`1 in ${oneIn.toLocaleString()}`, S/2, S/2 + 240);
+  ctx.fillText(numText, S / 2, S / 2 + 240);
 
   ctx.font = 'bold 55px "Space Grotesk"';
   ctx.fillStyle = '#ffffff';
-  ctx.fillText('PEOPLE ON EARTH', S/2, S/2 + 360);
+  ctx.fillText('PEOPLE ON EARTH', S / 2, S / 2 + 360);
 
-  // 5. Tier Badge
-  const bW = 450;
-  const bH = 90;
-  const bX = S/2 - bW/2;
-  const bY = S/2 + 450;
+  // 6. Stacked Badge & Date
+  const bW = 450, bH = 90, bX = S / 2 - bW / 2, bY = S / 2 + 420;
   ctx.fillStyle = tierColor;
   if (ctx.roundRect) {
     ctx.beginPath();
@@ -417,24 +372,23 @@ function downloadCertificate({ name, age, oneIn, rarityTier, tierColor, t, trait
   } else {
     ctx.fillRect(bX, bY, bW, bH);
   }
-
   ctx.font = 'bold 45px "Space Grotesk"';
   ctx.fillStyle = '#ffffff';
-  ctx.fillText(rarityTier.toUpperCase(), S/2, bY + bH/2);
+  ctx.fillText(rarityTier.toUpperCase(), S / 2, bY + bH / 2);
 
-  // 6. Footer
+  // Date below badge (8px gap visually, 40px in coordinate diff)
   ctx.font = '32px "Inter"';
   ctx.fillStyle = '#ffffff30';
   const dateStr = new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-  ctx.fillText(`Issued on: ${dateStr}`, S/2, S - pad - 120);
+  ctx.fillText(`Issued on: ${dateStr}`, S / 2, bY + bH + 40);
 
+  // 7. Footer URL
   ctx.font = 'bold 34px "Inter"';
   ctx.fillStyle = tierColor;
-  ctx.fillText('earthranker.himanshurajak.in', S/2, S - pad - 60);
+  ctx.fillText('earthranker.himanshurajak.in', S / 2, S - pad - 60);
 
-  // 7. Download
+  // Trigger download
   const link = document.createElement('a');
-  const certId = `ER-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
   link.download = `EarthRanker-Certificate-${name || 'Result'}.png`;
   link.href = canvas.toDataURL('image/png', 1.0);
   link.click();
