@@ -3,8 +3,8 @@ import Footer from '../components/Footer';
 
 export default function About() {
   return (
-    <>
-      <main className="min-h-screen bg-[#0a0a1a]">
+    <div className="page-transition page-bg--about">
+      <main className="min-h-screen">
         {/* ── Hero Section ────────────────────────────────────────── */}
         <section className="relative pt-16 pb-12 md:pt-24 md:pb-20 px-6 overflow-hidden">
           <div className="max-w-4xl mx-auto text-center relative z-10">
@@ -135,6 +135,6 @@ export default function About() {
         </div>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

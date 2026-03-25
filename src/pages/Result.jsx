@@ -108,24 +108,34 @@ function SlotCounter({ target, className = '' }) {
   const rafRef = useRef(null);
 
   useEffect(() => {
-    if (!target || target <= 1) { setDisplay(target || 1); return; }
+    if (!target || target <= 1) { 
+      setDisplay(target || 1); 
+      return; 
+    }
 
-    const DURATION = 3200; // ms
-    const start = performance.now();
-    const log10Target = Math.log10(target);
+    const DURATION = 1800; // 1.8 seconds
+    const startValue = 1;
+    const startTime = performance.now();
+    
+    const easeOut = t => 1 - Math.pow(1 - t, 3);
 
     function tick(now) {
-      const elapsed = now - start;
-      const t = Math.min(elapsed / DURATION, 1);
-      const eased = t === 0 ? 0 : Math.pow(2, 10 * (t - 1));
-      const logVal = eased * log10Target;
-      const val = Math.round(Math.pow(10, logVal));
-      setDisplay(Math.max(1, Math.min(val, target)));
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / DURATION, 1);
+      const easedProgress = easeOut(progress);
+      
+      const currentVal = Math.floor(startValue + (target - startValue) * easedProgress);
+      setDisplay(currentVal);
 
-      if (t < 1) {
+      if (progress < 1) {
         rafRef.current = requestAnimationFrame(tick);
       } else {
         setDisplay(target);
+        // Trigger flash
+        document.body.classList.add('result-flash');
+        setTimeout(() => {
+          document.body.classList.remove('result-flash');
+        }, 300);
       }
     }
 
@@ -135,7 +145,7 @@ function SlotCounter({ target, className = '' }) {
 
   return (
     <span className={`slot-number ${className}`}>
-      {formatLargeNumber(display)}
+      {display.toLocaleString('en-IN')}
     </span>
   );
 }
@@ -709,7 +719,7 @@ export default function Result() {
   }
 
   return (
-    <>
+    <div className="page-transition">
       <main className={`result-page ${isUniverse ? 'result-page--cosmic' : ''}`}>
 
       {/* ── Decorative Earth / Planetary System ────────────────────── */}
@@ -1194,6 +1204,6 @@ export default function Result() {
 
     </main>
     {!isEmbed && <Footer />}
-    </>
+    </div>
   );
 }

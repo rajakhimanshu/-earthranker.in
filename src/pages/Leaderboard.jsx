@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { getFlag } from '../data/flags';
 import { useTranslation } from '../contexts/LanguageContext';
@@ -64,19 +65,24 @@ export async function upsertEntry(entry) {
 
 /* ── Fallback data (shown when everything is empty) ─────────── */
 const FALLBACK_ENTRIES = [
-  { id: '1', displayName: 'Priya S.',   score: 99.97, tier: 'Mythic',     oneIn: 450000000, country: 'India',         timestamp: Date.now() - 1200000 },
-  { id: '2', displayName: 'Caspian T.', score: 99.85, tier: 'Legendary',  oneIn: 22000000,  country: 'United Kingdom', timestamp: Date.now() - 3600000 },
-  { id: '3', displayName: 'Yuki N.',    score: 99.52, tier: 'Legendary',  oneIn: 1800000,   country: 'Japan',          timestamp: Date.now() - 7200000 },
-  { id: '4', displayName: 'Aveline M.', score: 98.78, tier: 'Epic',       oneIn: 450000,    country: 'France',         timestamp: Date.now() - 14400000 },
-  { id: '5', displayName: 'Obinna F.',  score: 98.62, tier: 'Epic',       oneIn: 320000,    country: 'Nigeria',        timestamp: Date.now() - 28000000 },
-  { id: '6', displayName: 'Mateo R.',   score: 97.41, tier: 'Rare',       oneIn: 85000,     country: 'Brazil',         timestamp: Date.now() - 56000000 },
-  { id: '7', displayName: 'Lars O.',    score: 96.88, tier: 'Rare',       oneIn: 62000,     country: 'Norway',         timestamp: Date.now() - 86400000 },
-  { id: '8', displayName: 'Zoe K.',     score: 95.20, tier: 'Uncommon',   oneIn: 12000,     country: 'Canada',         timestamp: Date.now() - 172800000 },
-  { id: '9', displayName: 'Chen W.',    score: 94.55, tier: 'Uncommon',   oneIn: 8500,      country: 'China',          timestamp: Date.now() - 259200000 },
-  { id: '10', displayName: 'Sam J.',    score: 93.12, tier: 'Uncommon',   oneIn: 4200,      country: 'United States',  timestamp: Date.now() - 345600000 },
+  { id: 'f1',  displayName: 'Aarav P.',    score: 99.88, tier: 'Legendary', oneIn: 42000000,  country: 'India',          timestamp: Date.now() - 1200000 },
+  { id: 'f2',  displayName: 'Sarah J.',    score: 99.72, tier: 'Legendary', oneIn: 18500000,  country: 'United States',  timestamp: Date.now() - 3600000 },
+  { id: 'f3',  displayName: 'Hiroshi T.',  score: 99.45, tier: 'Legendary', oneIn: 6200000,   country: 'Japan',          timestamp: Date.now() - 7200000 },
+  { id: 'f4',  displayName: 'Sofia G.',    score: 98.92, tier: 'Epic',      oneIn: 850000,    country: 'Brazil',         timestamp: Date.now() - 14400000 },
+  { id: 'f5',  displayName: 'Liam W.',     score: 98.65, tier: 'Epic',      oneIn: 420000,    country: 'United Kingdom', timestamp: Date.now() - 28000000 },
+  { id: 'f6',  displayName: 'Fatima Z.',   score: 98.12, tier: 'Epic',      oneIn: 280000,    country: 'United Arab Emirates', timestamp: Date.now() - 56000000 },
+  { id: 'f7',  displayName: 'Marcus K.',   score: 97.55, tier: 'Rare',      oneIn: 92000,     country: 'Germany',        timestamp: Date.now() - 86400000 },
+  { id: 'f8',  displayName: 'Elena D.',    score: 97.28, tier: 'Rare',      oneIn: 68000,     country: 'Russia',         timestamp: Date.now() - 172800000 },
+  { id: 'f9',  displayName: 'Arjun M.',    score: 96.85, tier: 'Rare',      oneIn: 45000,     country: 'India',          timestamp: Date.now() - 259200000 },
+  { id: 'f10', displayName: 'Chloe L.',    score: 95.42, tier: 'Uncommon',  oneIn: 18000,     country: 'France',         timestamp: Date.now() - 345600000 },
+  { id: 'f11', displayName: 'Min-jun K.',  score: 94.18, tier: 'Uncommon',  oneIn: 12500,     country: 'South Korea',    timestamp: Date.now() - 432000000 },
+  { id: 'f12', displayName: 'Isabella V.', score: 93.75, tier: 'Uncommon',  oneIn: 8200,      country: 'Italy',          timestamp: Date.now() - 518400000 },
+  { id: 'f13', displayName: 'David O.',    score: 92.90, tier: 'Uncommon',  oneIn: 4100,      country: 'Nigeria',        timestamp: Date.now() - 604800000 },
+  { id: 'f14', displayName: 'Maria S.',    score: 91.50, tier: 'Common',    oneIn: 1200,      country: 'Spain',          timestamp: Date.now() - 691200000 },
+  { id: 'f15', displayName: 'Jack R.',     score: 89.20, tier: 'Common',    oneIn: 450,       country: 'Australia',      timestamp: Date.now() - 777600000 },
 ];
 
-const RANK_COLORS = { 1: '#FFCC00', 2: '#C0C0C0', 3: '#CD7F32' };
+const RANK_COLORS = { 1: '#FFD700', 2: '#C0C0C0', 3: '#CD7F32' };
 
 function formatTimeAgo(timestamp) {
   if (!timestamp) return 'Just now';
@@ -218,23 +224,29 @@ function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSki
   const { color, emoji } = getTierVisuals(tier);
   const flag = getFlag(country);
   const isTop3 = (idx + 1) <= 3;
-  const rankColor = isTop3 ? RANK_COLORS[idx + 1] : 'var(--color-subtext)';
   const rank = idx + 1;
+  
+  const getRankStyle = () => {
+    if (isMe) return { color: '#A855F7' };
+    if (rank === 1) return { color: '#FFD700', textShadow: '0 0 12px rgba(255,215,0,0.5)' };
+    if (rank === 2) return { color: '#C0C0C0', textShadow: '0 0 12px rgba(192,192,192,0.4)' };
+    if (rank === 3) return { color: '#CD7F32', textShadow: '0 0 12px rgba(205,127,50,0.4)' };
+    return { color: 'var(--color-subtext)' };
+  };
+
+  const rankColor = isTop3 ? RANK_COLORS[rank] : 'var(--color-subtext)';
 
   return (
     <div
-      className="glass-card px-4 py-4 sm:px-5 flex flex-col gap-3 transition-all hover:scale-[1.01] w-full max-w-full cursor-pointer"
+      className="glass-card px-4 py-4 sm:px-5 flex flex-col gap-3 transition-all hover:scale-[1.01] w-full max-w-full cursor-pointer relative z-10"
       style={isTop3 ? { borderColor: `${rankColor}50`, background: `linear-gradient(90deg, ${rankColor}10, transparent)` }
         : isMe ? { borderColor: '#A855F750', background: 'rgba(168,85,247,0.07)' } : {}}
-      onClick={(e) => {
-        if (e.target.closest('.story-toggle')) return;
-        onClick();
-      }}
+      onClick={() => onClick()}
     >
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex items-center gap-3 sm:gap-4 pointer-events-none">
         {/* Rank */}
         <div className="w-6 sm:w-8 text-center font-heading font-bold text-lg shrink-0"
-          style={{ color: isMe ? '#A855F7' : rankColor, ...(isTop3 ? { filter: `drop-shadow(0 0 5px ${rankColor}80)` } : {}) }}>
+          style={getRankStyle()}>
           #{rank}
         </div>
 
@@ -266,13 +278,13 @@ function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSki
       </div>
 
       {aiStory && (
-        <div className="mt-1 pl-9 sm:pl-12">
+        <div className="mt-1 pl-9 sm:pl-12 relative z-20">
           <p className={`text-xs italic text-white/40 leading-relaxed ${expanded ? '' : 'line-clamp-1'}`}>
             "{aiStory}"
           </p>
           <button 
             onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-            className="story-toggle text-[10px] font-bold uppercase tracking-widest text-purple-400/80 hover:text-purple-400 mt-1"
+            className="story-toggle text-[10px] font-bold uppercase tracking-widest text-purple-400/80 hover:text-purple-400 mt-1 cursor-pointer"
           >
             {expanded ? 'Show less ↑' : 'Read full story ↓'}
           </button>
@@ -280,7 +292,7 @@ function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSki
       )}
 
       {topSkills && topSkills.length > 0 && (
-        <div className="flex items-center gap-2 mt-2 pl-9 sm:pl-12 flex-wrap">
+        <div className="flex items-center gap-2 mt-2 pl-9 sm:pl-12 flex-wrap pointer-events-none">
           {topSkills.map((sk, i) => {
             const name = sk.split(' ').slice(1).join(' ') || sk;
             const icon = sk.split(' ')[0] || '';
@@ -318,24 +330,21 @@ export default function Leaderboard() {
         const liveEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         if (liveEntries.length > 0) {
           setEntries(liveEntries);
-          // Sync to LS for offline fallback
           writeLeaderboardLS(liveEntries);
         } else {
-          // If Firestore is empty but connected, check LS
           const ls = readLeaderboardLS();
-          setEntries(ls.length > 0 ? ls : FALLBACK_ENTRIES);
+          setEntries(ls);
         }
         setLoading(false);
       }, (err) => {
         console.warn("Firestore real-time error:", err);
         const ls = readLeaderboardLS();
-        setEntries(ls.length > 0 ? ls : FALLBACK_ENTRIES);
+        setEntries(ls);
         setLoading(false);
       });
     } else {
-      // No DB, use LS
       const ls = readLeaderboardLS();
-      setEntries(ls.length > 0 ? ls : FALLBACK_ENTRIES);
+      setEntries(ls);
       setLoading(false);
     }
 
@@ -373,77 +382,84 @@ export default function Leaderboard() {
 
   return (
     <>
-      {selectedEntry && (
-        <ProfileModal entry={selectedEntry} onClose={() => setSelectedEntry(null)} />
-      )}
-      <main className="min-h-screen flex flex-col items-center px-4 py-16 sm:px-6 sm:py-20" style={{ backgroundColor: '#0A0A14' }}>
-        <div className="w-full max-w-[1100px]">
-          <Link to="/" className="text-sm mb-8 inline-flex items-center gap-1 transition-colors hover:text-white" style={{ color: 'var(--color-subtext)' }}>
-            ← {t.leaderboard.back}
-          </Link>
+      <div className="page-transition">
+        <main className="min-h-screen flex flex-col items-center px-4 py-16 sm:px-6 sm:py-20" style={{ backgroundColor: '#0A0A14' }}>
+          <div className="w-full max-w-[1100px]">
+            <Link to="/" className="text-sm mb-8 inline-flex items-center gap-1 transition-colors hover:text-white" style={{ color: 'var(--color-subtext)' }}>
+              ← {t.leaderboard.back}
+            </Link>
 
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
-            <div>
-              <h1 className="font-heading text-2xl sm:text-4xl font-bold mb-2">
-                {t.leaderboard.title.split('Leader')[0]} <span className="text-gradient">Leaderboard</span>
-              </h1>
-              <p style={{ color: 'var(--color-subtext)' }}>{t.leaderboard.subtitle}</p>
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
+              <div>
+                <h1 className="font-heading text-2xl sm:text-4xl font-bold mb-2">
+                  {t.leaderboard.title.split('Leader')[0]} <span className="text-gradient">Leaderboard</span>
+                </h1>
+                <p style={{ color: 'var(--color-subtext)' }}>{t.leaderboard.subtitle}</p>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-xs font-bold text-green-400 uppercase tracking-widest">Updated in real-time</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)' }}>
-              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-xs font-bold text-green-400 uppercase tracking-widest">Updated in real-time</span>
+
+            {/* Search */}
+            <div className="mb-8 w-full">
+              <input
+                type="text"
+                placeholder="Search by country (e.g., India)"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500/50"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
             </div>
-          </div>
 
-          {/* Search */}
-          <div className="mb-8 w-full">
-            <input
-              type="text"
-              placeholder="Search by country (e.g., India)"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500/50"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-            />
-          </div>
+            {loading ? (
+              <div className="space-y-3 pb-32 sm:pb-24 w-full">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="lb-skeleton-card" />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3 pb-32 sm:pb-24 w-full">
+                {filtered.map((entry, idx) => {
+                  const isMe = entry.id === myLeaderboardDocId;
+                  return (
+                    <LeaderboardEntry 
+                      key={entry.id || idx}
+                      {...entry}
+                      idx={entries.findIndex(e => e.id === entry.id)}
+                      isMe={isMe}
+                      onClick={() => setSelectedEntry(entry)}
+                    />
+                  );
+                })}
+              </div>
+            )}
 
-          {loading ? (
-            <div className="text-center py-20 text-gray-500 animate-pulse">{t.leaderboard.loading}</div>
-          ) : (
-            <div className="space-y-3 pb-32 sm:pb-24 w-full">
-              {filtered.map((entry, idx) => {
-                const isMe = entry.id === myLeaderboardDocId;
-                return (
-                  <LeaderboardEntry 
-                    key={entry.id || idx}
-                    {...entry}
-                    idx={entries.findIndex(e => e.id === entry.id)}
-                    isMe={isMe}
-                    onClick={() => setSelectedEntry(entry)}
-                  />
-                );
-              })}
-            </div>
-          )}
-
-          {/* Sticky "your rank" bar */}
-          {myEntry && !loading && (
-            <div className="fixed bottom-0 left-0 right-0 p-4 pb-6 flex justify-center z-50 pointer-events-none">
-              <div className="glass-card px-5 py-4 w-full max-w-2xl pointer-events-auto shadow-2xl border border-purple-500/50 bg-gray-900/95 backdrop-blur-xl rounded-2xl flex items-center gap-4 animate-slide-up">
-                <div className="w-8 text-center font-heading font-bold text-xl shrink-0 text-purple-400">#{myIndex + 1}</div>
-                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                  <div className="font-heading font-semibold text-white text-lg">{t.leaderboard.yourRank.replace('{rank}', myIndex + 1)}</div>
-                  <div className="text-sm text-purple-200/80">
-                    {getTierVisuals(myEntry.tier || 'Common').emoji} {myEntry.tier || 'Common'} • Score: {(myEntry.score || 0).toFixed(2)} • {getFlag(myEntry.country)}
+            {/* Sticky "your rank" bar */}
+            {myEntry && !loading && (
+              <div className="fixed bottom-0 left-0 right-0 p-4 pb-6 flex justify-center z-50 pointer-events-none">
+                <div className="glass-card px-5 py-4 w-full max-w-2xl pointer-events-auto shadow-2xl border border-purple-500/50 bg-gray-900/95 backdrop-blur-xl rounded-2xl flex items-center gap-4 animate-slide-up">
+                  <div className="w-8 text-center font-heading font-bold text-xl shrink-0 text-purple-400">#{myIndex + 1}</div>
+                  <div className="flex-1 min-w-0 flex flex-col justify-center">
+                    <div className="font-heading font-semibold text-white text-lg">{t.leaderboard.yourRank.replace('{rank}', myIndex + 1)}</div>
+                    <div className="text-sm text-purple-200/80">
+                      {getTierVisuals(myEntry.tier || 'Common').emoji} {myEntry.tier || 'Common'} • Score: {(myEntry.score || 0).toFixed(2)} • {getFlag(myEntry.country)}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-        </div>
-      </main>
-      <Footer />
+          </div>
+        </main>
+        <Footer />
+      </div>
+      {selectedEntry && createPortal(
+        <ProfileModal entry={selectedEntry} onClose={() => setSelectedEntry(null)} />,
+        document.body
+      )}
     </>
   );
 }

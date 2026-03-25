@@ -3,7 +3,7 @@ import Footer from '../components/Footer';
 
 export default function NotFound() {
   return (
-    <>
+    <div className="page-transition">
       <main className="flex flex-col items-center justify-center min-h-[80vh] text-center px-4">
         <h1 className="text-6xl font-bold font-heading text-white mb-4">404</h1>
         <p className="text-xl font-body text-white/80 mb-8">Page not found — take the quiz instead</p>
@@ -15,6 +15,6 @@ export default function NotFound() {
         </Link>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

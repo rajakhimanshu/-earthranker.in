@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
 import { useTranslation } from '../contexts/LanguageContext';
@@ -38,7 +38,7 @@ function LiveCounter() {
 /* ─── Testimonial Card ──────────────────────────────────────────────── */
 function TestimonialCard({ name, country, tier, tierColor, quote }) {
   return (
-    <div className="testimonial-card">
+    <div className="testimonial-card" style={{ '--tier-accent': tierColor }}>
       <div className="testimonial-card__header">
         <span className="testimonial-card__name">{name}</span>
         <span className="testimonial-card__country">{country}</span>
@@ -52,13 +52,13 @@ function TestimonialCard({ name, country, tier, tierColor, quote }) {
 /* ─── Data ──────────────────────────────────────────────────────────── */
 const TESTIMONIALS = [
   { name: "Priya S.", country: "India", tier: "MYTHIC", tierColor: "#FF6B6B", quote: "I never knew my blood type made me this rare!" },
-  { name: "Arjun M.", country: "India", tier: "LEGENDARY", tierColor: "#FFD700", quote: "My combination of skills put me in the top 0.5%. Mind blown." },
-  { name: "James L.", country: "UK", tier: "LEGENDARY", tierColor: "#FFD700", quote: "The statistics are fascinating. Shared it with my whole office." },
+  { name: "Arjun M.", country: "India", tier: "LEGENDARY", tierColor: "#FBBF24", quote: "My combination of skills put me in the top 0.5%. Mind blown." },
+  { name: "James L.", country: "UK", tier: "LEGENDARY", tierColor: "#FBBF24", quote: "The statistics are fascinating. Shared it with my whole office." },
   { name: "Elena R.", country: "Brazil", tier: "EPIC", tierColor: "#A855F7", quote: "Finally a quiz that uses real data. My score was shocking!" },
   { name: "Mohammed A.", country: "UAE", tier: "RARE", tierColor: "#3B82F6", quote: "Being left-handed AND having green eyes made me rarer than I thought." },
   { name: "Sarah K.", country: "Canada", tier: "MYTHIC", tierColor: "#FF6B6B", quote: "Showed my friends and now we're all comparing scores." },
   { name: "Kavya R.", country: "India", tier: "EPIC", tierColor: "#A855F7", quote: "The AI story it wrote about me gave me chills. So personal." },
-  { name: "Rohan T.", country: "India", tier: "LEGENDARY", tierColor: "#FFD700", quote: "1 in 340 million. I screenshot this and posted it everywhere." }
+  { name: "Rohan T.", country: "India", tier: "LEGENDARY", tierColor: "#FBBF24", quote: "1 in 340 million. I screenshot this and posted it everywhere." }
 ];
 
 const HOW_IT_WORKS = [
@@ -89,24 +89,24 @@ const HOW_IT_WORKS = [
 ];
 
 const TIERS = [
-  { name: 'Common',    range: 'Top 50%',   color: '#9BA3B8', bg: 'rgba(155,163,184,0.12)', border: 'rgba(155,163,184,0.3)', icon: '⚪' },
-  { name: 'Uncommon',  range: 'Top 25%',   color: '#4ADE80', bg: 'rgba(74,222,128,0.12)',  border: 'rgba(74,222,128,0.3)',  icon: '🟢' },
-  { name: 'Rare',      range: 'Top 10%',   color: '#60A5FA', bg: 'rgba(96,165,250,0.12)',  border: 'rgba(96,165,250,0.3)',  icon: '🔵' },
-  { name: 'Epic',      range: 'Top 3%',    color: '#A78BFA', bg: 'rgba(167,139,250,0.12)', border: 'rgba(167,139,250,0.3)', icon: '🟣' },
-  { name: 'Legendary', range: 'Top 0.5%',  color: '#FBBF24', bg: 'rgba(251,191,36,0.12)',  border: 'rgba(251,191,36,0.3)',  icon: '🟡' },
-  { name: 'Mythic',    range: 'Top 0.01%', color: '#FF6B6B', bg: 'rgba(255,107,107,0.12)', border: 'rgba(255,107,107,0.3)', icon: '🔴' },
+  { name: 'Common',    range: 'Top 50%',   color: '#9BA3B8', glow: 'rgba(156,163,175,0.6)', icon: '⚪' },
+  { name: 'Uncommon',  range: 'Top 25%',   color: '#4ADE80', glow: 'rgba(74,222,128,0.6)',  icon: '🟢' },
+  { name: 'Rare',      range: 'Top 10%',   color: '#60A5FA', glow: 'rgba(96,165,250,0.6)',  icon: '🔵' },
+  { name: 'Epic',      range: 'Top 3%',    color: '#A78BFA', glow: 'rgba(168,85,247,0.6)',  icon: '🟣' },
+  { name: 'Legendary', range: 'Top 0.5%',  color: '#FBBF24', glow: 'rgba(251,191,36,0.6)',  icon: '🟡' },
+  { name: 'Mythic',    range: 'Top 0.01%', color: '#FF6B6B', glow: 'rgba(255,107,107,0.6)', icon: '🔴' },
 ];
 
 /* ─── Particles ─────────────────────────────────────────────────────── */
 function Particles() {
-  const particles = Array.from({ length: 30 }, (_, i) => ({
+  const particles = Array.from({ length: 40 }, (_, i) => ({
     id: i,
-    size:  Math.random() * 3 + 1,
+    size:  Math.random() * 2 + 1, // 1px to 3px
     x:     Math.random() * 100,
     y:     Math.random() * 100,
     delay: Math.random() * 8,
     dur:   Math.random() * 10 + 8,
-    opacity: Math.random() * 0.3 + 0.08,
+    opacity: Math.random() * 0.5 + 0.2, // 0.2 to 0.7
   }));
 
   return (
@@ -119,6 +119,7 @@ function Particles() {
             opacity: p.opacity,
             animationDelay: `${p.delay}s`,
             animationDuration: `${p.dur}s`,
+            background: 'rgba(255, 255, 255, 0.6)', // ensure white
           }}
         />
       ))}
@@ -126,12 +127,90 @@ function Particles() {
   );
 }
 
+/* ─── Count Up Animation Component ─────────────────────────────────── */
+function CountUp({ end, suffix = '' }) {
+  const [count, setCount] = useState(0);
+  const nodeRef = useRef(null);
+  const [hasStarted, setHasStarted] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && !hasStarted) {
+        setHasStarted(true);
+      }
+    }, { threshold: 0.5 });
+
+    if (nodeRef.current) observer.observe(nodeRef.current);
+    return () => observer.disconnect();
+  }, [hasStarted]);
+
+  useEffect(() => {
+    if (!hasStarted) return;
+
+    let start = 0;
+    const duration = 1200;
+    const target = parseFloat(end.replace(/[^0-9.]/g, ''));
+    const isFloat = end.includes('.');
+    
+    const startTime = performance.now();
+
+    const animate = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Ease out cubic
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+      const currentCount = easedProgress * target;
+
+      setCount(currentCount);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [hasStarted, end]);
+
+  const displayValue = count === 0 ? '0' : 
+    (end.includes('.') ? count.toFixed(1) : Math.floor(count));
+
+  return (
+    <span ref={nodeRef}>
+      {displayValue}{suffix}
+    </span>
+  );
+}
+
 /* ─── Main ──────────────────────────────────────────────────────────── */
 export default function Home() {
   const { t } = useTranslation();
+  const revealRefs = useRef([]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+        }
+      });
+    }, { threshold: 0.15 });
+
+    revealRefs.current.forEach(ref => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const addToReveal = (el) => {
+    if (el && !revealRefs.current.includes(el)) {
+      revealRefs.current.push(el);
+    }
+  };
 
   return (
-    <>
+    <div className="page-transition">
       <main>
 
         {/* ══ HERO ═══════════════════════════════════════════════════════ */}
@@ -163,19 +242,22 @@ export default function Home() {
             {/* Live counter */}
             <LiveCounter />
 
-            {/* Single primary CTA */}
-            <Link to="/quiz" className="cta-btn cta-btn--hero" id="hero-cta">
-              <span className="cta-btn__shimmer" aria-hidden="true" />
-              Discover My Rarity
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5"
-                      strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-            </Link>
+            {/* Single primary CTA wrapper for glow ring */}
+            <div className="cta-btn-wrapper">
+              <div className="cta-glow-ring" />
+              <Link to="/quiz" className="cta-btn cta-btn--hero" id="hero-cta">
+                <span className="cta-btn__shimmer" aria-hidden="true" />
+                Discover My Rarity
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.5"
+                        strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </Link>
+            </div>
 
             {/* Trust line under CTA */}
             <p className="hero__trust">
-              Free · Anonymous · No sign-up required
+              Free <span></span> Anonymous <span></span> No sign-up required
             </p>
 
             {/* Mini stats — 3 col grid on mobile */}
@@ -218,7 +300,7 @@ export default function Home() {
         {/* ══ HOW IT WORKS ════════════════════════════════════════════════ */}
         <section className="section" id="how-it-works">
           <div className="section-inner">
-            <div className="section-header">
+            <div className="section-header reveal-on-scroll" ref={addToReveal}>
               <span className="section-eyebrow">The Science</span>
               <h2 className="section-title">
                 Three steps to your<br />
@@ -230,8 +312,10 @@ export default function Home() {
             </div>
 
             <div className="cards-grid">
-              {HOW_IT_WORKS.map(({ step, icon, title, body, accent, glow }) => (
-                <div key={step} className="feature-card" style={{ '--accent': accent, '--glow': glow }}>
+              {HOW_IT_WORKS.map(({ step, icon, title, body, accent, glow }, i) => (
+                <div key={step} className={`feature-card reveal-on-scroll reveal-stagger-${i+1}`} 
+                     ref={addToReveal}
+                     style={{ '--accent': accent, '--glow': glow }}>
                   <div className="feature-card__step">{step}</div>
                   <div className="feature-card__icon">{icon}</div>
                   <h3 className="feature-card__title">{title}</h3>
@@ -249,9 +333,11 @@ export default function Home() {
           <div className="glow-blob glow-blob--coral"  style={{ bottom: '-100px', right: '-20%', filter: 'blur(120px)', opacity: 0.08 }} aria-hidden="true" />
 
           <div className="section-inner" style={{ position: 'relative', zIndex: 1 }}>
-            <div className="section-header">
+            <div className="section-header reveal-on-scroll" ref={addToReveal}>
               <span className="section-eyebrow">{t.home.tiersTitle}</span>
-              <h2 className="section-title">{t.home.tiersSub}</h2>
+              <h2 className="section-title">
+                <span className="animate-breath">{t.home.tiersSub}</span>
+              </h2>
               <p className="section-sub">
                 Your score unlocks one of six tiers based on how rare your exact
                 combination of traits is across all of humanity.
@@ -259,11 +345,19 @@ export default function Home() {
             </div>
 
             <div className="tiers-grid">
-              {TIERS.map(({ name, range, color, bg, border, icon }) => (
-                <div key={name} className="tier-badge" style={{ '--tier-color': color, '--tier-bg': bg, '--tier-border': border }}>
-                  <span className="tier-badge__icon">{icon}</span>
+              {TIERS.map(({ name, range, color, glow, icon }, i) => (
+                <div key={name} className={`tier-badge reveal-on-scroll reveal-stagger-${(i%3)+1}`}
+                     ref={addToReveal}
+                     style={{ 
+                       '--tier-color': color, 
+                       '--tier-glow': glow,
+                       '--float-delay': `${i * 0.2}s` 
+                     }}>
+                  <div className="tier-orb">
+                    {icon}
+                  </div>
                   <strong className="tier-badge__name">{t.tiers[name] || name}</strong>
-                  <span  className="tier-badge__range">{range}</span>
+                  <div className="tier-pill">{range}</div>
                 </div>
               ))}
             </div>
@@ -280,18 +374,20 @@ export default function Home() {
         </section>
 
         {/* ══ SOCIAL PROOF STRIP ══════════════════════════════════════════ */}
-        <section className="section" style={{ paddingTop: '3rem', paddingBottom: '4rem' }}>
+        <section className="section section--stats" style={{ paddingTop: '3rem', paddingBottom: '4rem' }}>
           <div className="section-inner">
             <div className="proof-strip">
               {[
-                { icon: '🔬', stat: '12 categories', sub: 'of human traits measured' },
-                { icon: '🌍', stat: '180+ countries', sub: 'represented in our data' },
-                { icon: '⚡', stat: '45 seconds',     sub: 'average completion time' },
-                { icon: '🔒', stat: '100% private',   sub: 'nothing stored, no login' },
-              ].map(({ icon, stat, sub }) => (
-                <div key={stat} className="proof-item">
+                { icon: '🔬', stat: '12', suffix: ' categories', sub: 'of human traits measured', accent: '#6C47FF' },
+                { icon: '🌍', stat: '180', suffix: '+ countries', sub: 'represented in our data', accent: '#00D4AA' },
+                { icon: '⚡', stat: '45', suffix: ' seconds',     sub: 'average completion time', accent: '#FF6B6B' },
+                { icon: '🔒', stat: '100', suffix: '% private',   sub: 'nothing stored, no login', accent: '#6C47FF' },
+              ].map(({ icon, stat, suffix, sub, accent }) => (
+                <div key={stat} className="proof-item" style={{ '--accent': accent }}>
                   <span className="proof-item__icon" aria-hidden="true">{icon}</span>
-                  <strong className="proof-item__stat">{stat}</strong>
+                  <strong className="proof-item__stat">
+                    <CountUp end={stat} suffix={suffix} />
+                  </strong>
                   <span className="proof-item__sub">{sub}</span>
                 </div>
               ))}
@@ -301,6 +397,6 @@ export default function Home() {
 
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

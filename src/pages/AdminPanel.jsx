@@ -248,8 +248,17 @@ export default function AdminPanel() {
     () => sessionStorage.getItem(SESSION_KEY) === '1'
   );
 
-  if (!authed) return <LoginScreen onAuth={() => setAuthed(true)} />;
-  return <AdminPanelInner />;
+  if (!authed) return (
+    <div className="page-transition">
+      <LoginScreen onAuth={() => setAuthed(true)} />
+    </div>
+  );
+  
+  return (
+    <div className="page-transition">
+      <AdminPanelInner />
+    </div>
+  );
 }
 
 /* ─── Styles (plain objects — no dependency on any CSS file) ─────── */

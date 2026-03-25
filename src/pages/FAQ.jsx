@@ -65,8 +65,8 @@ function FAQItem({ q, a, index }) {
 
 export default function FAQ() {
   return (
-    <>
-      <main className="min-h-screen bg-[#0a0a1a] text-white">
+    <div className="page-transition page-bg--faq">
+      <main className="min-h-screen text-white">
         <div className="max-w-5xl mx-auto px-6 py-12 md:py-20">
           
           <div className="flex flex-col md:flex-row gap-10 md:gap-16">
@@ -115,6 +115,6 @@ export default function FAQ() {
         </div>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

@@ -165,7 +165,7 @@ Find out how rare you are at ${window.location.origin}`;
   };
 
   return (
-    <>
+    <div className="page-transition">
       <main className="min-h-screen bg-[#050505] text-white py-12 px-4 sm:px-8">
         {showConfetti && <Confetti />}
         
@@ -311,6 +311,6 @@ Find out how rare you are at ${window.location.origin}`;
         </div>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

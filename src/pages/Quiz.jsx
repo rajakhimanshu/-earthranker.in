@@ -395,7 +395,7 @@ export default function Quiz() {
   }, [step, answers, isLast, finish, handleNext, validateStep]);
 
   return (
-    <>
+    <div className="page-transition">
       <div className={`min-h-screen w-full flex flex-col items-center quiz-page ${isEmbed ? 'quiz-page--embed' : ''}`}>
       {/* ── Top bar ───────── */}
       {!isEmbed && (
@@ -734,6 +734,6 @@ export default function Quiz() {
       )}
     </div>
     {!isEmbed && <Footer />}
-    </>
+    </div>
   );
 }

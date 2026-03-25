@@ -4,8 +4,8 @@ export default function PrivacyPolicy() {
   const updated = 'March 24, 2026';
 
   return (
-    <>
-      <main className="min-h-screen bg-[#0a0a1a] text-white">
+    <div className="page-transition page-bg--privacy">
+      <main className="min-h-screen text-white">
         <div className="max-w-5xl mx-auto px-6 py-12 md:py-20">
           
           <div className="flex flex-col md:flex-row gap-10 md:gap-16">
@@ -145,6 +145,6 @@ export default function PrivacyPolicy() {
         </div>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

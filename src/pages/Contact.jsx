@@ -30,8 +30,8 @@ const PERSONAL_NETWORK = [
 
 export default function Contact() {
   return (
-    <>
-      <main className="min-h-screen bg-[#0a0a1a] text-white">
+    <div className="page-transition page-bg--contact">
+      <main className="min-h-screen text-white">
         {/* ── Header ────────────────────────────────────────── */}
         <section className="pt-24 pb-12 md:pt-32 md:pb-20 px-6">
           <div className="max-w-4xl mx-auto text-center">
@@ -88,6 +88,6 @@ export default function Contact() {
         </div>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
