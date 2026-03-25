@@ -99,7 +99,7 @@ const TIERS = [
 
 /* ─── Particles ─────────────────────────────────────────────────────── */
 function Particles() {
-  const particles = Array.from({ length: 40 }, (_, i) => ({
+  const particles = Array.from({ length: 15 }, (_, i) => ({
     id: i,
     size:  Math.random() * 2 + 1, // 1px to 3px
     x:     Math.random() * 100,
@@ -336,7 +336,7 @@ export default function Home() {
             <div className="section-header reveal-on-scroll" ref={addToReveal}>
               <span className="section-eyebrow">{t.home.tiersTitle}</span>
               <h2 className="section-title">
-                <span className="animate-breath">{t.home.tiersSub}</span>
+                <span>{t.home.tiersSub}</span>
               </h2>
               <p className="section-sub">
                 Your score unlocks one of six tiers based on how rare your exact
