@@ -43,7 +43,9 @@ export default async function handler(req) {
       skills = [],
       score = 0,
       tier = 'Common',
-      oneIn = 1
+      oneIn = 1,
+      estimatedRank = 'Unknown',
+      topPercentile = 'Unknown'
     } = userProfile;
 
     const actualName = sanitize(userName || (name !== 'You' && name !== '' ? name : 'You'));
@@ -57,6 +59,7 @@ export default async function handler(req) {
     const promptText = `You are a poetic data scientist writing a personalised rarity report. 
 Write exactly 3 sentences about this person's statistical rarity. 
 Be specific — mention their actual traits by name. 
+Mention their Global Rank (#${estimatedRank} out of 8.28 billion) and that they are in the top ${Number(topPercentile).toFixed(4)}% of the world population.
 Make it feel like a personal revelation, not a generic compliment. 
 Never use the phrases 'truly unique', 'one of a kind', or 'special'. 
 Start with '${actualName !== 'You' ? actualName : '[userName]'},' if name is provided, or 'You' if not provided. Never invent or assume a name.
@@ -71,6 +74,8 @@ Eye Color: ${cleanEye},
 Rare Skills: ${cleanSkills.join(', ')}, 
 Score: ${score}/100, 
 Tier: ${tier}, 
+Global Rank: #${estimatedRank},
+Top Percentile: ${Number(topPercentile).toFixed(4)}%,
 1 in ${oneIn.toLocaleString('en-US')} people.`;
 
     const groqRequestBody = {

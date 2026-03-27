@@ -105,6 +105,46 @@ function getTierVisuals(tierName) {
   return match || { color: '#a0aec0', emoji: '✨' };
 }
 
+/* ── unique titles for rare and common skills ────────────────── */
+const SKILL_TITLES = {
+  // Rare / Specialist
+  '✈️ Flying a Plane': 'The Aviator',
+  '🪂 Skydiving': 'Adrenaline Junkie',
+  '🤿 Scuba Diving': 'Deep Diver',
+  '🔬 Scientific Research': 'The Researcher',
+  '🤖 AI/Machine Learning': 'Tech Visionary',
+  '📈 Trading/Investing': 'Market Legend',
+  '🧗 Rock Climbing': 'The Nomad',
+  '🤸 Gymnastics': 'The Acrobat',
+  '🎛️ Music Production': 'The Maestro',
+  '🎮 Game Development': 'Game Architect',
+  '⚖️ Legal Knowledge': 'The Advocate',
+  '🕌 Religious Scholarship': 'The Scholar',
+  '🪡 Tailoring/Fashion Design': 'Artisan Designer',
+  '✍️ Writing/Authoring': 'The Scribe',
+  
+  // More Common / Foundational
+  '🏊 Swimming': 'Aqua Master',
+  '🚗 Driving (Car)': 'Road Veteran',
+  '🏍️ Riding (Bike/Motorbike)': 'Speedster',
+  '🥊 Martial Arts': 'The Defender',
+  '💻 Programming/Coding': 'Digital Smith',
+  '🔧 Mechanical Repair': 'Gearhead',
+  '⚕️ Medical Training': 'Healer',
+  '🌐 Multiple Languages (3+)': 'Polyglot',
+  '🎨 Painting/Drawing': 'Creative Soul',
+  '🎵 Playing Instrument': 'Melody Maker',
+  '🌱 Farming/Agriculture': "Nature's Guardian",
+};
+
+function getUniqueTitle(skills = []) {
+  for (const sk of skills) {
+    if (SKILL_TITLES[sk]) return SKILL_TITLES[sk];
+  }
+  // Fallback for everyone else
+  return 'Global Citizen';
+}
+
 /* ── helpers ─────────────────────────────────────────────────────── */
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -219,7 +259,7 @@ function ProfileModal({ entry, onClose }) {
   );
 }
 
-function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSkills, timestamp, aiStory, isMe, idx, onClick }) {
+function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSkills, allSkills, timestamp, aiStory, isMe, idx, onClick }) {
   const [expanded, setExpanded] = useState(false);
   const { color, emoji } = getTierVisuals(tier);
   const flag = getFlag(country);
@@ -235,6 +275,14 @@ function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSki
   };
 
   const rankColor = isTop3 ? RANK_COLORS[rank] : 'var(--color-subtext)';
+  const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
+
+  // Polymath logic: 7+ total skills
+  const totalSkillsCount = (allSkills?.length || topSkills?.length || 0);
+  const isPolymath = totalSkillsCount >= 7;
+
+  // Unique Title Logic
+  const uniqueTitle = getUniqueTitle(allSkills?.length > 0 ? allSkills : topSkills);
 
   return (
     <div
@@ -245,16 +293,23 @@ function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSki
     >
       <div className="flex items-center gap-3 sm:gap-4 pointer-events-none">
         {/* Rank */}
-        <div className="w-6 sm:w-8 text-center font-heading font-bold text-lg shrink-0"
+        <div className="w-8 sm:w-10 text-center font-heading font-bold text-lg shrink-0 flex flex-col items-center"
           style={getRankStyle()}>
-          #{rank}
+          <span className="text-xl leading-none">{isTop3 ? medals[rank] : `#${rank}`}</span>
+          {isTop3 && <span className="text-[9px] uppercase tracking-tighter mt-1">{rank === 1 ? 'Gold' : rank === 2 ? 'Silver' : 'Bronze'}</span>}
         </div>
 
         {/* Info */}
         <div className="flex-1 min-w-0 flex flex-col justify-center">
-          <div className="flex items-center gap-2">
-            <span className="font-heading font-semibold text-white text-base sm:text-lg">{displayName}</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-heading font-semibold text-white text-base sm:text-lg truncate">{displayName}</span>
+            {uniqueTitle && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-tighter">
+                ✨ {uniqueTitle}
+              </span>
+            )}
             {isMe && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">YOU</span>}
+            {isPolymath && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">🎓 POLYMATH</span>}
             <span className="text-sm" title={country}>{flag}</span>
           </div>
           <div className="flex items-center gap-2 mt-0.5 text-xs sm:text-sm">
@@ -278,7 +333,7 @@ function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSki
       </div>
 
       {aiStory && (
-        <div className="mt-1 pl-9 sm:pl-12 relative z-20">
+        <div className="mt-1 pl-11 sm:pl-14 relative z-20">
           <p className={`text-xs italic text-white/40 leading-relaxed ${expanded ? '' : 'line-clamp-1'}`}>
             "{aiStory}"
           </p>
@@ -292,8 +347,8 @@ function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSki
       )}
 
       {topSkills && topSkills.length > 0 && (
-        <div className="flex items-center gap-2 mt-2 pl-9 sm:pl-12 flex-wrap pointer-events-none">
-          {topSkills.map((sk, i) => {
+        <div className="flex items-center gap-2 mt-2 pl-11 sm:pl-14 flex-wrap pointer-events-none">
+          {topSkills.slice(0, 3).map((sk, i) => {
             const name = sk.split(' ').slice(1).join(' ') || sk;
             const icon = sk.split(' ')[0] || '';
             return (
@@ -316,6 +371,9 @@ export default function Leaderboard() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEntry, setSelectedEntry] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
   const myLeaderboardDocId = sessionStorage.getItem('myLeaderboardDocId') || null;
   const { t } = useTranslation();
 
@@ -324,13 +382,35 @@ export default function Leaderboard() {
 
     if (db) {
       setLoading(true);
+      // Fetch top 100 by score first to ensure we have high-quality candidates
       const q = query(collection(db, 'leaderboard'), orderBy('score', 'desc'), limit(100));
       
       unsubscribe = onSnapshot(q, (snapshot) => {
         const liveEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        if (liveEntries.length > 0) {
-          setEntries(liveEntries);
-          writeLeaderboardLS(liveEntries);
+        
+        // REFINED SORTING LOGIC:
+        // 1. Primary: Score (Descending)
+        // 2. Secondary: Rarity / OneIn (Descending)
+        // 3. Tertiary: Number of skills (Descending)
+        // 4. Quaternary: Age (Ascending - Rarity at a younger age is rarer)
+        const sortedEntries = [...liveEntries].sort((a, b) => {
+          if ((b.score || 0) !== (a.score || 0)) {
+            return (b.score || 0) - (a.score || 0);
+          }
+          if ((b.oneIn || 0) !== (a.oneIn || 0)) {
+            return (b.oneIn || 0) - (a.oneIn || 0);
+          }
+          const bSkills = (b.allSkills?.length || b.topSkills?.length || 0);
+          const aSkills = (a.allSkills?.length || a.topSkills?.length || 0);
+          if (bSkills !== aSkills) {
+            return bSkills - aSkills;
+          }
+          return (parseInt(a.age) || 999) - (parseInt(b.age) || 999);
+        });
+
+        if (sortedEntries.length > 0) {
+          setEntries(sortedEntries);
+          writeLeaderboardLS(sortedEntries);
         } else {
           const ls = readLeaderboardLS();
           setEntries(ls);
@@ -348,7 +428,6 @@ export default function Leaderboard() {
       setLoading(false);
     }
 
-    // Fallback sync: listen to cross-tab localStorage changes
     const handleStorageChange = (e) => {
       if (e.key === LS_KEY) {
         setEntries(readLeaderboardLS());
@@ -356,7 +435,6 @@ export default function Leaderboard() {
     };
     window.addEventListener('storage', handleStorageChange);
 
-    // Re-render interval for "time ago" strings
     const interval = setInterval(() => setEntries(prev => [...prev]), 30000);
 
     return () => {
@@ -370,7 +448,9 @@ export default function Leaderboard() {
     !searchQuery || (e.country && e.country.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  // Calculate user's rank after entries are fetched and sorted
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const currentEntries = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   const { myIndex, myEntry } = useMemo(() => {
     if (!myLeaderboardDocId || !entries.length) return { myIndex: -1, myEntry: null };
     const idx = entries.findIndex(e => e.id === myLeaderboardDocId);
@@ -410,8 +490,20 @@ export default function Leaderboard() {
                 placeholder="Search by country (e.g., India)"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500/50"
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
+                onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               />
+              
+              {/* Legend / Info */}
+              <div className="flex flex-wrap gap-4 mt-4 px-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">🎓 POLYMATH</span>
+                  <span className="text-[11px] text-white/40">Master of 7+ unique skills</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-tighter">✨ UNIQUE TITLE</span>
+                  <span className="text-[11px] text-white/40">Earned via world-class rare skills</span>
+                </div>
+              </div>
             </div>
 
             {loading ? (
@@ -421,12 +513,12 @@ export default function Leaderboard() {
                 ))}
               </div>
             ) : (
-              <div className="space-y-3 pb-32 sm:pb-24 w-full">
-                {filtered.map((entry, idx) => {
+              <div className="space-y-3 w-full">
+                {currentEntries.map((entry) => {
                   const isMe = entry.id === myLeaderboardDocId;
                   return (
                     <LeaderboardEntry 
-                      key={entry.id || idx}
+                      key={entry.id}
                       {...entry}
                       idx={entries.findIndex(e => e.id === entry.id)}
                       isMe={isMe}
@@ -434,6 +526,35 @@ export default function Leaderboard() {
                     />
                   );
                 })}
+
+                {filtered.length === 0 && (
+                  <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/10">
+                    <p className="text-white/40 italic">No rankings found for this region.</p>
+                  </div>
+                )}
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-4 mt-12 pb-20">
+                    <button 
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(p => p - 1)}
+                      className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white disabled:opacity-30 transition-all hover:bg-white/10"
+                    >
+                      ← Previous
+                    </button>
+                    <span className="text-sm font-mono text-white/50">
+                      Page <span className="text-white">{currentPage}</span> / {totalPages}
+                    </span>
+                    <button 
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(p => p + 1)}
+                      className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white disabled:opacity-30 transition-all hover:bg-white/10"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

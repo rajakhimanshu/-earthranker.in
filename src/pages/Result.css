@@ -1338,4 +1338,169 @@
   .modal-btn.submit {
     flex: 1;
   }
+
+  /* ── New Leaderboard Flow Styles ── */
+  .lb-confirm-card {
+    background: rgba(108, 71, 255, 0.08);
+    border: 1px solid rgba(108, 71, 255, 0.3);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .lb-confirm-card__title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fff;
+    margin: 0;
+  }
+  .lb-confirm-card__subtitle {
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.45);
+    margin: 0.25rem 0 0;
+  }
+  .lb-confirm-card__btns {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .lb-confirm-yes {
+    padding: 0.65rem 1.25rem;
+    border-radius: 10px;
+    background: var(--color-primary);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.88rem;
+    border: none;
+    cursor: pointer;
+    min-height: 44px;
+    transition: all 0.2s ease;
+  }
+  .lb-confirm-yes:hover {
+    background: #7B5FFF;
+    transform: translateY(-1px);
+  }
+  .lb-confirm-no {
+    padding: 0.65rem 1.25rem;
+    border-radius: 10px;
+    background: transparent;
+    color: rgba(255,255,255,0.45);
+    font-weight: 600;
+    font-size: 0.88rem;
+    border: 1px solid rgba(255,255,255,0.12);
+    cursor: pointer;
+    min-height: 44px;
+    transition: all 0.2s ease;
+  }
+  .lb-confirm-no:hover {
+    border-color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.7);
+  }
+  .lb-bottom-banner {
+    margin: 2rem auto;
+    max-width: 600px;
+    padding: 1.75rem 1.5rem;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: center;
+  }
+  .lb-bottom-banner__title {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: #fff;
+    font-size: 1.05rem;
+    margin: 0;
+  }
+  .lb-bottom-banner__sub {
+    color: rgba(255,255,255,0.4);
+    font-size: 0.85rem;
+    margin: 0;
+  }
+  .lb-enter-btn {
+    padding: 0.8rem 2rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #6C47FF, #9B6BFF);
+    color: #fff;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(108,71,255,0.35);
+    transition: all 0.2s ease;
+    min-height: 48px;
+  }
+  .lb-enter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 32px rgba(108,71,255,0.55);
+  }
+  .lb-success-msg {
+    color: #4ADE80;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* Modal Overlay & Card */
+  .lb-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+  }
+  .lb-modal-card {
+    background: #0f111a;
+    border: 1px solid rgba(108, 71, 255, 0.25);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 440px;
+    padding: 2rem;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .lb-modal-close {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.3);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    line-height: 1;
+  }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translate(-50%, 20px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
+  }
+
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.4s ease both;
+  }
+  .animate-scale-in {
+    animation: scale-in 0.3s ease both;
+  }
+
 }

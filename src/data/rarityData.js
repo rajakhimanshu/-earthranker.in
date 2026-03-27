@@ -58,7 +58,6 @@ export const TRAITS = {
   skills: {
     // Physical Skills
     '🏊 Swimming': 0.50,
-    '🏇 Horse Riding': 0.02,
     '🚗 Driving (Car)': 0.40,
     '🏍️ Riding (Bike/Motorbike)': 0.15,
     '🤸 Gymnastics': 0.01,
@@ -83,10 +82,7 @@ export const TRAITS = {
     // Creative & Other
     '🎨 Painting/Drawing': 0.05,
     '🎵 Playing Instrument': 0.08,
-    '📷 Photography': 0.06,
     '✍️ Writing/Authoring': 0.02,
-    '🎭 Acting/Theatre': 0.01,
-    '🧁 Professional Cooking/Baking': 0.02,
     '🪡 Tailoring/Fashion Design': 0.01,
     '🌱 Farming/Agriculture': 0.20,
     '⚖️ Legal Knowledge': 0.01,
@@ -174,61 +170,57 @@ export const TRAITS = {
 };
 
 // ─────────────────────────────────────────────
-//  Rarity tiers — ordered from most to least rare
+//  Rarity tiers — updated thresholds March 2026
 // ─────────────────────────────────────────────
 
 export const TIERS = [
-  { name: 'Mythic',     minScore: 90, color: '#FF6B9D', emoji: '🌌' },
-  { name: 'Legendary',  minScore: 75, color: '#FFD700', emoji: '⚡' },
-  { name: 'Epic',       minScore: 60, color: '#A855F7', emoji: '💎' },
-  { name: 'Rare',       minScore: 45, color: '#3B82F6', emoji: '🔷' },
-  { name: 'Uncommon',   minScore: 30, color: '#10B981', emoji: '🌿' },
+  { name: 'Mythic',     minScore: 97, color: '#FF6B9D', emoji: '🌌' },
+  { name: 'Legendary',  minScore: 89, color: '#FFD700', emoji: '⚡' },
+  { name: 'Epic',       minScore: 78, color: '#A855F7', emoji: '💎' },
+  { name: 'Rare',       minScore: 64, color: '#3B82F6', emoji: '🔷' },
+  { name: 'Uncommon',   minScore: 45, color: '#10B981', emoji: '🌿' },
   { name: 'Common',     minScore: 0,  color: '#6B7280', emoji: '⚪' },
 ];
 
 // ─────────────────────────────────────────────
 //  calculateScore(answers)
 //
-//  answers  – plain object whose keys match the
-//             TRAITS keys, e.g.:
-//             { handedness: 'Left', eyeColor: 'Blue', … }
-//
-//  Returns  – {
-//               score        : number  0-100,
-//               rarityTier   : string  (tier name),
-//               tierColor    : string  (hex),
-//               tierEmoji    : string,
-//               oneIn        : number  (1-in-X),
-//               traitBreakdown: Array<{
-//                 trait      : string,
-//                 value      : string,
-//                 fraction   : number,
-//                 percentage : string,
-//               }>,
-//             }
+//  NEW RULES (March 2026):
+//  1. Traits are weighted by category:
+//     - Physical/Biological (e.g. blood, eyes, moles) -> 1.0x
+//     - Demographic (country, age, gender, edu) -> 0.9x
+//     - Skills -> 0.65x
+//  2. Only the TOP 3 rarest skills selected count toward the score.
+//  3. Raw probabilities are multiplied after weighting (prob^weight).
+//  4. Coupling Factor of 0.75 is applied: CombinedProb = RawProduct^0.75
+//  5. Final Score (0-100) is logarithmic based on CombinedProb.
 // ─────────────────────────────────────────────
 
 export function calculateScore(answers) {
   const traitBreakdown = [];
   let rawProduct = 1;
-  let traitCount = 0;
+
+  // Owner override for Himanshu (flex mode)
+  const maxSkillsToCount = answers.maxSkillsOverride || 3;
+
+  const selectedSkills = [];
+  const otherTraits = [];
+
+  // Demographic traits for 0.9x weighting
+  const demographicTraits = ['country', 'ageGroup', 'gender', 'education'];
 
   for (const [trait, value] of Object.entries(answers)) {
     const traitMap = TRAITS[trait];
     
-    // Handle special case: birthday
+    // Handle Birthday (Physical: 1.0x)
     if (trait === 'bDay' || trait === 'bMonth' || trait === 'bYear') {
-      if (!traitBreakdown.some(t => t.trait === 'birthday')) {
+      if (!otherTraits.some(t => t.trait === 'birthday')) {
         const fraction = 1 / 365.25;
-        rawProduct *= fraction;
-        traitCount++;
-        traitBreakdown.push({
+        otherTraits.push({
           trait: 'birthday',
           value: `${answers.bDay} ${answers.bMonth} ${answers.bYear}`,
           fraction,
-          percentage: `${(fraction * 100).toFixed(2)}%`,
-          worldCount: Math.round(fraction * 8_280_000_000),
-          isSkill: false
+          weight: 1.0
         });
       }
       continue;
@@ -236,91 +228,99 @@ export function calculateScore(answers) {
 
     if (!traitMap && trait !== 'country') continue;
 
-    if (Array.isArray(value)) {
-      for (const v of value) {
-        const fraction = traitMap ? traitMap[v] : null;
-        if (fraction != null) {
-          rawProduct *= fraction;
-          traitCount++;
-          traitBreakdown.push({
-            trait,
-            value: v,
-            fraction,
-            percentage: `${(fraction * 100).toFixed(2)}%`,
-            worldCount: Math.round(fraction * 8_280_000_000),
-            isSkill: trait === 'skills'
-          });
-        }
-      }
-      continue;
-    }
+    // Weight determination
+    let weight = 1.0; 
+    if (demographicTraits.includes(trait)) weight = 0.9;
+    if (trait === 'skills') weight = 0.65;
 
-    let fraction = traitMap ? traitMap[value] : null;
+    // Handle single or multiple values (e.g. skills, moles)
+    const values = Array.isArray(value) ? value : [value];
 
-    if (fraction == null) {
-      if (trait === 'country') {
-        fraction = 0.003; // Fallback for countries not in top 40
+    for (const v of values) {
+      let fraction = traitMap ? traitMap[v] : null;
+      
+      // Fallback for country if not in map
+      if (fraction == null && trait === 'country') fraction = 0.003;
+      if (fraction == null) continue;
+
+      const item = {
+        trait,
+        value: v,
+        fraction,
+        weight
+      };
+
+      if (trait === 'skills') {
+        selectedSkills.push(item);
       } else {
-        continue;
+        otherTraits.push(item);
       }
     }
+  }
 
-    rawProduct *= fraction;
-    traitCount++;
+  // 1. Process Non-Skill Traits
+  for (const item of otherTraits) {
+    const weightedProb = Math.pow(item.fraction, item.weight);
+    rawProduct *= weightedProb;
 
     traitBreakdown.push({
-      trait,
-      value,
-      fraction,
-      percentage: `${(fraction * 100).toFixed(2)}%`,
-      worldCount: Math.round(fraction * 8_280_000_000),
+      trait: item.trait,
+      value: item.value,
+      fraction: item.fraction,
+      percentage: `${(item.fraction * 100).toFixed(2)}%`,
+      worldCount: Math.round(item.fraction * 8_280_000_000),
       isSkill: false
     });
   }
 
-  // Guard against edge-case
+  // 2. Process Skills (Only top N count)
+  const sortedSkills = [...selectedSkills].sort((a, b) => a.fraction - b.fraction);
+  
+  selectedSkills.forEach(skill => {
+    // Only the top N with lowest probability count
+    const isCounted = sortedSkills.slice(0, maxSkillsToCount).some(s => s.value === skill.value);
+    
+    if (isCounted) {
+      const weightedProb = Math.pow(skill.fraction, skill.weight);
+      rawProduct *= weightedProb;
+    }
+
+    traitBreakdown.push({
+      trait: skill.trait,
+      value: skill.value,
+      fraction: skill.fraction,
+      percentage: `${(skill.fraction * 100).toFixed(2)}%`,
+      worldCount: Math.round(skill.fraction * 8_280_000_000),
+      isSkill: true,
+      counted: isCounted 
+    });
+  });
+
   if (rawProduct <= 0 || traitBreakdown.length === 0) {
     return {
-      score: 0,
-      rarityTier: 'Common',
-      tierColor: TIERS[TIERS.length - 1].color,
-      tierEmoji: TIERS[TIERS.length - 1].emoji,
-      oneIn: 1,
-      oneInRaw: 1,
-      traitBreakdown,
+      score: 0, rarityTier: 'Common', tierColor: '#6B7280', tierEmoji: '⚪',
+      oneIn: 1, oneInRaw: 1, estimatedRank: 8_280_000_000, topPercentile: 100,
+      traitBreakdown
     };
   }
 
-  // ── Correlation / Coupling Factor ──────────────────────────────────────
-  //  In reality, traits are not perfectly independent. 
-  //  Using a power factor (0.82) to "pull back" the extreme rarity 
-  //  caused by multiplying many independent fractions.
-  //  This makes it harder to hit the 8.28B cap too early.
-  // ────────────────────────────────────────────────────────────────────────
-  const couplingFactor = 0.82;
-  const combinedProbability = Math.pow(rawProduct, couplingFactor);
+  // 3. Combined Probability (Coupling Factor 0.75)
+  const combinedProbability = Math.pow(rawProduct, 0.75);
 
-  // oneIn: realistic "1 in X people" on Earth (8.28B cap for display clarity)
+  // 4. One-in-X Calculation
   const oneInRaw = 1 / combinedProbability;
-  const oneIn = Math.min(
-    Math.round(oneInRaw),
-    8_280_000_000
-  );
+  const oneIn = Math.min(Math.round(oneInRaw), 8_280_000_000);
 
-  // ── Logarithmic scoring — calibrated to real trait probability ranges ───
-  //
-  //  Calibration (log10(1/prob) / base * 100):
-  //    Core (4 steps avg):      negLog ≈ 2.2   / 12 * 100 ≈ 18  (Common)
-  //    Full (all avg):          negLog ≈ 4.5   / 12 * 100 ≈ 37  (Rare)
-  //    Rare physical traits:    negLog ≈ 7.5   / 12 * 100 ≈ 62  (Epic)
-  //    Unique on Earth (8.28B): negLog ≈ 9.9   / 12 * 100 ≈ 82  (Legendary)
-  //    Historically Unique:     negLog ≈ 11.0  / 12 * 100 ≈ 91  (Mythic)
-  // ────────────────────────────────────────────────────────────────────────
-  
+  // 5. Final Score (0-100)
   const negLog = Math.log10(oneInRaw);
   const score = Math.min(100, Math.max(0, Math.round((negLog / 12) * 100)));
 
-  // Determine tier (TIERS ordered highest minScore first)
+  // 6. Rank & Percentile (Population 8.28 Billion)
+  const population = 8_280_000_000;
+  const estimatedRank = Math.max(1, Math.round(combinedProbability * population));
+  const topPercentile = combinedProbability * 100;
+
+  // 7. Determine Tier
   const tier = TIERS.find((t) => score >= t.minScore) ?? TIERS[TIERS.length - 1];
 
   return {
@@ -329,7 +329,9 @@ export function calculateScore(answers) {
     tierColor: tier.color,
     tierEmoji: tier.emoji,
     oneIn,
-    oneInRaw, // return raw for cosmic mode
+    oneInRaw,
+    estimatedRank,
+    topPercentile,
     traitBreakdown,
   };
 }

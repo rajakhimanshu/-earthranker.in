@@ -89,12 +89,12 @@ const HOW_IT_WORKS = [
 ];
 
 const TIERS = [
-  { name: 'Common',    range: 'Top 50%',   color: '#9BA3B8', glow: 'rgba(156,163,175,0.6)', icon: '⚪' },
-  { name: 'Uncommon',  range: 'Top 25%',   color: '#4ADE80', glow: 'rgba(74,222,128,0.6)',  icon: '🟢' },
-  { name: 'Rare',      range: 'Top 10%',   color: '#60A5FA', glow: 'rgba(96,165,250,0.6)',  icon: '🔵' },
-  { name: 'Epic',      range: 'Top 3%',    color: '#A78BFA', glow: 'rgba(168,85,247,0.6)',  icon: '🟣' },
-  { name: 'Legendary', range: 'Top 0.5%',  color: '#FBBF24', glow: 'rgba(251,191,36,0.6)',  icon: '🟡' },
-  { name: 'Mythic',    range: 'Top 0.01%', color: '#FF6B6B', glow: 'rgba(255,107,107,0.6)', icon: '🔴' },
+  { name: 'Common',    range: 'Top 100%',  color: '#9BA3B8', glow: 'rgba(156,163,175,0.6)', icon: '⚪' },
+  { name: 'Uncommon',  range: '1 in 2.5K+', color: '#4ADE80', glow: 'rgba(74,222,128,0.6)',  icon: '🟢' },
+  { name: 'Rare',      range: '1 in 4.7M+', color: '#60A5FA', glow: 'rgba(96,165,250,0.6)',  icon: '🔵' },
+  { name: 'Epic',      range: '1 in 229M+', color: '#A78BFA', glow: 'rgba(168,85,247,0.6)',  icon: '🟣' },
+  { name: 'Legendary', range: '1 in 4.7B+', color: '#FBBF24', glow: 'rgba(251,191,36,0.6)',  icon: '🟡' },
+  { name: 'Mythic',    range: '1 in 15B+',  color: '#FF6B6B', glow: 'rgba(255,107,107,0.6)', icon: '🔴' },
 ];
 
 /* ─── Particles ─────────────────────────────────────────────────────── */

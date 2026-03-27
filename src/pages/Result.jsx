@@ -3,6 +3,7 @@ import { useLocation, Link, useNavigate, useSearchParams } from 'react-router-do
 import { useTranslation } from '../contexts/LanguageContext';
 import { calculateScore, TIERS } from '../data/rarityData';
 import { famousProfiles } from '../data/famousProfiles';
+import { db } from '../firebase';
 import { upsertEntry } from './Leaderboard';
 import { generateStoryKey } from '../utils/storyGenerator';
 import { generateAIStory, compareCelebrity } from '../utils/groqStory';
@@ -541,7 +542,7 @@ export default function Result() {
   }
 
   const normAnswers = useMemo(() => normaliseAnswers(rawAnswers), [rawAnswers]);
-  const { score, rarityTier, tierColor, tierEmoji, oneIn: baseOneIn, oneInRaw, traitBreakdown } =
+  const { score, rarityTier, tierColor, tierEmoji, oneIn: baseOneIn, oneInRaw, traitBreakdown, estimatedRank, topPercentile } =
     useMemo(() => {
       const res = calculateScore(normAnswers);
       trackEvent('quiz_completed', { score: res.score, tier: res.rarityTier });
@@ -578,7 +579,9 @@ export default function Result() {
         skills: skillTraits.map(s => s.value),
         score,
         tier: rarityTier,
-        oneIn: baseOneIn
+        oneIn: baseOneIn,
+        estimatedRank,
+        topPercentile
       };
 
       const story = await generateAIStory(profile);
@@ -614,11 +617,15 @@ export default function Result() {
   const [revealed,  setRevealed]  = useState(false);
   const [downloading, setDownloading] = useState(false);
   
-  // Leaderboard Modal State
-  const [showModal, setShowModal] = useState(false);
-  const [modalName, setModalName] = useState(rawAnswers?.userName || '');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
+  // Leaderboard State
+  const [lbSubmitted, setLbSubmitted] = useState(
+    sessionStorage.getItem('lb_submitted') === 'true'
+  );
+  const [showNamePopup, setShowNamePopup] = useState(false);
+  const [nameInput, setNameInput] = useState('');
+  const [lbLoading, setLbLoading] = useState(false);
+  const [lbSuccess, setLbSuccess] = useState(false);
+  const [nameConfirmed, setNameConfirmed] = useState(false);
   
   // Cosmic Mode State
   const [isUniverse, setIsUniverse] = useState(false);
@@ -653,73 +660,89 @@ export default function Result() {
   // "Exact Birth Cohort" (born same day): ~385k per day on Earth.
   const birthdayTwinExact = hasBirthday ? Math.round((isUniverse ? 385000 * 1250000 : 385000)) : 0;
 
-  // Staggered reveal & Modal popup
+  // New Leaderboard Submission System
+  const handleLeaderboardSubmit = async (nameToSubmit) => {
+    if (!nameToSubmit.trim() || nameToSubmit.length > 20) return;
+    setLbLoading(true);
+    try {
+      const entryId = crypto.randomUUID();
+      const entry = {
+        id: entryId,
+        displayName: nameToSubmit.trim(),
+        score: score,
+        tier: rarityTier,
+        oneIn: baseOneIn,
+        age: rawAnswers.age || '',
+        country: rawAnswers.country || '',
+        birthDay: rawAnswers.bDay || '',
+        birthMonth: rawAnswers.bMonth || '',
+        education: rawAnswers.education || '',
+        bloodType: rawAnswers.blood || '',
+        eyeColor: rawAnswers.eyeColor || '',
+        hairColor: rawAnswers.hairColor || '',
+        handedness: rawAnswers.hand || '',
+        nameInitial: rawAnswers.nameInitial || '',
+        aiStory: aiStory || '',
+        topSkills: [...skillTraits].sort((a, b) => a.fraction - b.fraction).slice(0, 3).map(s => s.value),
+        allSkills: (rawAnswers.skills || [])
+      };
+
+      await upsertEntry(entry);
+
+      sessionStorage.setItem('lb_submitted', 'true');
+      sessionStorage.setItem('myLeaderboardDocId', entryId);
+      setLbSubmitted(true);
+      setLbSuccess(true);
+      setShowNamePopup(false);
+      trackEvent('leaderboard_submitted', { tier: rarityTier });
+    } catch (err) {
+      console.error('Leaderboard error:', err);
+      alert('Failed to add to leaderboard. Please try again.');
+    } finally {
+      setLbLoading(false);
+    }
+  };
+
+  // Staggered reveal effect
   useEffect(() => {
     const t = setTimeout(() => setRevealed(true), 400);
-    const m = setTimeout(() => { 
-      const alreadySubmitted = sessionStorage.getItem("myLeaderboardDocId");
-      if (score > 0 && !alreadySubmitted) {
-        setShowModal(true); 
+    return () => clearTimeout(t);
+  }, []);
+
+  // Auto popup after 45 seconds
+  useEffect(() => {
+    if (lbSubmitted) return;
+    const timer = setTimeout(() => {
+      if (sessionStorage.getItem('lb_submitted') !== 'true') {
+        setShowNamePopup(true);
       }
-    }, 2800);
-    return () => { clearTimeout(t); clearTimeout(m); };
-  }, [score]);
+    }, 45000);
+    return () => clearTimeout(timer);
+  }, [lbSubmitted]);
 
-  async function submitToLeaderboard(e) {
-    e.preventDefault();
-    if (!modalName.trim()) return;
-    setIsSubmitting(true);
-    try {
-      if (!sessionStorage.getItem('sessionId')) {
-        sessionStorage.setItem('sessionId', crypto.randomUUID());
-      }
-      const sessionId = sessionStorage.getItem('sessionId');
-      const entryId = crypto.randomUUID(); 
-
-      // ── Ranking Logic Update ───────────────────────────────────────────
-      // We use a high-precision weight to decide who is "actually better"
-      // base: oneInRaw (the raw mathematical rarity)
-      // bonus: number of skills (+10% per skill)
-      const skillBonus = (rawAnswers.skills || []).length * 0.1;
-      const rarityWeight = oneInRaw * (1 + skillBonus);
-
-      await upsertEntry({
-        id: entryId,
-        sessionId,
-        displayName: modalName.trim(),
-        score,
-        rarityWeight, // Precision sorting field
-        tier: rarityTier,
-        tierEmoji: tierEmoji || '',
-        oneIn: baseOneIn,
-        country: rawAnswers.country || 'Global',
-        // Public trait showcase
-        gender:       rawAnswers.gender       || '',
-        handedness:   rawAnswers.hand         || '',
-        eyeColor:     rawAnswers.eyeColor      || '',
-        hairColor:    rawAnswers.hairColor     || '',
-        bloodType:    rawAnswers.blood         || '',
-        education:    rawAnswers.education     || '',
-        nameInitial:  rawAnswers.nameInitial   || '',
-        birthDay:     rawAnswers.bDay          || '',
-        birthMonth:   rawAnswers.bMonth        || '',
-        aiStory:      aiStory || '',
-        topSkills: [...skillTraits].sort((a, b) => a.fraction - b.fraction).slice(0, 3).map(s => s.value),
-        allSkills: (rawAnswers.skills || []),
-        timestamp: Date.now(),
-      });
-      sessionStorage.setItem("myLeaderboardDocId", entryId);
-      trackEvent('leaderboard_submitted');
-      setSubmitSuccess(true);
-      setTimeout(() => setShowModal(false), 900);
-    } catch (err) {
-      console.error('Leaderboard save error:', err);
-      setIsSubmitting(false);
-    }
-  }
+  // Success toast timeout
+  useEffect(() => {
+    if (!lbSuccess) return;
+    const t = setTimeout(() => setLbSuccess(false), 3000);
+    return () => clearTimeout(t);
+  }, [lbSuccess]);
 
   return (
     <div className="page-transition">
+      {lbSuccess && (
+        <div style={{
+          position: 'fixed', bottom: '2rem', left: '50%',
+          transform: 'translateX(-50%)', zIndex: 9999,
+          background: 'linear-gradient(135deg, #6C47FF, #4ADE80)',
+          color: '#fff', padding: '0.85rem 1.75rem',
+          borderRadius: '99px', fontWeight: 700,
+          fontSize: '0.95rem', whiteSpace: 'nowrap',
+          boxShadow: '0 8px 32px rgba(108,71,255,0.5)',
+          animation: 'fade-up 0.3s ease both'
+        }}>
+          🏆 You're on the Global Leaderboard!
+        </div>
+      )}
       <main className={`result-page ${isUniverse ? 'result-page--cosmic' : ''}`}>
 
       {/* ── Decorative Earth / Planetary System ────────────────────── */}
@@ -801,16 +824,25 @@ export default function Result() {
         </section>
 
         {/* ── STATS PILLS ROW ─────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full px-4 mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full px-4 mt-6">
           <div className="w-full rounded-2xl border border-teal-500/30 bg-[#0d1117] p-5">
-            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Rarity Score</p>
+            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+              Rarity Score
+              <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border border-gray-600 text-[10px] text-gray-500 cursor-help" title="Only your 3 rarest skills count toward the final score.">i</span>
+            </p>
             <p className="text-3xl font-bold text-white">{score}/100</p>
           </div>
 
           <div className="w-full rounded-2xl border border-teal-500/30 bg-[#0d1117] p-5">
-            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Top % of Humans</p>
+            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Global Rank</p>
+            <p className="text-3xl font-bold text-white">#{estimatedRank.toLocaleString()}</p>
+            <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-tighter">Out of 8.28 Billion</p>
+          </div>
+
+          <div className="w-full rounded-2xl border border-purple-500/30 bg-[#0d1117] p-5">
+            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Top Percentile</p>
             <p className="text-3xl font-bold text-white">
-              {(1 / baseOneIn * 100) < 0.0001 ? '<0.0001%' : parseFloat((1 / baseOneIn * 100).toFixed(4)) + '%'}
+              {topPercentile < 0.0001 ? '<0.0001%' : parseFloat(topPercentile.toFixed(4)) + '%'}
             </p>
           </div>
 
@@ -900,9 +932,9 @@ export default function Result() {
                   </div>
                 )}
               </div>
-              
+
               {!isGenerating && !isTyping && regenCount < 3 && (
-                <button 
+                <button
                   onClick={handleRegenerate}
                   className="premium-regen-btn"
                 >
@@ -912,6 +944,39 @@ export default function Result() {
             </div>
           </div>
         </section>
+
+        {/* ── Name Confirmation Card ── */}
+        {!lbSubmitted && !nameConfirmed && (rawAnswers.userName || rawAnswers.name || rawAnswers.nameInitial) && (
+          <div className="lb-confirm-card animate-fade-in">
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              <div style={{ fontSize: '1.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '12px' }}>📋</div>
+              <div>
+                <p className="lb-confirm-card__title">
+                  Is your name "{rawAnswers.userName || rawAnswers.name || rawAnswers.nameInitial || ''}"?
+                </p>
+                <p className="lb-confirm-card__subtitle">
+                  Confirm to appear on the Global Leaderboard
+                </p>
+              </div>
+            </div>
+            <div className="lb-confirm-card__btns" style={{ marginTop: '0.5rem' }}>
+              <button className="lb-confirm-yes"
+                onClick={() => {
+                  setNameConfirmed(true);
+                  handleLeaderboardSubmit(rawAnswers.userName || rawAnswers.name || rawAnswers.nameInitial || '');
+                }}>
+                ✓ Yes, add me to leaderboard
+              </button>
+              <button className="lb-confirm-no"
+                onClick={() => {
+                  setNameConfirmed(true);
+                  setShowNamePopup(true);
+                }}>
+                ✗ No, use different name
+              </button>
+            </div>
+          </div>
+        )}
         {/* ── Rare Skills ──────────────────────────────────────── */}
         {skillTraits.length > 0 && (
           <section className="result-skills-card glass-card">
@@ -1172,32 +1237,113 @@ export default function Result() {
           </div>
         )}
 
-      </div>
-
-      {showModal && (
-        <div className="leaderboard-modal-overlay">
-          <div className="leaderboard-modal">
-            <h3 dangerouslySetInnerHTML={{ __html: t.result.modal.title }} />
-            <p>{t.result.modal.sub}</p>
-            <form onSubmit={submitToLeaderboard} className="modal-form">
-              <input 
-                type="text" 
-                maxLength={20}
-                placeholder={t.result.modal.placeholder} 
-                value={modalName} 
-                onChange={e => setModalName(e.target.value)}
-                autoFocus
-                required
-              />
-              <div className="modal-actions">
-                <button type="submit" className="modal-btn submit" disabled={isSubmitting || submitSuccess}>
-                  {submitSuccess ? t.result.modal.success : isSubmitting ? t.result.modal.uploading : t.result.modal.submit}
-                </button>
-                <button type="button" className="modal-btn cancel" onClick={() => setShowModal(false)}>
-                  {t.result.modal.skip}
+        {/* ── Bottom Leaderboard Banner ── */}
+        {!isEmbed && (
+          <div className="w-full">
+            {!lbSubmitted ? (
+              <div className="lb-bottom-banner animate-fade-in">
+                <span className="lb-bottom-banner__title">
+                  🏆 Want to appear on the Global Leaderboard?
+                </span>
+                <p className="lb-bottom-banner__sub">
+                  See how you rank against everyone worldwide
+                </p>
+                <button className="lb-enter-btn" 
+                  onClick={() => setShowNamePopup(true)}>
+                  Enter My Name →
                 </button>
               </div>
-            </form>
+            ) : (
+              <div className="lb-bottom-banner animate-fade-in">
+                <span className="lb-success-msg">
+                  ✓ You're on the Global Leaderboard!
+                </span>
+                <Link to="/leaderboard" 
+                   className="action-btn action-btn-secondary" 
+                   style={{ marginTop: '0.5rem', width: 'auto', minWidth: '200px' }}>
+                  View Leaderboard →
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+
+      </div>
+
+      {/* ── Name Input Popup Modal ── */}
+      {showNamePopup && (
+        <div className="lb-modal-overlay" 
+             onClick={(e) => e.target === e.currentTarget && setShowNamePopup(false)}>
+          <div className="lb-modal-card animate-scale-in">
+            <button className="lb-modal-close" 
+                    onClick={() => setShowNamePopup(false)}>✕</button>
+            
+            <h3 style={{ fontFamily: 'var(--font-heading)', 
+                         fontSize: '1.3rem', fontWeight: 800,
+                         color: '#fff', marginBottom: '0.5rem' }}>
+              Add to Global Leaderboard 🏆
+            </h3>
+            <p style={{ color: 'rgba(255,255,255,0.45)', 
+                        fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+              How should your name appear on the leaderboard?
+            </p>
+
+            <input
+              type="text"
+              maxLength={20}
+              placeholder="Your name or nickname"
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && 
+                                nameInput.trim() && 
+                                handleLeaderboardSubmit(nameInput)}
+              style={{
+                width: '100%', padding: '0.85rem 1rem',
+                borderRadius: '12px', border: '1px solid rgba(108,71,255,0.4)',
+                background: 'rgba(108,71,255,0.08)', color: '#fff',
+                fontSize: '1rem', outline: 'none',
+                fontFamily: 'var(--font-body)', marginBottom: '0.4rem',
+                boxSizing: 'border-box'
+              }}
+              autoFocus
+            />
+            <div style={{ textAlign: 'right', fontSize: '0.75rem',
+                          color: 'rgba(255,255,255,0.3)', marginBottom: '1rem' }}>
+              {nameInput.length} / 20
+            </div>
+
+            <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.3)',
+                        marginBottom: '1.25rem', display: 'flex', 
+                        alignItems: 'center', gap: '0.4rem' }}>
+              🔒 Only your name and rarity tier are visible to others
+            </p>
+
+            <div style={{ display: 'flex', gap: '0.75rem', 
+                          justifyContent: 'flex-end' }}>
+              <button 
+                onClick={() => setShowNamePopup(false)}
+                style={{ padding: '0.65rem 1.25rem', borderRadius: '10px',
+                         background: 'transparent', color: 'rgba(255,255,255,0.4)',
+                         border: '1px solid rgba(255,255,255,0.12)',
+                         cursor: 'pointer', fontSize: '0.9rem' }}>
+                Skip for now
+              </button>
+              <button
+                disabled={!nameInput.trim() || lbLoading}
+                onClick={() => handleLeaderboardSubmit(nameInput)}
+                style={{ padding: '0.65rem 1.5rem', borderRadius: '10px',
+                         background: nameInput.trim() 
+                           ? 'linear-gradient(135deg, #6C47FF, #9B6BFF)' 
+                           : 'rgba(255,255,255,0.08)',
+                         color: nameInput.trim() ? '#fff' : 'rgba(255,255,255,0.3)',
+                         border: 'none', cursor: nameInput.trim() ? 'pointer' : 'default',
+                         fontWeight: 700, fontSize: '0.95rem',
+                         boxShadow: nameInput.trim() 
+                           ? '0 0 20px rgba(108,71,255,0.4)' : 'none',
+                         transition: 'all 0.2s ease' }}>
+                {lbLoading ? 'Adding...' : 'Add Me →'}
+              </button>
+            </div>
           </div>
         </div>
       )}
