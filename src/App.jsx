@@ -15,6 +15,7 @@ const Terms       = lazy(() => import('./pages/Terms'));
 import InstallPrompt from './components/InstallPrompt';
 import Navbar      from './components/Navbar';
 import { LanguageProvider } from './contexts/LanguageContext';
+import ScrollToTop from './components/ScrollToTop';
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
       <div className="mesh-background" aria-hidden="true" />
 
       <BrowserRouter>
+        <ScrollToTop />
         {/* z-index: 50 — sticky navbar, above all page content */}
         <Navbar />
 

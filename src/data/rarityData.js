@@ -228,7 +228,7 @@ const BONUS_W = 0.6; // Bonus traits (name initial, moles)
 // ── Coupling & score normalisation ───────────
 const COUPLING = 0.675;  // Reduces raw negLog to account for trait correlation
 const LOG_FLOOR = 0.4;   // negLog at score 0 (practically "no data")
-const LOG_CEIL = 11.0;   // Hard ceiling so Mythic requires true 1 in 15B+ math
+const LOG_CEIL = 9.0;    // Hard ceiling: 1 in 1B+ is Mythic, 1 in 200M+ is Legendary
 
 // ── Trait category sets ───────────────────────
 const BIOLOGICAL_TRAITS = new Set(['handedness', 'eyeColor', 'hairColor', 'bloodType']);
@@ -379,6 +379,13 @@ export function calculateScore(answers) {
   // ── Map negLog to 0–100 score ─────────────────
   // LOG_FLOOR → score 0, LOG_CEIL → score 100
   let score = ((finalNegLog - LOG_FLOOR) / (LOG_CEIL - LOG_FLOOR)) * 100;
+
+  // ── +1 Bonus for 10+ Skills ───────────────────
+  const providedSkills = answers.skills ? (Array.isArray(answers.skills) ? answers.skills : [answers.skills]) : [];
+  if (providedSkills.length >= 10) {
+    score += 1;
+  }
+
   score = Math.min(100, Math.max(0, Math.round(score)));
 
   // ── Rank & percentile ─────────────────────────

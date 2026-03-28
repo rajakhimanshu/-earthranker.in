@@ -467,6 +467,7 @@ export default function Leaderboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortMode, setSortMode] = useState('normal'); // 'normal' | 'genetics' | 'talent'
   const ITEMS_PER_PAGE = 10;
 
   const myLeaderboardDocId = sessionStorage.getItem('myLeaderboardDocId') || null;
@@ -477,76 +478,70 @@ export default function Leaderboard() {
 
     if (db) {
       setLoading(true);
-      // Fetch top 100 by score first to ensure we have high-quality candidates
-      const q = query(collection(db, 'leaderboard'), orderBy('score', 'desc'), limit(100));
+      // Fetch more entries for diverse sorting segments
+      const q = query(collection(db, 'leaderboard'), limit(150));
       
       unsubscribe = onSnapshot(q, (snapshot) => {
         const liveEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
         // ─── SORTING LOGIC: ─────────────────────────────────────────────
-        // 1. Primary:   Score (descending)
-        // 2. Secondary: Number of elite skills (descending)
-        // 3. Tertiary:  Total skill count (descending)
-        // 4. Quaternary: Age (ascending - younger age ranks higher)
-        const getEliteSkillCount = (entry) => {
-          const skills = entry.allSkills || entry.skills || entry.topSkills || [];
-          return skills.filter(sk => RARE_SKILL_SET.has(sk)).length;
+        const processEntries = (raw) => {
+          return [...raw].sort((a, b) => {
+            if (sortMode === 'genetics') {
+              const bBio = calcBioRarityScore(b);
+              const aBio = calcBioRarityScore(a);
+              return bBio - aBio || (b.score - a.score);
+            }
+            if (sortMode === 'talent') {
+              const bSkills = b.allSkills || b.skills || [];
+              const aSkills = a.allSkills || a.skills || [];
+              const bElite = bSkills.filter(sk => RARE_SKILL_SET.has(sk)).length;
+              const aElite = aSkills.filter(sk => RARE_SKILL_SET.has(sk)).length;
+              return bElite - aElite || (bSkills.length - aSkills.length) || (b.score - a.score);
+            }
+            // Normal: Unified score
+            return (b.score || 0) - (a.score || 0);
+          });
         };
 
-        const sortedEntries = [...liveEntries].sort((a, b) => {
-          if ((b.score || 0) !== (a.score || 0)) {
-            return (b.score || 0) - (a.score || 0);
-          }
-          const bElite = getEliteSkillCount(b);
-          const aElite = getEliteSkillCount(a);
-          if (bElite !== aElite) return bElite - aElite;
-          
-          const bSkills = (b.allSkills?.length || b.skills?.length || b.topSkills?.length || 0);
-          const aSkills = (a.allSkills?.length || a.skills?.length || a.topSkills?.length || 0);
-          if (bSkills !== aSkills) return bSkills - aSkills;
-          
-          return (parseInt(a.age) || 999) - (parseInt(b.age) || 999);
-        });
+        const sortedEntries = processEntries(liveEntries);
 
         if (sortedEntries.length > 0) {
           setEntries(sortedEntries);
           writeLeaderboardLS(sortedEntries);
         } else {
-          const ls = readLeaderboardLS();
-          setEntries(ls);
+          setEntries(readLeaderboardLS());
         }
         setLoading(false);
       }, (err) => {
         console.warn("Firestore real-time error:", err);
-        const ls = readLeaderboardLS();
-        setEntries(ls);
+        setEntries(readLeaderboardLS());
         setLoading(false);
       });
     } else {
-      const ls = readLeaderboardLS();
-      setEntries(ls);
+      setEntries(readLeaderboardLS());
       setLoading(false);
     }
 
     const handleStorageChange = (e) => {
-      if (e.key === LS_KEY) {
-        setEntries(readLeaderboardLS());
-      }
+      if (e.key === LS_KEY) setEntries(readLeaderboardLS());
     };
     window.addEventListener('storage', handleStorageChange);
-
-    const interval = setInterval(() => setEntries(prev => [...prev]), 30000);
-
     return () => {
       unsubscribe();
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
     };
-  }, []);
+  }, [sortMode]);
 
-  const filtered = entries.filter(e =>
-    !searchQuery || (e.country && e.country.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filtered = entries.filter(e => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    const nameMatch = e.displayName?.toLowerCase().includes(query);
+    const countryMatch = e.country?.toLowerCase().includes(query);
+    const skills = [...(e.allSkills || []), ...(e.skills || []), ...(e.topSkills || [])];
+    const skillMatch = skills.some(s => s.toLowerCase().includes(query));
+    return nameMatch || countryMatch || skillMatch;
+  });
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const currentEntries = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -554,10 +549,7 @@ export default function Leaderboard() {
   const { myIndex, myEntry } = useMemo(() => {
     if (!myLeaderboardDocId || !entries.length) return { myIndex: -1, myEntry: null };
     const idx = entries.findIndex(e => e.id === myLeaderboardDocId);
-    return {
-      myIndex: idx,
-      myEntry: idx !== -1 ? entries[idx] : null
-    };
+    return { myIndex: idx, myEntry: idx !== -1 ? entries[idx] : null };
   }, [entries, myLeaderboardDocId]);
 
   return (
@@ -568,6 +560,28 @@ export default function Leaderboard() {
             <Link to="/" className="text-sm mb-8 inline-flex items-center gap-1 transition-colors hover:text-white" style={{ color: 'var(--color-subtext)' }}>
               ← {t.leaderboard.back}
             </Link>
+
+            {/* Section Tabs Switcher */}
+            <div className="flex items-center gap-2 mb-8 bg-white/5 p-1 rounded-2xl w-fit border border-white/5">
+              {[
+                { id: 'normal',   label: '🏆 Global Rank', icon: '🌍' },
+                { id: 'genetics', label: '🧬 Genetically', icon: '🧬' },
+                { id: 'talent',   label: '⚡ By Talent',   icon: '⚡' },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => { setSortMode(tab.id); setCurrentPage(1); }}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                    sortMode === tab.id 
+                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20 scale-[1.02]' 
+                    : 'text-white/40 hover:text-white/70 hover:bg-white/5'
+                  }`}
+                >
+                  <span className="hidden sm:inline">{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
@@ -585,13 +599,16 @@ export default function Leaderboard() {
 
             {/* Search */}
             <div className="mb-8 w-full">
-              <input
-                type="text"
-                placeholder="Search by country (e.g., India)"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500/50"
-                value={searchQuery}
-                onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-              />
+              <div className="relative group">
+                <div className="absolute inset-0 bg-purple-500/10 rounded-xl blur-lg transition-opacity duration-300 opacity-0 group-focus-within:opacity-100 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Search by name, skill, or country (e.g., Programming, India)"
+                  className="relative w-full bg-white/5 border border-white/10 rounded-xl px-4 py-4 text-white text-sm focus:outline-none focus:border-purple-500/50 transition-all"
+                  value={searchQuery}
+                  onChange={e => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                />
+              </div>
               
               {/* Legend / Info */}
               <div className="flex flex-wrap gap-x-6 gap-y-3 mt-4 px-1">
