@@ -16,10 +16,14 @@ import InstallPrompt from './components/InstallPrompt';
 import Navbar      from './components/Navbar';
 import { LanguageProvider } from './contexts/LanguageContext';
 import ScrollToTop from './components/ScrollToTop';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 
 export default function App() {
   return (
     <LanguageProvider>
+      <Analytics />
+      <SpeedInsights />
       {/* z-index: 0 — decorative animated mesh, fixed behind everything */}
       <div className="mesh-background" aria-hidden="true" />
 
