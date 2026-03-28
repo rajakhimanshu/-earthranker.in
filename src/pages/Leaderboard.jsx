@@ -65,21 +65,21 @@ export async function upsertEntry(entry) {
 
 /* ── Fallback data (shown when everything is empty) ─────────── */
 const FALLBACK_ENTRIES = [
-  { id: 'f1',  displayName: 'Aarav P.',    score: 99.88, tier: 'Legendary', oneIn: 42000000,  country: 'India',          timestamp: Date.now() - 1200000 },
-  { id: 'f2',  displayName: 'Sarah J.',    score: 99.72, tier: 'Legendary', oneIn: 18500000,  country: 'United States',  timestamp: Date.now() - 3600000 },
-  { id: 'f3',  displayName: 'Hiroshi T.',  score: 99.45, tier: 'Legendary', oneIn: 6200000,   country: 'Japan',          timestamp: Date.now() - 7200000 },
-  { id: 'f4',  displayName: 'Sofia G.',    score: 98.92, tier: 'Epic',      oneIn: 850000,    country: 'Brazil',         timestamp: Date.now() - 14400000 },
-  { id: 'f5',  displayName: 'Liam W.',     score: 98.65, tier: 'Epic',      oneIn: 420000,    country: 'United Kingdom', timestamp: Date.now() - 28000000 },
-  { id: 'f6',  displayName: 'Fatima Z.',   score: 98.12, tier: 'Epic',      oneIn: 280000,    country: 'United Arab Emirates', timestamp: Date.now() - 56000000 },
-  { id: 'f7',  displayName: 'Marcus K.',   score: 97.55, tier: 'Rare',      oneIn: 92000,     country: 'Germany',        timestamp: Date.now() - 86400000 },
-  { id: 'f8',  displayName: 'Elena D.',    score: 97.28, tier: 'Rare',      oneIn: 68000,     country: 'Russia',         timestamp: Date.now() - 172800000 },
-  { id: 'f9',  displayName: 'Arjun M.',    score: 96.85, tier: 'Rare',      oneIn: 45000,     country: 'India',          timestamp: Date.now() - 259200000 },
-  { id: 'f10', displayName: 'Chloe L.',    score: 95.42, tier: 'Uncommon',  oneIn: 18000,     country: 'France',         timestamp: Date.now() - 345600000 },
-  { id: 'f11', displayName: 'Min-jun K.',  score: 94.18, tier: 'Uncommon',  oneIn: 12500,     country: 'South Korea',    timestamp: Date.now() - 432000000 },
-  { id: 'f12', displayName: 'Isabella V.', score: 93.75, tier: 'Uncommon',  oneIn: 8200,      country: 'Italy',          timestamp: Date.now() - 518400000 },
-  { id: 'f13', displayName: 'David O.',    score: 92.90, tier: 'Uncommon',  oneIn: 4100,      country: 'Nigeria',        timestamp: Date.now() - 604800000 },
-  { id: 'f14', displayName: 'Maria S.',    score: 91.50, tier: 'Common',    oneIn: 1200,      country: 'Spain',          timestamp: Date.now() - 691200000 },
-  { id: 'f15', displayName: 'Jack R.',     score: 89.20, tier: 'Common',    oneIn: 450,       country: 'Australia',      timestamp: Date.now() - 777600000 },
+  { id: 'f1',  displayName: 'Aarav P.',    score: 99.88, tier: 'Mythic',    oneIn: 42000000,  country: 'India',          timestamp: Date.now() - 1200000 },
+  { id: 'f2',  displayName: 'Sarah J.',    score: 99.72, tier: 'Mythic',    oneIn: 18500000,  country: 'United States',  timestamp: Date.now() - 3600000 },
+  { id: 'f3',  displayName: 'Hiroshi T.',  score: 99.45, tier: 'Mythic',    oneIn: 6200000,   country: 'Japan',          timestamp: Date.now() - 7200000 },
+  { id: 'f4',  displayName: 'Sofia G.',    score: 98.92, tier: 'Mythic',    oneIn: 850000,    country: 'Brazil',         timestamp: Date.now() - 14400000 },
+  { id: 'f5',  displayName: 'Liam W.',     score: 98.65, tier: 'Mythic',    oneIn: 420000,    country: 'United Kingdom', timestamp: Date.now() - 28000000 },
+  { id: 'f6',  displayName: 'Fatima Z.',   score: 98.12, tier: 'Mythic',    oneIn: 280000,    country: 'United Arab Emirates', timestamp: Date.now() - 56000000 },
+  { id: 'f7',  displayName: 'Marcus K.',   score: 97.55, tier: 'Mythic',    oneIn: 92000,     country: 'Germany',        timestamp: Date.now() - 86400000 },
+  { id: 'f8',  displayName: 'Elena D.',    score: 97.28, tier: 'Mythic',    oneIn: 68000,     country: 'Russia',         timestamp: Date.now() - 172800000 },
+  { id: 'f9',  displayName: 'Arjun M.',    score: 96.85, tier: 'Legendary', oneIn: 45000,     country: 'India',          timestamp: Date.now() - 259200000 },
+  { id: 'f10', displayName: 'Chloe L.',    score: 95.42, tier: 'Legendary', oneIn: 18000,     country: 'France',         timestamp: Date.now() - 345600000 },
+  { id: 'f11', displayName: 'Min-jun K.',  score: 94.18, tier: 'Legendary', oneIn: 12500,     country: 'South Korea',    timestamp: Date.now() - 432000000 },
+  { id: 'f12', displayName: 'Isabella V.', score: 93.75, tier: 'Legendary', oneIn: 8200,      country: 'Italy',          timestamp: Date.now() - 518400000 },
+  { id: 'f13', displayName: 'David O.',    score: 92.90, tier: 'Legendary', oneIn: 4100,      country: 'Nigeria',        timestamp: Date.now() - 604800000 },
+  { id: 'f14', displayName: 'Maria S.',    score: 91.50, tier: 'Legendary', oneIn: 1200,      country: 'Spain',          timestamp: Date.now() - 691200000 },
+  { id: 'f15', displayName: 'Jack R.',     score: 89.20, tier: 'Legendary', oneIn: 450,       country: 'Australia',      timestamp: Date.now() - 777600000 },
 ];
 
 const RANK_COLORS = { 1: '#FFD700', 2: '#C0C0C0', 3: '#CD7F32' };
@@ -134,6 +134,9 @@ const SKILL_TITLES = {
   '🌐 Multiple Languages (3+)': 'Polyglot',
   '🎨 Painting/Drawing': 'Creative Soul',
   '🎵 Playing Instrument': 'Melody Maker',
+  '📷 Photography': 'Visual Storyteller',
+  '🎭 Acting/Theatre': 'The Performer',
+  '🧁 Professional Cooking/Baking': 'Master Chef',
   '🌱 Farming/Agriculture': "Nature's Guardian",
 };
 
@@ -142,23 +145,78 @@ function getUniqueTitle(skills = []) {
     if (SKILL_TITLES[sk]) return SKILL_TITLES[sk];
   }
   // Fallback for everyone else
-  return 'Global Citizen';
+  return null;
+}
+
+/* ── Bio rarity score helper ───────────────────────────────────
+   Returns the average -log10(fraction) across the the user’s
+   four biological traits. Higher = rarer genetics. */
+const BIO_FRACTIONS = {
+  eyeColor:   { Black: 0.55, Brown: 0.79, Blue: 0.08, Green: 0.02, Hazel: 0.05, Gray: 0.03, Other: 0.03 },
+  hairColor:  { Black: 0.15, Brown: 0.45, Blonde: 0.16, Red: 0.02, White: 0.05, Gray: 0.06, Other: 0.11 },
+  bloodType:  { 'O+': 0.38, 'A+': 0.28, 'B+': 0.08, 'AB+': 0.035, 'O-': 0.07, 'A-': 0.06, 'B-': 0.015, 'AB-': 0.006 },
+  handedness: { Right: 0.89, Left: 0.10, Ambidextrous: 0.01 },
+};
+
+function calcBioRarityScore(entry) {
+  let total = 0, count = 0;
+  for (const [trait, map] of Object.entries(BIO_FRACTIONS)) {
+    const val = entry[trait];
+    if (val && map[val] != null) {
+      total += -Math.log10(map[val]);
+      count++;
+    }
+  }
+  return count > 0 ? total / count : 0;
+}
+
+/* ── Skills badge helper ───────────────────────────────────────────
+   Returns 'elite' | 'rare' | 'versatile' | null based on
+   the rarity and count of the user’s skills. */
+const RARE_SKILL_SET = new Set([
+  '✈️ Flying a Plane', '🤖 AI/Machine Learning', '🪂 Skydiving',
+  '🏇 Horse Riding', '🤿 Scuba Diving', '📈 Trading/Investing',
+  '🔬 Scientific Research', '🎮 Game Development', '🕌 Religious Scholarship',
+  '🤸 Gymnastics', '🎛️ Music Production', '🎭 Acting/Theatre',
+  '⚖️ Legal Knowledge', '🪡 Tailoring/Fashion Design', '🧗 Rock Climbing',
+  '⚕️ Medical Training',
+]);
+
+function getSkillsBadgeLevel(entry) {
+  const allSkills = entry.allSkills || entry.skills || [];
+  const topSkills = entry.topSkills || [];
+  const combined = [...new Set([...allSkills, ...topSkills])];
+  const rareCount = combined.filter(s => RARE_SKILL_SET.has(s)).length;
+  const totalCount = combined.length;
+  if (rareCount >= 4) return 'elite';      // 4+ rare skills = Elite
+  if (rareCount >= 2) return 'rare';       // 2-3 rare skills = Rare Skills
+  if (totalCount >= 5) return 'versatile'; // 5+ any skills = Versatile
+  return null;
 }
 
 /* ── helpers ─────────────────────────────────────────────────────── */
 const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-function formatBirthday(day, month) {
+function formatBirthday(entry) {
+  // Support both bDay/bMonth/bYear (stored by Result.jsx) and birthDay/birthMonth/birthYear (legacy)
+  const day   = entry.bDay   || entry.birthDay   || null;
+  const month = entry.bMonth || entry.birthMonth || null;
+  const year  = entry.bYear  || entry.birthYear  || null;
   if (!day && !month) return null;
-  const m = MONTH_NAMES[(parseInt(month, 10) || 1) - 1] || '';
-  return day ? `${day} ${m}` : m;
+  const monthIdx = parseInt(month, 10);
+  const m = (!isNaN(monthIdx) && monthIdx >= 1 && monthIdx <= 12)
+    ? MONTH_NAMES[monthIdx - 1]
+    : (month || '');
+  const dayStr  = day   ? `${day} ` : '';
+  const yearStr = year  ? ` ${year}` : '';
+  return `${dayStr}${m}${yearStr}`;
 }
 
 /* ── Profile Modal ───────────────────────────────────────────────── */
 function ProfileModal({ entry, onClose }) {
   const { color, emoji } = getTierVisuals(entry.tier);
 
-  const birthday = formatBirthday(entry.birthDay, entry.birthMonth);
+  const birthday = formatBirthday(entry);
 
   // Trait rows — only non-empty ones shown
   const traits = [
@@ -259,13 +317,34 @@ function ProfileModal({ entry, onClose }) {
   );
 }
 
-function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSkills, allSkills, timestamp, aiStory, isMe, idx, onClick }) {
+function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSkills, allSkills, skills, bloodType, eyeColor, hairColor, handedness, timestamp, aiStory, isMe, idx, onClick }) {
   const [expanded, setExpanded] = useState(false);
   const { color, emoji } = getTierVisuals(tier);
   const flag = getFlag(country);
   const isTop3 = (idx + 1) <= 3;
   const rank = idx + 1;
-  
+
+  // ─── Compute identity-source badges ───────────────────────────────
+  const bioEntry = { bloodType, eyeColor, hairColor, handedness };
+  const bioScore = calcBioRarityScore(bioEntry);
+  // avg -log10 thresholds:
+  //   > 0.90 = user has at least one notably rare bio trait  (e.g. AB- blood)
+  //   > 0.55 = user has mildly rare combo (e.g. Blue eyes + A- blood)
+  const bioBadge = bioScore >= 0.90
+    ? { label: '🧬 Rare DNA', color: '#22d3ee',   bg: 'rgba(34,211,238,0.08)',   border: 'rgba(34,211,238,0.25)' }
+    : bioScore >= 0.55
+    ? { label: '🧬 Unique Genes', color: '#60a5fa', bg: 'rgba(96,165,250,0.08)',  border: 'rgba(96,165,250,0.25)' }
+    : null;
+
+  const skillsEntry = { allSkills, skills, topSkills };
+  const skillLevel = getSkillsBadgeLevel(skillsEntry);
+  const skillBadge = skillLevel === 'elite'
+    ? { label: '⚡ Elite Skills',  color: '#fbbf24', bg: 'rgba(251,191,36,0.08)',  border: 'rgba(251,191,36,0.25)' }
+    : skillLevel === 'rare'
+    ? { label: '⚡ Rare Skills',   color: '#f59e0b', bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.22)' }
+    : skillLevel === 'versatile'
+    ? { label: '⚡ Versatile',     color: '#a78bfa', bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.25)' }
+    : null;
   const getRankStyle = () => {
     if (isMe) return { color: '#A855F7' };
     if (rank === 1) return { color: '#FFD700', textShadow: '0 0 12px rgba(255,215,0,0.5)' };
@@ -310,6 +389,22 @@ function LeaderboardEntry({ id, displayName, score, tier, oneIn, country, topSki
             )}
             {isMe && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">YOU</span>}
             {isPolymath && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">🎓 POLYMATH</span>}
+            {bioBadge && (
+              <span
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter"
+                style={{ color: bioBadge.color, background: bioBadge.bg, border: `1px solid ${bioBadge.border}` }}
+              >
+                {bioBadge.label}
+              </span>
+            )}
+            {skillBadge && (
+              <span
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter"
+                style={{ color: skillBadge.color, background: skillBadge.bg, border: `1px solid ${skillBadge.border}` }}
+              >
+                {skillBadge.label}
+              </span>
+            )}
             <span className="text-sm" title={country}>{flag}</span>
           </div>
           <div className="flex items-center gap-2 mt-0.5 text-xs sm:text-sm">
@@ -388,23 +483,28 @@ export default function Leaderboard() {
       unsubscribe = onSnapshot(q, (snapshot) => {
         const liveEntries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        // REFINED SORTING LOGIC:
-        // 1. Primary: Score (Descending)
-        // 2. Secondary: Rarity / OneIn (Descending)
-        // 3. Tertiary: Number of skills (Descending)
-        // 4. Quaternary: Age (Ascending - Rarity at a younger age is rarer)
+        // ─── SORTING LOGIC: ─────────────────────────────────────────────
+        // 1. Primary:   Score (descending)
+        // 2. Secondary: Number of elite skills (descending)
+        // 3. Tertiary:  Total skill count (descending)
+        // 4. Quaternary: Age (ascending - younger age ranks higher)
+        const getEliteSkillCount = (entry) => {
+          const skills = entry.allSkills || entry.skills || entry.topSkills || [];
+          return skills.filter(sk => RARE_SKILL_SET.has(sk)).length;
+        };
+
         const sortedEntries = [...liveEntries].sort((a, b) => {
           if ((b.score || 0) !== (a.score || 0)) {
             return (b.score || 0) - (a.score || 0);
           }
-          if ((b.oneIn || 0) !== (a.oneIn || 0)) {
-            return (b.oneIn || 0) - (a.oneIn || 0);
-          }
-          const bSkills = (b.allSkills?.length || b.topSkills?.length || 0);
-          const aSkills = (a.allSkills?.length || a.topSkills?.length || 0);
-          if (bSkills !== aSkills) {
-            return bSkills - aSkills;
-          }
+          const bElite = getEliteSkillCount(b);
+          const aElite = getEliteSkillCount(a);
+          if (bElite !== aElite) return bElite - aElite;
+          
+          const bSkills = (b.allSkills?.length || b.skills?.length || b.topSkills?.length || 0);
+          const aSkills = (a.allSkills?.length || a.skills?.length || a.topSkills?.length || 0);
+          if (bSkills !== aSkills) return bSkills - aSkills;
+          
           return (parseInt(a.age) || 999) - (parseInt(b.age) || 999);
         });
 
@@ -494,7 +594,7 @@ export default function Leaderboard() {
               />
               
               {/* Legend / Info */}
-              <div className="flex flex-wrap gap-4 mt-4 px-1">
+              <div className="flex flex-wrap gap-x-6 gap-y-3 mt-4 px-1">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">🎓 POLYMATH</span>
                   <span className="text-[11px] text-white/40">Master of 7+ unique skills</span>
@@ -503,7 +603,16 @@ export default function Leaderboard() {
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-tighter">✨ UNIQUE TITLE</span>
                   <span className="text-[11px] text-white/40">Earned via world-class rare skills</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter" style={{ color: '#22d3ee', background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.25)' }}>🧬 Rare DNA</span>
+                  <span className="text-[11px] text-white/40">Exceptionally rare biological traits</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter" style={{ color: '#fbbf24', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)' }}>⚡ Elite Skills</span>
+                  <span className="text-[11px] text-white/40">4+ globally rare skills mastered</span>
+                </div>
               </div>
+
             </div>
 
             {loading ? (

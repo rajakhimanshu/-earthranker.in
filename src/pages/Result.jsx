@@ -34,22 +34,22 @@ function TypingEffect({ text, speed = 30, onComplete }) {
 
 /* ─── Key-mapping: quiz answer keys → rarityData keys ──────────────── */
 const EDUCATION_MAP = {
-  'No formal schooling':        'No formal education',
-  'Primary school':             'Primary school',
-  'Secondary / High school':    'High school',
-  "Bachelor's degree":          "Bachelor's degree",
-  "Master's degree":            "Master's degree",
-  'PhD / Doctorate':            'Doctorate / PhD',
-  'Trade / Vocational':         'Trade / Vocational',
+  'No formal schooling': 'No formal education',
+  'Primary school': 'Primary school',
+  'Secondary / High school': 'High school',
+  "Bachelor's degree": "Bachelor's degree",
+  "Master's degree": "Master's degree",
+  'PhD / Doctorate': 'Doctorate / PhD',
+  'Trade / Vocational': 'Trade / Vocational',
 };
 
 const AGE_BUCKET_MAP = [
-  [13, 17,  'Under 18'],
-  [18, 24,  '18–24'],
-  [25, 34,  '25–34'],
-  [35, 44,  '35–44'],
-  [45, 54,  '45–54'],
-  [55, 64,  '55–64'],
+  [13, 17, 'Under 18'],
+  [18, 24, '18–24'],
+  [25, 34, '25–34'],
+  [35, 44, '35–44'],
+  [45, 54, '45–54'],
+  [55, 64, '55–64'],
   [65, 999, '65+'],
 ];
 
@@ -61,35 +61,68 @@ function getAgeBucket(age) {
 
 export function normaliseAnswers(raw) {
   const out = {};
-  if (raw.hand)      out.handedness = raw.hand;
-  if (raw.eyeColor)  out.eyeColor   = raw.eyeColor;
-  if (raw.hairColor) out.hairColor  = raw.hairColor;
-  if (raw.gender)    out.gender     = raw.gender;
-  if (raw.country)   out.country    = raw.country;
-  if (raw.blood)     out.bloodType  = raw.blood;
-  if (raw.education) out.education  = EDUCATION_MAP[raw.education] ?? raw.education;
-  if (raw.age)       out.ageGroup   = getAgeBucket(raw.age);
+
+  // ── Handedness: quiz stores as raw.hand, Firestore may store as raw.handedness ──
+  const handedness = raw.hand || raw.handedness;
+  if (handedness) out.handedness = handedness;
+
+  // ── Eye color ───────────────────────────────────────────────────────────────────
+  if (raw.eyeColor) out.eyeColor = raw.eyeColor;
+
+  // ── Hair color ──────────────────────────────────────────────────────────────────
+  if (raw.hairColor) out.hairColor = raw.hairColor;
+
+  // ── Gender ──────────────────────────────────────────────────────────────────────
+  if (raw.gender) out.gender = raw.gender;
+
+  // ── Country ─────────────────────────────────────────────────────────────────────
+  if (raw.country) out.country = raw.country;
+
+  // ── Blood type: quiz stores as raw.blood, Firestore may store as raw.bloodType ──
+  const bloodType = raw.blood || raw.bloodType;
+  if (bloodType) out.bloodType = bloodType;
+
+  // ── Education: apply label map when coming from quiz; pass through when already normalised ──
+  if (raw.education) out.education = EDUCATION_MAP[raw.education] ?? raw.education;
+
+  // ── Age group: convert numeric age → bucket, or accept already-bucketed string ──
+  if (raw.age) {
+    out.ageGroup = getAgeBucket(raw.age);
+  }
+  // Accept already-normalised ageGroup (e.g. '25\u201334') stored in Firestore
+  if (raw.ageGroup && !out.ageGroup) {
+    out.ageGroup = raw.ageGroup;
+  }
+
+  // ── Skills ──────────────────────────────────────────────────────────────────────
   if (raw.skills && raw.skills.length > 0) out.skills = raw.skills;
-  if (raw.bDay)      out.bDay       = raw.bDay;
-  if (raw.bMonth)    out.bMonth     = raw.bMonth;
-  if (raw.bYear)     out.bYear      = raw.bYear;
-  // New optional traits
+
+  // ── Birthday: accept both quiz keys (bDay/bMonth/bYear) and Firestore keys ──────
+  if (raw.bDay || raw.birthDay) out.bDay = raw.bDay || raw.birthDay;
+  if (raw.bMonth || raw.birthMonth) out.bMonth = raw.bMonth || raw.birthMonth;
+  if (raw.bYear || raw.birthYear) out.bYear = raw.bYear || raw.birthYear;
+
+  // ── Bonus traits ────────────────────────────────────────────────────────────────
   if (raw.nameInitial) out.nameInitial = raw.nameInitial;
   if (raw.moles && raw.moles.length > 0 && !raw.moles.includes('None'))
     out.moleLocations = raw.moles;
+
+  // ── Admin override: pass through skill cap if set ──────────────────────────────
+  if (raw.maxSkillsOverride) out.maxSkillsOverride = raw.maxSkillsOverride;
+
   return out;
 }
 
 /* Shorthand for astronomical numbers */
 function formatLargeNumber(num) {
   if (num < 1000000) return num.toLocaleString('en-US');
-  
+
   const units = [
     { value: 1e18, label: 'Quintillion' },
     { value: 1e15, label: 'Quadrillion' },
     { value: 1e12, label: 'Trillion' },
-    { value: 1e9,  label: 'Billion' },
-    { value: 1e6,  label: 'Million' },
+    { value: 1e9, label: 'Billion' },
+    { value: 1e6, label: 'Million' },
   ];
 
   for (const unit of units) {
@@ -109,22 +142,22 @@ function SlotCounter({ target, className = '' }) {
   const rafRef = useRef(null);
 
   useEffect(() => {
-    if (!target || target <= 1) { 
-      setDisplay(target || 1); 
-      return; 
+    if (!target || target <= 1) {
+      setDisplay(target || 1);
+      return;
     }
 
     const DURATION = 1800; // 1.8 seconds
     const startValue = 1;
     const startTime = performance.now();
-    
+
     const easeOut = t => 1 - Math.pow(1 - t, 3);
 
     function tick(now) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / DURATION, 1);
       const easedProgress = easeOut(progress);
-      
+
       const currentVal = Math.floor(startValue + (target - startValue) * easedProgress);
       setDisplay(currentVal);
 
@@ -155,20 +188,20 @@ function SlotCounter({ target, className = '' }) {
 
 /* Canvas score card generator */
 function downloadScoreCard({ name, oneIn, rarityTier, tierEmoji, tierColor, score, t }) {
-  const SIZE   = 1080;
+  const SIZE = 1080;
   const canvas = document.createElement('canvas');
-  canvas.width  = SIZE;
+  canvas.width = SIZE;
   canvas.height = SIZE;
   const ctx = canvas.getContext('2d');
 
   // Redesign tier color mapping
   const tierColorsRedesign = {
-    'COMMON':    '#9CA3AF',
-    'UNCOMMON':  '#4ADE80',
-    'RARE':      '#60A5FA',
-    'EPIC':      '#A855F7',
+    'COMMON': '#9CA3AF',
+    'UNCOMMON': '#4ADE80',
+    'RARE': '#60A5FA',
+    'EPIC': '#A855F7',
     'LEGENDARY': '#FBBF24',
-    'MYTHIC':    '#FF6B9D'
+    'MYTHIC': '#FF6B9D'
   };
   const activeColor = tierColorsRedesign[rarityTier.toUpperCase()] || tierColor;
 
@@ -235,7 +268,7 @@ function downloadScoreCard({ name, oneIn, rarityTier, tierEmoji, tierColor, scor
   ctx.save();
   ctx.shadowColor = activeColor + '99'; // ~0.6 opacity
   ctx.shadowBlur = 40;
-  
+
   const goldGrad = ctx.createLinearGradient(SIZE / 2 - 300, 0, SIZE / 2 + 300, 0);
   goldGrad.addColorStop(0, '#B8860B');
   goldGrad.addColorStop(0.25, '#FFD700');
@@ -255,12 +288,12 @@ function downloadScoreCard({ name, oneIn, rarityTier, tierEmoji, tierColor, scor
   ctx.save();
   ctx.shadowColor = activeColor + '80'; // 0.5 opacity
   ctx.shadowBlur = 24;
-  
+
   const pillGrad = ctx.createLinearGradient(pillX, pillY, pillX + pillW, pillY + pillH);
   pillGrad.addColorStop(0, activeColor + '88'); // Darker version
   pillGrad.addColorStop(1, activeColor);
   ctx.fillStyle = pillGrad;
-  
+
   if (ctx.roundRect) {
     ctx.beginPath();
     ctx.roundRect(pillX, pillY, pillW, pillH, 40);
@@ -289,7 +322,7 @@ function downloadScoreCard({ name, oneIn, rarityTier, tierEmoji, tierColor, scor
     ctx.roundRect(sX, sY, sW, sH, 22);
     ctx.stroke();
   }
-  ctx.font = '400 24px "Inter"'; 
+  ctx.font = '400 24px "Inter"';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
   ctx.fillText(`${t.result.rarityScore}: ${score} / 100`, SIZE / 2, sY + sH / 2 + 2);
 
@@ -307,7 +340,7 @@ function downloadScoreCard({ name, oneIn, rarityTier, tierEmoji, tierColor, scor
 
 /* Canvas Certificate generator */
 function downloadCertificate({ name, age, oneIn, rarityTier, tierColor, t, traitBreakdown }) {
-  const S = 1440; 
+  const S = 1440;
   const canvas = document.createElement('canvas');
   canvas.width = S;
   canvas.height = S;
@@ -331,7 +364,7 @@ function downloadCertificate({ name, age, oneIn, rarityTier, tierColor, t, trait
   ctx.shadowColor = 'rgba(108, 71, 255, 0.25)';
   ctx.shadowBlur = 60;
   ctx.strokeRect(pad, pad, S - pad * 2, S - pad * 2);
-  
+
   // Inner glow (simulated)
   ctx.shadowColor = 'rgba(108, 71, 255, 0.08)';
   ctx.shadowBlur = 40;
@@ -375,7 +408,7 @@ function downloadCertificate({ name, age, oneIn, rarityTier, tierColor, t, trait
   const numText = `1 in ${oneIn.toLocaleString()}`;
   // Clamp(2.5rem, 10vw, 5rem) on 1440px canvas:
   // min 40px, ideal 144px, max 80px. So 80px is the target.
-  let numFontSize = 80; 
+  let numFontSize = 80;
   ctx.font = `900 ${numFontSize}px "Space Grotesk"`;
   while (ctx.measureText(numText).width > S - pad * 2 - 64 && numFontSize > 40) {
     numFontSize -= 2;
@@ -438,7 +471,7 @@ function FamousCompareSection({ userName, userTraits, score, rarityNumber, tierC
       setError('Comparison limit reached (max 3).');
       return;
     }
-    
+
     setIsLoading(true);
     setCompareResult('');
     setError('');
@@ -451,7 +484,7 @@ function FamousCompareSection({ userName, userTraits, score, rarityNumber, tierC
         rarityScore: score,
         rarityNumber: rarityNumber
       });
-      
+
       if (text) {
         setCompareResult(text);
         setCompareCount(prev => prev + 1);
@@ -524,7 +557,7 @@ function FamousCompareSection({ userName, userTraits, score, rarityNumber, tierC
 
 export default function Result() {
   const { state } = useLocation();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isEmbed = searchParams.get('embed') === 'true';
   const { t } = useTranslation();
@@ -570,7 +603,7 @@ export default function Result() {
     try {
       const profile = {
         userName: rawAnswers.userName,
-        name: rawAnswers.userName, 
+        name: rawAnswers.userName,
         country: rawAnswers.country,
         age: rawAnswers.age,
         education: rawAnswers.education,
@@ -605,7 +638,7 @@ export default function Result() {
 
   const handleRegenerate = () => {
     if (regenCount >= 3) return;
-    
+
     const newCount = regenCount + 1;
     setRegenCount(newCount);
     sessionStorage.setItem('ai_regen_count', newCount.toString());
@@ -614,9 +647,9 @@ export default function Result() {
   };
 
   const [copiedChallenge, setCopiedChallenge] = useState(false);
-  const [revealed,  setRevealed]  = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const [downloading, setDownloading] = useState(false);
-  
+
   // Leaderboard State
   const [lbSubmitted, setLbSubmitted] = useState(
     sessionStorage.getItem('lb_submitted') === 'true'
@@ -626,13 +659,13 @@ export default function Result() {
   const [lbLoading, setLbLoading] = useState(false);
   const [lbSuccess, setLbSuccess] = useState(false);
   const [nameConfirmed, setNameConfirmed] = useState(false);
-  
+
   // Cosmic Mode State
   const [isUniverse, setIsUniverse] = useState(false);
 
   const COSMIC_MULTIPLIER = 1250000;
   let oneIn = isUniverse ? Math.round(oneInRaw * COSMIC_MULTIPLIER) : baseOneIn;
-  
+
   // Cap at 100 Quintillion to prevent display breakdown
   if (isUniverse && oneIn > 1e20) {
     oneIn = 1e20;
@@ -640,7 +673,7 @@ export default function Result() {
 
   // Cosmic Tiers Mapping
   const getCosmicTier = (normalTier) => {
-    switch(normalTier) {
+    switch (normalTier) {
       case 'Common': return { name: 'Stardust', emoji: '✨' };
       case 'Uncommon': return { name: 'Comet', emoji: '☄️' };
       case 'Rare': return { name: 'Nebula', emoji: '🌌' };
@@ -653,7 +686,7 @@ export default function Result() {
   const currentTierData = isUniverse ? getCosmicTier(rarityTier) : { name: t.tiers[rarityTier] || rarityTier, emoji: tierEmoji };
 
   const hasBirthday = !!rawAnswers.bDay && !!rawAnswers.bMonth && !!rawAnswers.bYear;
-  
+
   // Real stats: ~385,000 born per day globally. 
   // "Birthday Twins" (alive today): Population / 365.25
   const birthdayTwinMonth = hasBirthday ? Math.round((isUniverse ? 10000000000000 : 8280000000) / 365.25) : 0;
@@ -669,22 +702,47 @@ export default function Result() {
       const entry = {
         id: entryId,
         displayName: nameToSubmit.trim(),
-        score: score,
+        score,
         tier: rarityTier,
+        tierEmoji,
         oneIn: baseOneIn,
+        estimatedRank,
+        topPercentile: Number(topPercentile.toFixed(6)),
+
+        // ── Raw quiz field names (kept for legacy compatibility) ─────────────────
+        hand: rawAnswers.hand || '',
+        blood: rawAnswers.blood || '',
         age: rawAnswers.age || '',
+
+        // ── Normalised field names (AdminPanel + calculateScore expect these) ────
+        handedness: rawAnswers.hand || rawAnswers.handedness || '',
+        bloodType: rawAnswers.blood || rawAnswers.bloodType || '',
+        ageGroup: normAnswers.ageGroup || '',
+        gender: rawAnswers.gender || '',
         country: rawAnswers.country || '',
-        birthDay: rawAnswers.bDay || '',
-        birthMonth: rawAnswers.bMonth || '',
-        education: rawAnswers.education || '',
-        bloodType: rawAnswers.blood || '',
+        education: normAnswers.education || '',
         eyeColor: rawAnswers.eyeColor || '',
         hairColor: rawAnswers.hairColor || '',
-        handedness: rawAnswers.hand || '',
         nameInitial: rawAnswers.nameInitial || '',
-        aiStory: aiStory || '',
+
+        // ── Birthday: save both naming conventions ───────────────────────────────
+        bDay: rawAnswers.bDay || '',
+        bMonth: rawAnswers.bMonth || '',
+        bYear: rawAnswers.bYear || '',
+        birthDay: rawAnswers.bDay || '',
+        birthMonth: rawAnswers.bMonth || '',
+        birthYear: rawAnswers.bYear || '',
+
+        // ── Moles ────────────────────────────────────────────────────────────────
+        moleLocations: rawAnswers.moles || [],
+
+        // ── Skills: all naming variants so any recalc path can find them ─────────
+        skills: rawAnswers.skills || [],
+        allSkills: rawAnswers.skills || [],
         topSkills: [...skillTraits].sort((a, b) => a.fraction - b.fraction).slice(0, 3).map(s => s.value),
-        allSkills: (rawAnswers.skills || [])
+
+        // ── AI story ─────────────────────────────────────────────────────────────
+        aiStory: aiStory || '',
       };
 
       await upsertEntry(entry);
@@ -745,611 +803,623 @@ export default function Result() {
       )}
       <main className={`result-page ${isUniverse ? 'result-page--cosmic' : ''}`}>
 
-      {/* ── Decorative Earth / Planetary System ────────────────────── */}
-      {!isUniverse ? (
-        <div className="planetary-system" aria-hidden>
-          <div className="earth-orbit-ring" />
-          <div className="moon-orbit-ring" />
-          <div className="planet-earth">
-            <div className="earth-texture"></div>
-          </div>
-          <div className="orbit-container">
-            <div className="planet-moon"></div>
-          </div>
-        </div>
-      ) : (
-        <div className="cosmic-bg" aria-hidden />
-      )}
-
-      <div className={`result-content ${revealed ? 'result-content--in' : ''}`}>
-
-        {/* ── PREMIUM HERO SECTION ──────────────────────────────────────────────── */}
-        <section className={`result-hero-premium tier-${rarityTier.toLowerCase()}`} style={{ '--tierColor': tierColor }}>
-          <div className="result-hero-premium-inner">
-            <div className="hero-massive-row">
-              <div className="hero-number-wrap">
-                <p className="text-sm sm:text-base tracking-widest text-gray-400 uppercase">{t.result.oneIn}</p>
-                <h1 className="text-4xl sm:text-6xl lg:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">
-                  <SlotCounter target={oneIn} />
-                </h1>
-              </div>
-              
-              <div className="hero-badge-wrap">
-                <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 floating-badge-premium" style={{ '--tierColor': tierColor }}>
-                  <div className="badge-glow-pulse" />
-                  <span className="badge-emoji-main text-3xl sm:text-4xl lg:text-5xl">{currentTierData.emoji}</span>
-                  <span className="badge-tier-name text-[10px] sm:text-xs lg:text-sm">{currentTierData.name}</span>
-                </div>
-              </div>
+        {/* ── Decorative Earth / Planetary System ────────────────────── */}
+        {!isUniverse ? (
+          <div className="planetary-system" aria-hidden>
+            <div className="earth-orbit-ring" />
+            <div className="moon-orbit-ring" />
+            <div className="planet-earth">
+              <div className="earth-texture"></div>
             </div>
-
-            <p className="hero-premium-subtitle text-sm sm:text-base">
-              {isUniverse ? t.result.oneInSubUniverse : t.result.oneInSubEarth}
-            </p>
-
-            {!isEmbed && (
-              <div className="flex justify-center w-full mt-4">
-                <div
-                  onClick={() => setIsUniverse(!isUniverse)}
-                  className="relative flex items-center cursor-pointer select-none bg-[#1a1a2e] rounded-full p-1 w-56 h-12 mx-auto"
-                >
-                  {/* Sliding background knob */}
-                  <div
-                    className="absolute top-1 bottom-1 transition-all duration-300 ease-in-out bg-white rounded-full z-0"
-                    style={{
-                      left: isUniverse ? 'calc(50% + 2px)' : '4px',
-                      width: 'calc(50% - 6px)',
-                    }}
-                  />
-                  {/* Earth label */}
-                  <span
-                    className={`flex-1 text-center z-10 font-bold text-sm transition-colors duration-300 ${
-                      !isUniverse ? 'text-gray-900' : 'text-gray-400'
-                    }`}
-                  >
-                    Earth 🌍
-                  </span>
-                  {/* Universe label */}
-                  <span
-                    className={`flex-1 text-center z-10 font-bold text-sm transition-colors duration-300 ${
-                      isUniverse ? 'text-gray-900' : 'text-gray-400'
-                    }`}
-                  >
-                    Universe 🔭
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* ── STATS PILLS ROW ─────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full px-4 mt-6">
-          <div className="w-full rounded-2xl border border-teal-500/30 bg-[#0d1117] p-5">
-            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1">
-              Rarity Score
-              <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border border-gray-600 text-[10px] text-gray-500 cursor-help" title="Only your 3 rarest skills count toward the final score.">i</span>
-            </p>
-            <p className="text-3xl font-bold text-white">{score}/100</p>
-          </div>
-
-          <div className="w-full rounded-2xl border border-teal-500/30 bg-[#0d1117] p-5">
-            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Global Rank</p>
-            <p className="text-3xl font-bold text-white">#{estimatedRank.toLocaleString()}</p>
-            <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-tighter">Out of 8.28 Billion</p>
-          </div>
-
-          <div className="w-full rounded-2xl border border-purple-500/30 bg-[#0d1117] p-5">
-            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Top Percentile</p>
-            <p className="text-3xl font-bold text-white">
-              {topPercentile < 0.0001 ? '<0.0001%' : parseFloat(topPercentile.toFixed(4)) + '%'}
-            </p>
-          </div>
-
-          <div className="w-full rounded-2xl border border-purple-500/30 bg-[#0d1117] p-5">
-            <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Tier</p>
-            <p className="text-3xl font-bold text-purple-400">{currentTierData.name}</p>
-          </div>
-        </div>
-
-        {/* ── Trait Breakdown (Premium Table) ──────────────────────────────────────── */}
-        {normalTraits.length > 0 && (
-          <section className="premium-breakdown-card glass-card">
-            <h2 className="premium-section-title">{t.result.traitBreakdown.title}</h2>
-            <div className="premium-trait-list">
-              {normalTraits.map(({ trait, value, fraction }, i) => {
-                const pct = Math.round(fraction * 100 * 100) / 100;
-                let rarityLabelKey = 'common';
-                let rarityClass = 'common';
-                if (pct < 1) { rarityLabelKey = 'mythic'; rarityClass = 'mythic'; }
-                else if (pct < 5) { rarityLabelKey = 'rare'; rarityClass = 'rare'; }
-                else if (pct < 20) { rarityLabelKey = 'uncommon'; rarityClass = 'uncommon'; }
-
-                const emoji = t.traits[trait]?.split(' ')[0] || '✨';
-
-                return (
-                  <div key={trait} className="premium-trait-row">
-                    <div className="trait-col-left">
-                      <span className="trait-emoji">{emoji}</span>
-                      <span className="trait-name">{value}</span>
-                    </div>
-                    <div className="trait-col-center">
-                      <span className={`rarity-pill-premium pill-${rarityClass}`}>{t.traitTiers[rarityLabelKey]}</span>
-                    </div>
-                    <div className="trait-col-right">
-                      <span className="trait-pct-text">
-                        {pct < 1 ? `${(fraction * 100).toFixed(2)}%` : `${pct}%`}
-                      </span>
-                    </div>
-                  </div>
-                )
-              })}
+            <div className="orbit-container">
+              <div className="planet-moon"></div>
             </div>
-          </section>
+          </div>
+        ) : (
+          <div className="cosmic-bg" aria-hidden />
         )}
 
-        {/* ── Your Rarity Story (Premium Editorial) ────────────────────────────────────── */}
-        <section className="premium-story-container" style={{ '--tierColor': tierColor }}>
-          <div className="premium-story-border-wrap">
-            <div className="premium-story-card">
-              {/* AI Generated Badge */}
-              {aiStory && !isGenerating && (
-                <div className="absolute top-4 right-6 text-[10px] font-bold tracking-widest uppercase bg-white/5 border border-white/10 px-3 py-1 rounded-full text-purple-400 shadow-sm flex items-center gap-1.5 z-10 animate-fade-in">
-                  ✨ AI Generated
+        <div className={`result-content ${revealed ? 'result-content--in' : ''}`}>
+
+          {/* ── PREMIUM HERO SECTION ──────────────────────────────────────────────── */}
+          <section className={`result-hero-premium tier-${rarityTier.toLowerCase()}`} style={{ '--tierColor': tierColor }}>
+            <div className="result-hero-premium-inner">
+              <div className="hero-massive-row">
+                <div className="hero-number-wrap">
+                  <p className="text-sm sm:text-base tracking-widest text-gray-400 uppercase">{t.result.oneIn}</p>
+                  <h1 className="text-4xl sm:text-6xl lg:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">
+                    <SlotCounter target={oneIn} />
+                  </h1>
+                </div>
+
+                <div className="hero-badge-wrap">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 lg:w-40 lg:h-40 floating-badge-premium" style={{ '--tierColor': tierColor }}>
+                    <div className="badge-glow-pulse" />
+                    <span className="badge-emoji-main text-3xl sm:text-4xl lg:text-5xl">{currentTierData.emoji}</span>
+                    <span className="badge-tier-name text-[10px] sm:text-xs lg:text-sm">{currentTierData.name}</span>
+                  </div>
+                </div>
+              </div>
+
+              <p className="hero-premium-subtitle text-sm sm:text-base">
+                {isUniverse ? t.result.oneInSubUniverse : t.result.oneInSubEarth}
+              </p>
+
+              {!isEmbed && (
+                <div className="flex justify-center w-full mt-4">
+                  <div
+                    onClick={() => setIsUniverse(!isUniverse)}
+                    className="relative flex items-center cursor-pointer select-none bg-[#1a1a2e] rounded-full p-1 w-56 h-12 mx-auto"
+                  >
+                    {/* Sliding background knob */}
+                    <div
+                      className="absolute top-1 bottom-1 transition-all duration-300 ease-in-out bg-white rounded-full z-0"
+                      style={{
+                        left: isUniverse ? 'calc(50% + 2px)' : '4px',
+                        width: 'calc(50% - 6px)',
+                      }}
+                    />
+                    {/* Earth label */}
+                    <span
+                      className={`flex-1 text-center z-10 font-bold text-sm transition-colors duration-300 ${!isUniverse ? 'text-gray-900' : 'text-gray-400'
+                        }`}
+                    >
+                      Earth 🌍
+                    </span>
+                    {/* Universe label */}
+                    <span
+                      className={`flex-1 text-center z-10 font-bold text-sm transition-colors duration-300 ${isUniverse ? 'text-gray-900' : 'text-gray-400'
+                        }`}
+                    >
+                      Universe 🔭
+                    </span>
+                  </div>
                 </div>
               )}
+            </div>
+          </section>
 
-              <span className="premium-quote-mark">“</span>
-              <div className="premium-story-text">
-                {isGenerating ? (
-                  <div className="flex flex-col items-center gap-4 py-8">
-                    <div className="flex gap-2">
-                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                      <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
+          {/* ── STATS PILLS ROW ─────────────────────────────────────────────────── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full px-4 mt-6">
+            <div className="w-full rounded-2xl border border-teal-500/30 bg-[#0d1117] p-5">
+              <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                Rarity Score
+                <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border border-gray-600 text-[10px] text-gray-500 cursor-help" title="Only your 3 rarest skills count toward the final score.">i</span>
+              </p>
+              <p className="text-3xl font-bold text-white">{score}/100</p>
+            </div>
+
+            <div className="w-full rounded-2xl border border-teal-500/30 bg-[#0d1117] p-5">
+              <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Global Rank</p>
+              <p className="text-3xl font-bold text-white">#{estimatedRank.toLocaleString()}</p>
+              <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-tighter">Out of 8.28 Billion</p>
+            </div>
+
+            <div className="w-full rounded-2xl border border-purple-500/30 bg-[#0d1117] p-5">
+              <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Top Percentile</p>
+              <p className="text-3xl font-bold text-white">
+                {topPercentile < 0.0001 ? '<0.0001%' : parseFloat(topPercentile.toFixed(4)) + '%'}
+              </p>
+            </div>
+
+            <div className="w-full rounded-2xl border border-purple-500/30 bg-[#0d1117] p-5">
+              <p className="text-xs text-gray-400 uppercase tracking-widest mb-2">Tier</p>
+              <p className="text-3xl font-bold text-purple-400">{currentTierData.name}</p>
+            </div>
+          </div>
+
+          {/* ── Trait Breakdown (Premium Table) ──────────────────────────────────────── */}
+          {normalTraits.length > 0 && (
+            <section className="premium-breakdown-card glass-card">
+              <h2 className="premium-section-title">{t.result.traitBreakdown.title}</h2>
+              <div className="premium-trait-list">
+                {normalTraits.map(({ trait, value, fraction }, i) => {
+                  const pct = Math.round(fraction * 100 * 100) / 100;
+                  let rarityLabelKey = 'common';
+                  let rarityClass = 'common';
+                  if (pct < 1) { rarityLabelKey = 'mythic'; rarityClass = 'mythic'; }
+                  else if (pct < 5) { rarityLabelKey = 'rare'; rarityClass = 'rare'; }
+                  else if (pct < 20) { rarityLabelKey = 'uncommon'; rarityClass = 'uncommon'; }
+
+                  const emoji = t.traits[trait]?.split(' ')[0] || '✨';
+
+                  return (
+                    <div key={trait} className="premium-trait-row">
+                      <div className="trait-col-left">
+                        <span className="trait-emoji">{emoji}</span>
+                        <span className="trait-name">{value}</span>
+                      </div>
+                      <div className="trait-col-center">
+                        <span className={`rarity-pill-premium pill-${rarityClass}`}>{t.traitTiers[rarityLabelKey]}</span>
+                      </div>
+                      <div className="trait-col-right">
+                        <span className="trait-pct-text">
+                          {pct < 1 ? `${(fraction * 100).toFixed(2)}%` : `${pct}%`}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-xs font-mono uppercase tracking-widest text-white/30 animate-pulse">AI is analysing your rarity...</p>
-                  </div>
-                ) : aiStory ? (
-                  isTyping ? (
-                    <TypingEffect text={aiStory} onComplete={() => setIsTyping(false)} />
-                  ) : (
-                    aiStory
                   )
-                ) : (
-                  <div className="flex flex-col gap-4">
-                    <p className="text-white/40 text-sm uppercase tracking-tighter mb-2">AI Story unavailable in local mode</p>
-                    {t.result.story.messages[fallbackStoryKey] && t.result.story.messages[fallbackStoryKey].split('{name}').map((part, i) => (
-                      <span key={i}>
-                        {part}
-                        {i === 0 && t.result.story.messages[fallbackStoryKey].includes('{name}') && (
-                          <strong className="story-name-highlight" style={{ color: tierColor }}>
-                            {rawAnswers.name || (t.HI ? 'आप' : 'You')}
-                          </strong>
-                        )}
-                      </span>
-                    ))}
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* ── Your Rarity Story (Premium Editorial) ────────────────────────────────────── */}
+          <section className="premium-story-container" style={{ '--tierColor': tierColor }}>
+            <div className="premium-story-border-wrap">
+              <div className="premium-story-card">
+                {/* AI Generated Badge */}
+                {aiStory && !isGenerating && (
+                  <div className="absolute top-4 right-6 text-[10px] font-bold tracking-widest uppercase bg-white/5 border border-white/10 px-3 py-1 rounded-full text-purple-400 shadow-sm flex items-center gap-1.5 z-10 animate-fade-in">
+                    ✨ AI Generated
                   </div>
                 )}
-              </div>
 
-              {!isGenerating && !isTyping && regenCount < 3 && (
-                <button
-                  onClick={handleRegenerate}
-                  className="premium-regen-btn"
-                >
-                  {t.result.story.newStory} ↻ <span className="opacity-50 lowercase tracking-normal font-normal">({3 - regenCount} {t.result.story.left})</span>
+                <span className="premium-quote-mark">“</span>
+                <div className="premium-story-text">
+                  {isGenerating ? (
+                    <div className="flex flex-col items-center gap-4 py-8">
+                      <div className="flex gap-2">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                        <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                        <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
+                      </div>
+                      <p className="text-xs font-mono uppercase tracking-widest text-white/30 animate-pulse">AI is analysing your rarity...</p>
+                    </div>
+                  ) : aiStory ? (
+                    isTyping ? (
+                      <TypingEffect text={aiStory} onComplete={() => setIsTyping(false)} />
+                    ) : (
+                      aiStory
+                    )
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      <p className="text-white/40 text-sm uppercase tracking-tighter mb-2">AI Story unavailable in local mode</p>
+                      {t.result.story.messages[fallbackStoryKey] && t.result.story.messages[fallbackStoryKey].split('{name}').map((part, i) => (
+                        <span key={i}>
+                          {part}
+                          {i === 0 && t.result.story.messages[fallbackStoryKey].includes('{name}') && (
+                            <strong className="story-name-highlight" style={{ color: tierColor }}>
+                              {rawAnswers.name || (t.HI ? 'आप' : 'You')}
+                            </strong>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {!isGenerating && !isTyping && regenCount < 3 && (
+                  <button
+                    onClick={handleRegenerate}
+                    className="premium-regen-btn"
+                  >
+                    {t.result.story.newStory} ↻ <span className="opacity-50 lowercase tracking-normal font-normal">({3 - regenCount} {t.result.story.left})</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </section>
+
+          {/* ── Name Confirmation Card ── */}
+          {!lbSubmitted && !nameConfirmed && (rawAnswers.userName || rawAnswers.name || rawAnswers.nameInitial) && (
+            <div className="lb-confirm-card animate-fade-in">
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div style={{ fontSize: '1.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '12px' }}>📋</div>
+                <div>
+                  <p className="lb-confirm-card__title">
+                    Is your name "{rawAnswers.userName || rawAnswers.name || rawAnswers.nameInitial || ''}"?
+                  </p>
+                  <p className="lb-confirm-card__subtitle">
+                    Confirm to appear on the Global Leaderboard
+                  </p>
+                </div>
+              </div>
+              <div className="lb-confirm-card__btns" style={{ marginTop: '0.5rem' }}>
+                <button className="lb-confirm-yes"
+                  onClick={() => {
+                    setNameConfirmed(true);
+                    handleLeaderboardSubmit(rawAnswers.userName || rawAnswers.name || rawAnswers.nameInitial || '');
+                  }}>
+                  ✓ Yes, add me to leaderboard
                 </button>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Name Confirmation Card ── */}
-        {!lbSubmitted && !nameConfirmed && (rawAnswers.userName || rawAnswers.name || rawAnswers.nameInitial) && (
-          <div className="lb-confirm-card animate-fade-in">
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <div style={{ fontSize: '1.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem', borderRadius: '12px' }}>📋</div>
-              <div>
-                <p className="lb-confirm-card__title">
-                  Is your name "{rawAnswers.userName || rawAnswers.name || rawAnswers.nameInitial || ''}"?
-                </p>
-                <p className="lb-confirm-card__subtitle">
-                  Confirm to appear on the Global Leaderboard
-                </p>
+                <button className="lb-confirm-no"
+                  onClick={() => {
+                    setNameConfirmed(true);
+                    setShowNamePopup(true);
+                  }}>
+                  ✗ No, use different name
+                </button>
               </div>
             </div>
-            <div className="lb-confirm-card__btns" style={{ marginTop: '0.5rem' }}>
-              <button className="lb-confirm-yes"
-                onClick={() => {
-                  setNameConfirmed(true);
-                  handleLeaderboardSubmit(rawAnswers.userName || rawAnswers.name || rawAnswers.nameInitial || '');
-                }}>
-                ✓ Yes, add me to leaderboard
-              </button>
-              <button className="lb-confirm-no"
-                onClick={() => {
-                  setNameConfirmed(true);
-                  setShowNamePopup(true);
-                }}>
-                ✗ No, use different name
-              </button>
-            </div>
-          </div>
-        )}
-        {/* ── Rare Skills ──────────────────────────────────────── */}
-        {skillTraits.length > 0 && (
-          <section className="result-skills-card glass-card">
-            <h2 className="result-section-title">{t.result.rareSkills.title}</h2>
-            <p className="result-section-sub">{t.result.rareSkills.sub}</p>
-            <div className="skills-masonry">
-              {[...skillTraits].sort((a, b) => a.fraction - b.fraction).map((skill, index) => {
-                const isRarest = index === 0;
-                const isRare = skill.fraction < 0.05;
-                const pct = skill.fraction < 0.01 
-                  ? (skill.fraction * 100).toFixed(2) 
-                  : (skill.fraction * 100).toFixed(0);
-                
-                const firstSpace = skill.value.indexOf(' ');
-                const emoji = firstSpace > 0 ? skill.value.slice(0, firstSpace) : '';
-                const skillName = firstSpace > 0 ? skill.value.slice(firstSpace + 1) : skill.value;
+          )}
+          {/* ── Rare Skills ──────────────────────────────────────── */}
+          {skillTraits.length > 0 && (
+            <section className="result-skills-card glass-card">
+              <h2 className="result-section-title">{t.result.rareSkills.title}</h2>
+              <p className="result-section-sub">{t.result.rareSkills.sub}</p>
+              <div className="skills-masonry">
+                {[...skillTraits].sort((a, b) => a.fraction - b.fraction).map((skill, index) => {
+                  const isRarest = index === 0;
+                  const isRare = skill.fraction < 0.05;
+                  const pct = skill.fraction < 0.01
+                    ? (skill.fraction * 100).toFixed(2)
+                    : (skill.fraction * 100).toFixed(0);
 
-                // Font scaling 0.85rem to 1.4rem depending on rarity
-                const rarityScore = Math.max(0, 0.05 - skill.fraction);
-                const scale = 0.85 + (rarityScore * 10);
-                const glowLevel = isRare ? Math.min(25, rarityScore * 400) : 0;
+                  const firstSpace = skill.value.indexOf(' ');
+                  const emoji = firstSpace > 0 ? skill.value.slice(0, firstSpace) : '';
+                  const skillName = firstSpace > 0 ? skill.value.slice(firstSpace + 1) : skill.value;
 
-                const count = skill.worldCount || 0;
-                let countStr = '';
-                if (count >= 1000000) {
-                  const m = count / 1000000;
-                  countStr = `~${Number.isInteger(m) ? m : m.toFixed(1)}M`;
-                } else {
-                  countStr = `~${(count/1000).toFixed(0)}k`;
-                }
+                  // Font scaling 0.85rem to 1.4rem depending on rarity
+                  const rarityScore = Math.max(0, 0.05 - skill.fraction);
+                  const scale = 0.85 + (rarityScore * 10);
+                  const glowLevel = isRare ? Math.min(25, rarityScore * 400) : 0;
 
-                return (
-                  <div key={skill.value} 
-                       className={`skill-cloud-tag ${isRarest ? 'rarest-skill' : ''} ${isRare ? 'rare-skill-tag' : 'common-skill-tag'}`}
-                       style={{ 
-                         fontSize: `${scale}rem`,
-                         boxShadow: isRare ? `0 0 ${glowLevel}px ${tierColor}60` : 'none',
-                         borderColor: isRare ? `${tierColor}90` : 'rgba(255,255,255,0.1)'
-                       }}>
-                    {isRarest && <div className="rarest-badge" style={{ background: tierColor }}>⭐ {t.result.rareSkills.rarest}</div>}
-                    <div className="skill-cloud-top">
-                      <span className="skill-emoji">{emoji}</span>
-                      <strong className="skill-name">{skillName}</strong>
+                  const count = skill.worldCount || 0;
+                  let countStr = '';
+                  if (count >= 1000000) {
+                    const m = count / 1000000;
+                    countStr = `~${Number.isInteger(m) ? m : m.toFixed(1)}M`;
+                  } else {
+                    countStr = `~${(count / 1000).toFixed(0)}k`;
+                  }
+
+                  return (
+                    <div key={skill.value}
+                      className={`skill-cloud-tag ${isRarest ? 'rarest-skill' : ''} ${isRare ? 'rare-skill-tag' : 'common-skill-tag'}`}
+                      style={{
+                        fontSize: `${scale}rem`,
+                        boxShadow: isRare ? `0 0 ${glowLevel}px ${tierColor}60` : 'none',
+                        borderColor: isRare ? `${tierColor}90` : 'rgba(255,255,255,0.1)'
+                      }}>
+                      {isRarest && <div className="rarest-badge" style={{ background: tierColor }}>⭐ {t.result.rareSkills.rarest}</div>}
+                      <div className="skill-cloud-top">
+                        <span className="skill-emoji">{emoji}</span>
+                        <strong className="skill-name">{skillName}</strong>
+                      </div>
+                      <div className="skill-cloud-bot">
+                        <span className="skill-count">{countStr}</span>
+                        <span className="skill-pct-pill">{pct}%</span>
+                      </div>
                     </div>
-                    <div className="skill-cloud-bot">
-                      <span className="skill-count">{countStr}</span>
-                      <span className="skill-pct-pill">{pct}%</span>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* ── Multi-Skilled Anomaly Banner ─────────────────────── */}
+          {rareSkills.length >= 3 && (
+            <div className="w-full max-w-[680px] bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/30 rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(139,92,246,0.2)]">
+              <h3 className="text-[1.3rem] font-bold text-white mb-2 flex items-center justify-center gap-2 font-heading tracking-wide">
+                {t.result.anomaly.title}
+              </h3>
+              <p className="text-purple-200/80 text-[0.95rem] font-body leading-relaxed">
+                {t.result.anomaly.sub}
+              </p>
+            </div>
+          )}
+
+          {/* ── Birthday Rarity ────────────────────────────────────── */}
+          {hasBirthday && (
+            <section className="result-birthday glass-card">
+              <h2 className="result-section-title">{t.result.birthday.title}</h2>
+              <p className="result-section-sub">{isUniverse ? t.result.birthday.subUniverse : t.result.birthday.subEarth}</p>
+              <div className="birthday-stats-row">
+                <div className="birthday-stat-pill teal">
+                  <span className="bday-num"><SlotCounter target={birthdayTwinMonth} className="bday-slot" /></span>
+                  <span className="bday-label">{isUniverse ? t.result.birthday.monthShareUniverse : t.result.birthday.monthShareEarth} {t.result.birthday.monthShareText}</span>
+                </div>
+                <div className="birthday-stat-pill coral">
+                  <span className="bday-num"><SlotCounter target={birthdayTwinExact} className="bday-slot" /></span>
+                  <span className="bday-label">{isUniverse ? t.result.birthday.exactShareUniverse : t.result.birthday.exactShareEarth} {t.result.birthday.exactShareText}</span>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ── Name Initial Fun Fact ─────────────────────────────────── */}
+          {rawAnswers.nameInitial && (() => {
+            const letter = rawAnswers.nameInitial;
+            const FRACS = { A: 0.12, B: 0.06, C: 0.07, D: 0.06, E: 0.05, F: 0.04, G: 0.04, H: 0.05, I: 0.03, J: 0.08, K: 0.06, L: 0.05, M: 0.10, N: 0.05, O: 0.03, P: 0.06, Q: 0.002, R: 0.08, S: 0.11, T: 0.05, U: 0.01, V: 0.03, W: 0.03, X: 0.001, Y: 0.005, Z: 0.003 };
+            const frac = FRACS[letter] ?? 0.04;
+            const worldCount = Math.round(frac * 8_280_000_000);
+            const countStr = worldCount >= 1_000_000_000
+              ? `${(worldCount / 1_000_000_000).toFixed(1)}B`
+              : worldCount >= 1_000_000
+                ? `${(worldCount / 1_000_000).toFixed(0)}M`
+                : `${(worldCount / 1_000).toFixed(0)}K`;
+            return (
+              <div className="w-full flex items-center gap-4 p-4 sm:p-6 rounded-2xl bg-[#1a1a2e] border border-purple-900">
+                <span className="text-4xl sm:text-6xl font-bold text-purple-400 shrink-0">
+                  {letter}
+                </span>
+                <div>
+                  <p className="font-semibold text-white text-sm sm:text-base">
+                    🔡 Your name initial (<span className="text-purple-400">{letter}</span>)
+                  </p>
+                  <p className="text-gray-400 text-xs sm:text-sm mt-1">
+                    Shared by approximately <strong>{countStr}</strong> people on Earth — {(frac * 100).toFixed(1)}% of the population.
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* ── Mole Fun Facts ────────────────────────────────────────── */}
+          {rawAnswers.moles && rawAnswers.moles.length > 0 && !rawAnswers.moles.includes('None') && (
+            <section className="glass-card" style={{ width: '100%', padding: '1.75rem 2rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '1.4rem' }}>🖤</span>
+                <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: '#fff', fontSize: '1.05rem' }}>Mole Locations</p>
+                <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.75rem', borderRadius: 99, background: 'rgba(255,107,107,0.12)', border: '1px solid rgba(255,107,107,0.25)', color: '#FF6B6B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>🎉 Fun Bonus</span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                {rawAnswers.moles.map(loc => {
+                  const MOLE_FRACS = { Face: 0.20, Hand: 0.15, Neck: 0.10, Back: 0.25 };
+                  const frac = MOLE_FRACS[loc] ?? 0.15;
+                  const count = Math.round(frac * 8_280_000_000);
+                  const countStr = `~${(count / 1_000_000).toFixed(0)}M`;
+                  const emoji = loc === 'Face' ? '😊' : loc === 'Hand' ? '✋' : loc === 'Neck' ? '🦒' : '🔙';
+                  return (
+                    <div key={loc} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '0.85rem 1.25rem' }}>
+                      <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: '#fff', marginBottom: '0.2rem' }}>{emoji} Mole on {loc}</p>
+                      <p style={{ fontFamily: 'var(--font-body)', color: 'rgba(255,255,255,0.5)', fontSize: '0.82rem' }}>Shared by {countStr} people ({(frac * 100).toFixed(0)}%)</p>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* ── Multi-Skilled Anomaly Banner ─────────────────────── */}
-        {rareSkills.length >= 3 && (
-          <div className="w-full max-w-[680px] bg-gradient-to-r from-purple-900/40 to-indigo-900/40 border border-purple-500/30 rounded-2xl p-6 text-center shadow-[0_0_30px_rgba(139,92,246,0.2)]">
-            <h3 className="text-[1.3rem] font-bold text-white mb-2 flex items-center justify-center gap-2 font-heading tracking-wide">
-              {t.result.anomaly.title}
-            </h3>
-            <p className="text-purple-200/80 text-[0.95rem] font-body leading-relaxed">
-              {t.result.anomaly.sub}
-            </p>
-          </div>
-        )}
-
-        {/* ── Birthday Rarity ────────────────────────────────────── */}
-        {hasBirthday && (
-          <section className="result-birthday glass-card">
-            <h2 className="result-section-title">{t.result.birthday.title}</h2>
-            <p className="result-section-sub">{isUniverse ? t.result.birthday.subUniverse : t.result.birthday.subEarth}</p>
-            <div className="birthday-stats-row">
-              <div className="birthday-stat-pill teal">
-                <span className="bday-num"><SlotCounter target={birthdayTwinMonth} className="bday-slot" /></span>
-                <span className="bday-label">{isUniverse ? t.result.birthday.monthShareUniverse : t.result.birthday.monthShareEarth} {t.result.birthday.monthShareText}</span>
+                  );
+                })}
               </div>
-              <div className="birthday-stat-pill coral">
-                <span className="bday-num"><SlotCounter target={birthdayTwinExact} className="bday-slot" /></span>
-                <span className="bday-label">{isUniverse ? t.result.birthday.exactShareUniverse : t.result.birthday.exactShareEarth} {t.result.birthday.exactShareText}</span>
-              </div>
-            </div>
-          </section>
-        )}
+            </section>
+          )}
 
-        {/* ── Name Initial Fun Fact ─────────────────────────────────── */}
-        {rawAnswers.nameInitial && (() => {
-          const letter = rawAnswers.nameInitial;
-          const FRACS = { A:0.12,B:0.06,C:0.07,D:0.06,E:0.05,F:0.04,G:0.04,H:0.05,I:0.03,J:0.08,K:0.06,L:0.05,M:0.10,N:0.05,O:0.03,P:0.06,Q:0.002,R:0.08,S:0.11,T:0.05,U:0.01,V:0.03,W:0.03,X:0.001,Y:0.005,Z:0.003 };
-          const frac = FRACS[letter] ?? 0.04;
-          const worldCount = Math.round(frac * 8_280_000_000);
-          const countStr = worldCount >= 1_000_000_000
-            ? `${(worldCount / 1_000_000_000).toFixed(1)}B`
-            : worldCount >= 1_000_000
-            ? `${(worldCount / 1_000_000).toFixed(0)}M`
-            : `${(worldCount / 1_000).toFixed(0)}K`;
-          return (
-            <div className="w-full flex items-center gap-4 p-4 sm:p-6 rounded-2xl bg-[#1a1a2e] border border-purple-900">
-              <span className="text-4xl sm:text-6xl font-bold text-purple-400 shrink-0">
-                {letter}
-              </span>
-              <div>
-                <p className="font-semibold text-white text-sm sm:text-base">
-                  🔡 Your name initial (<span className="text-purple-400">{letter}</span>)
-                </p>
-                <p className="text-gray-400 text-xs sm:text-sm mt-1">
-                  Shared by approximately <strong>{countStr}</strong> people on Earth — {(frac * 100).toFixed(1)}% of the population.
-                </p>
-              </div>
-            </div>
-          );
-        })()}
+          {/* ── Famous Person Comparison ──────────────────────────────── */}
+          <FamousCompareSection
+            userName={rawAnswers.userName}
+            userTraits={traitBreakdown}
+            score={score}
+            rarityNumber={oneIn.toLocaleString()}
+            tierColor={tierColor}
+          />
 
-        {/* ── Mole Fun Facts ────────────────────────────────────────── */}
-        {rawAnswers.moles && rawAnswers.moles.length > 0 && !rawAnswers.moles.includes('None') && (
-          <section className="glass-card" style={{ width: '100%', padding: '1.75rem 2rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem', flexWrap:'wrap' }}>
-              <span style={{ fontSize: '1.4rem' }}>🖤</span>
-              <p style={{ fontFamily:'var(--font-heading)', fontWeight: 700, color: '#fff', fontSize: '1.05rem' }}>Mole Locations</p>
-              <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.75rem', borderRadius: 99, background: 'rgba(255,107,107,0.12)', border: '1px solid rgba(255,107,107,0.25)', color: '#FF6B6B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>🎉 Fun Bonus</span>
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-              {rawAnswers.moles.map(loc => {
-                const MOLE_FRACS = { Face: 0.20, Hand: 0.15, Neck: 0.10, Back: 0.25 };
-                const frac = MOLE_FRACS[loc] ?? 0.15;
-                const count = Math.round(frac * 8_280_000_000);
-                const countStr = `~${(count / 1_000_000).toFixed(0)}M`;
-                const emoji = loc === 'Face' ? '😊' : loc === 'Hand' ? '✋' : loc === 'Neck' ? '🦒' : '🔙';
-                return (
-                  <div key={loc} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '0.85rem 1.25rem' }}>
-                    <p style={{ fontFamily:'var(--font-heading)', fontWeight: 700, color: '#fff', marginBottom: '0.2rem' }}>{emoji} Mole on {loc}</p>
-                    <p style={{ fontFamily:'var(--font-body)', color:'rgba(255,255,255,0.5)', fontSize:'0.82rem' }}>Shared by {countStr} people ({(frac * 100).toFixed(0)}%)</p>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
+          {/* ── Daily Fact ─────────────────────────────────────────── */}
+          <DailyFact />
 
-        {/* ── Famous Person Comparison ──────────────────────────────── */}
-        <FamousCompareSection 
-          userName={rawAnswers.userName}
-          userTraits={traitBreakdown}
-          score={score}
-          rarityNumber={oneIn.toLocaleString()}
-          tierColor={tierColor}
-        />
-
-        {/* ── Daily Fact ─────────────────────────────────────────── */}
-        <DailyFact />
-
-        {/* ── Action Buttons (Equal Width Row) ────────────────────── */}
-        <section className="flex flex-col sm:flex-row gap-3 w-full">
-          <button
-            className={`w-full sm:w-auto flex-1 action-btn action-btn-secondary ${downloading ? 'busy' : ''}`}
-            onClick={async () => {
-              setDownloading(true);
-              await document.fonts.ready;
-              requestAnimationFrame(() => {
-                downloadScoreCard({ 
-                  name: rawAnswers.userName || rawAnswers.name,
-                  oneIn, rarityTier, tierEmoji, tierColor, score, t 
-                });
-                setDownloading(false);
-              });
-            }}
-          >
-            {downloading ? '⏳ ' + t.result.share.generating : '⬇️ ' + t.result.share.download}
-          </button>
-
-          <button
-            className="w-full sm:w-auto flex-1 action-btn action-btn-secondary"
-            onClick={async () => {
-              await document.fonts.ready;
-              downloadCertificate({ 
-                name: rawAnswers.userName || rawAnswers.name, 
-                age: rawAnswers.age,
-                oneIn, 
-                rarityTier, 
-                tierColor, 
-                t,
-                traitBreakdown: traitBreakdown.sort((a, b) => a.fraction - b.fraction)
-              });
-              trackEvent('certificate_downloaded');
-            }}
-          >
-            🏅 {t.HI ? 'प्रमाणपत्र डाउनलोड करें' : 'Download Certificate'}
-          </button>
-
-          {!isEmbed && (
+          {/* ── Action Buttons (Equal Width Row) ────────────────────── */}
+          <section className="flex flex-col sm:flex-row gap-3 w-full">
             <button
-              className="w-full sm:w-auto flex-1 action-btn action-btn-primary"
-              onClick={() => {
-                try {
-                  const challengerData = {
-                    displayName: rawAnswers.name || (t.HI ? 'आपका मित्र' : 'Your Friend'),
-                    score,
-                    tier: rarityTier,
-                    oneIn,
-                    country: rawAnswers.country || 'Global',
-                    topSkills: skillTraits.sort((a, b) => a.fraction - b.fraction).slice(0, 3).map(s => s.value),
-                    traitBreakdown: normalTraits.slice(0, 6),
-                    age: rawAnswers.age,
-                    bloodType: rawAnswers.blood,
-                    eyeColor: rawAnswers.eyeColor,
-                    handedness: rawAnswers.hand,
-                    education: rawAnswers.education
-                  };
-                  const payload = btoa(unescape(encodeURIComponent(JSON.stringify(challengerData))))
-                    .replace(/\+/g, '-')
-                    .replace(/\//g, '_')
-                    .replace(/=+$/, '');
-                  const url = `${window.location.origin}/compare?challenger=${payload}`;
-                  navigator.clipboard.writeText(url);
-                  localStorage.setItem('myChallenge', payload);
-                  trackEvent('compare_link_created');
-                  setCopiedChallenge(true);
-                  setTimeout(() => setCopiedChallenge(false), 2000);
-                } catch (e) {
-                  console.error('Failed to create challenge link', e);
-                }
+              className={`w-full sm:w-auto flex-1 action-btn action-btn-secondary ${downloading ? 'busy' : ''}`}
+              onClick={async () => {
+                setDownloading(true);
+                await document.fonts.ready;
+                requestAnimationFrame(() => {
+                  downloadScoreCard({
+                    name: rawAnswers.userName || rawAnswers.name,
+                    oneIn, rarityTier, tierEmoji, tierColor, score, t
+                  });
+                  setDownloading(false);
+                });
               }}
             >
-              <div className="action-btn-glow" style={{ background: tierColor }} />
-              <span className="relative z-10">{copiedChallenge ? '✅ ' + (t.HI ? 'लिंक कॉपी हो गया!' : 'Link copied!') : '🤝 ' + t.result.actions.challenge}</span>
+              {downloading ? '⏳ ' + t.result.share.generating : '⬇️ ' + t.result.share.download}
             </button>
-          )}
 
-          {!isEmbed && (
-            <Link to="/leaderboard" className="w-full sm:w-auto flex-1 action-btn action-btn-secondary flex items-center justify-center">
-              🏆 {t.nav.leaderboard.split(' ')[1]}
+            <button
+              className="w-full sm:w-auto flex-1 action-btn action-btn-secondary"
+              onClick={async () => {
+                await document.fonts.ready;
+                downloadCertificate({
+                  name: rawAnswers.userName || rawAnswers.name,
+                  age: rawAnswers.age,
+                  oneIn,
+                  rarityTier,
+                  tierColor,
+                  t,
+                  traitBreakdown: traitBreakdown.sort((a, b) => a.fraction - b.fraction)
+                });
+                trackEvent('certificate_downloaded');
+              }}
+            >
+              🏅 {t.HI ? 'प्रमाणपत्र डाउनलोड करें' : 'Download Certificate'}
+            </button>
+
+            {!isEmbed && (
+              <button
+                className="w-full sm:w-auto flex-1 action-btn action-btn-primary"
+                onClick={() => {
+                  try {
+                    const challengerData = {
+                      displayName: rawAnswers.name || (t.HI ? 'आपका मित्र' : 'Your Friend'),
+                      score,
+                      tier: rarityTier,
+                      oneIn,
+                      country: rawAnswers.country || 'Global',
+                      topSkills: skillTraits.sort((a, b) => a.fraction - b.fraction).slice(0, 3).map(s => s.value),
+                      traitBreakdown: normalTraits.slice(0, 6),
+                      age: rawAnswers.age,
+                      bloodType: rawAnswers.blood,
+                      eyeColor: rawAnswers.eyeColor,
+                      handedness: rawAnswers.hand,
+                      education: rawAnswers.education
+                    };
+                    const payload = btoa(unescape(encodeURIComponent(JSON.stringify(challengerData))))
+                      .replace(/\+/g, '-')
+                      .replace(/\//g, '_')
+                      .replace(/=+$/, '');
+                    const url = `${window.location.origin}/compare?challenger=${payload}`;
+                    navigator.clipboard.writeText(url);
+                    localStorage.setItem('myChallenge', payload);
+                    trackEvent('compare_link_created');
+                    setCopiedChallenge(true);
+                    setTimeout(() => setCopiedChallenge(false), 2000);
+                  } catch (e) {
+                    console.error('Failed to create challenge link', e);
+                  }
+                }}
+              >
+                <div className="action-btn-glow" style={{ background: tierColor }} />
+                <span className="relative z-10">{copiedChallenge ? '✅ ' + (t.HI ? 'लिंक कॉपी हो गया!' : 'Link copied!') : '🤝 ' + t.result.actions.challenge}</span>
+              </button>
+            )}
+
+            {!isEmbed && (
+              <Link to="/leaderboard" className="w-full sm:w-auto flex-1 action-btn action-btn-secondary flex items-center justify-center">
+                🏆 {t.nav.leaderboard.split(' ')[1]}
+              </Link>
+            )}
+          </section>
+
+          <div className="result-nav-links" style={{ marginTop: '2.5rem' }}>
+            <Link to={`/quiz${isEmbed ? '?embed=true' : ''}`} className="result-nav-link">
+              {t.nav.retake}
             </Link>
-          )}
-        </section>
-
-        <div className="result-nav-links" style={{ marginTop: '2.5rem' }}>
-          <Link to={`/quiz${isEmbed ? '?embed=true' : ''}`} className="result-nav-link">
-            {t.nav.retake}
-          </Link>
-          {!isEmbed && (
-            <Link to="/" className="result-nav-link">
-              🏠 {t.nav.home}
-            </Link>
-          )}
-        </div>
-
-        {isUniverse && !isEmbed && (
-          <div className="cosmic-disclaimer">
-            <p>{t.result.cosmicDisclaimer}</p>
-          </div>
-        )}
-        
-        {isEmbed && (
-          <div className="text-center pt-8 pb-4 z-10 relative mt-4">
-            <a href="https://earthranker.himanshurajak.in" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white/60 text-xs font-medium transition-colors">
-              {t.poweredBy}
-            </a>
-          </div>
-        )}
-
-        {/* ── Bottom Leaderboard Banner ── */}
-        {!isEmbed && (
-          <div className="w-full">
-            {!lbSubmitted ? (
-              <div className="lb-bottom-banner animate-fade-in">
-                <span className="lb-bottom-banner__title">
-                  🏆 Want to appear on the Global Leaderboard?
-                </span>
-                <p className="lb-bottom-banner__sub">
-                  See how you rank against everyone worldwide
-                </p>
-                <button className="lb-enter-btn" 
-                  onClick={() => setShowNamePopup(true)}>
-                  Enter My Name →
-                </button>
-              </div>
-            ) : (
-              <div className="lb-bottom-banner animate-fade-in">
-                <span className="lb-success-msg">
-                  ✓ You're on the Global Leaderboard!
-                </span>
-                <Link to="/leaderboard" 
-                   className="action-btn action-btn-secondary" 
-                   style={{ marginTop: '0.5rem', width: 'auto', minWidth: '200px' }}>
-                  View Leaderboard →
-                </Link>
-              </div>
+            {!isEmbed && (
+              <Link to="/" className="result-nav-link">
+                🏠 {t.nav.home}
+              </Link>
             )}
           </div>
-        )}
 
-      </div>
-
-      {/* ── Name Input Popup Modal ── */}
-      {showNamePopup && (
-        <div className="lb-modal-overlay" 
-             onClick={(e) => e.target === e.currentTarget && setShowNamePopup(false)}>
-          <div className="lb-modal-card animate-scale-in">
-            <button className="lb-modal-close" 
-                    onClick={() => setShowNamePopup(false)}>✕</button>
-            
-            <h3 style={{ fontFamily: 'var(--font-heading)', 
-                         fontSize: '1.3rem', fontWeight: 800,
-                         color: '#fff', marginBottom: '0.5rem' }}>
-              Add to Global Leaderboard 🏆
-            </h3>
-            <p style={{ color: 'rgba(255,255,255,0.45)', 
-                        fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-              How should your name appear on the leaderboard?
-            </p>
-
-            <input
-              type="text"
-              maxLength={20}
-              placeholder="Your name or nickname"
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && 
-                                nameInput.trim() && 
-                                handleLeaderboardSubmit(nameInput)}
-              style={{
-                width: '100%', padding: '0.85rem 1rem',
-                borderRadius: '12px', border: '1px solid rgba(108,71,255,0.4)',
-                background: 'rgba(108,71,255,0.08)', color: '#fff',
-                fontSize: '1rem', outline: 'none',
-                fontFamily: 'var(--font-body)', marginBottom: '0.4rem',
-                boxSizing: 'border-box'
-              }}
-              autoFocus
-            />
-            <div style={{ textAlign: 'right', fontSize: '0.75rem',
-                          color: 'rgba(255,255,255,0.3)', marginBottom: '1rem' }}>
-              {nameInput.length} / 20
+          {isUniverse && !isEmbed && (
+            <div className="cosmic-disclaimer">
+              <p>{t.result.cosmicDisclaimer}</p>
             </div>
+          )}
 
-            <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.3)',
-                        marginBottom: '1.25rem', display: 'flex', 
-                        alignItems: 'center', gap: '0.4rem' }}>
-              🔒 Only your name and rarity tier are visible to others
-            </p>
+          {isEmbed && (
+            <div className="text-center pt-8 pb-4 z-10 relative mt-4">
+              <a href="https://earthranker.himanshurajak.in" target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white/60 text-xs font-medium transition-colors">
+                {t.poweredBy}
+              </a>
+            </div>
+          )}
 
-            <div style={{ display: 'flex', gap: '0.75rem', 
-                          justifyContent: 'flex-end' }}>
-              <button 
-                onClick={() => setShowNamePopup(false)}
-                style={{ padding: '0.65rem 1.25rem', borderRadius: '10px',
-                         background: 'transparent', color: 'rgba(255,255,255,0.4)',
-                         border: '1px solid rgba(255,255,255,0.12)',
-                         cursor: 'pointer', fontSize: '0.9rem' }}>
-                Skip for now
-              </button>
-              <button
-                disabled={!nameInput.trim() || lbLoading}
-                onClick={() => handleLeaderboardSubmit(nameInput)}
-                style={{ padding: '0.65rem 1.5rem', borderRadius: '10px',
-                         background: nameInput.trim() 
-                           ? 'linear-gradient(135deg, #6C47FF, #9B6BFF)' 
-                           : 'rgba(255,255,255,0.08)',
-                         color: nameInput.trim() ? '#fff' : 'rgba(255,255,255,0.3)',
-                         border: 'none', cursor: nameInput.trim() ? 'pointer' : 'default',
-                         fontWeight: 700, fontSize: '0.95rem',
-                         boxShadow: nameInput.trim() 
-                           ? '0 0 20px rgba(108,71,255,0.4)' : 'none',
-                         transition: 'all 0.2s ease' }}>
-                {lbLoading ? 'Adding...' : 'Add Me →'}
-              </button>
+          {/* ── Bottom Leaderboard Banner ── */}
+          {!isEmbed && (
+            <div className="w-full">
+              {!lbSubmitted ? (
+                <div className="lb-bottom-banner animate-fade-in">
+                  <span className="lb-bottom-banner__title">
+                    🏆 Want to appear on the Global Leaderboard?
+                  </span>
+                  <p className="lb-bottom-banner__sub">
+                    See how you rank against everyone worldwide
+                  </p>
+                  <button className="lb-enter-btn"
+                    onClick={() => setShowNamePopup(true)}>
+                    Enter My Name →
+                  </button>
+                </div>
+              ) : (
+                <div className="lb-bottom-banner animate-fade-in">
+                  <span className="lb-success-msg">
+                    ✓ You're on the Global Leaderboard!
+                  </span>
+                  <Link to="/leaderboard"
+                    className="action-btn action-btn-secondary"
+                    style={{ marginTop: '0.5rem', width: 'auto', minWidth: '200px' }}>
+                    View Leaderboard →
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+
+        </div>
+
+        {/* ── Name Input Popup Modal ── */}
+        {showNamePopup && (
+          <div className="lb-modal-overlay"
+            onClick={(e) => e.target === e.currentTarget && setShowNamePopup(false)}>
+            <div className="lb-modal-card animate-scale-in">
+              <button className="lb-modal-close"
+                onClick={() => setShowNamePopup(false)}>✕</button>
+
+              <h3 style={{
+                fontFamily: 'var(--font-heading)',
+                fontSize: '1.3rem', fontWeight: 800,
+                color: '#fff', marginBottom: '0.5rem'
+              }}>
+                Add to Global Leaderboard 🏆
+              </h3>
+              <p style={{
+                color: 'rgba(255,255,255,0.45)',
+                fontSize: '0.85rem', marginBottom: '1.5rem'
+              }}>
+                How should your name appear on the leaderboard?
+              </p>
+
+              <input
+                type="text"
+                maxLength={20}
+                placeholder="Your name or nickname"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' &&
+                  nameInput.trim() &&
+                  handleLeaderboardSubmit(nameInput)}
+                style={{
+                  width: '100%', padding: '0.85rem 1rem',
+                  borderRadius: '12px', border: '1px solid rgba(108,71,255,0.4)',
+                  background: 'rgba(108,71,255,0.08)', color: '#fff',
+                  fontSize: '1rem', outline: 'none',
+                  fontFamily: 'var(--font-body)', marginBottom: '0.4rem',
+                  boxSizing: 'border-box'
+                }}
+                autoFocus
+              />
+              <div style={{
+                textAlign: 'right', fontSize: '0.75rem',
+                color: 'rgba(255,255,255,0.3)', marginBottom: '1rem'
+              }}>
+                {nameInput.length} / 20
+              </div>
+
+              <p style={{
+                fontSize: '0.78rem', color: 'rgba(255,255,255,0.3)',
+                marginBottom: '1.25rem', display: 'flex',
+                alignItems: 'center', gap: '0.4rem'
+              }}>
+                🔒 Only your name and rarity tier are visible to others
+              </p>
+
+              <div style={{
+                display: 'flex', gap: '0.75rem',
+                justifyContent: 'flex-end'
+              }}>
+                <button
+                  onClick={() => setShowNamePopup(false)}
+                  style={{
+                    padding: '0.65rem 1.25rem', borderRadius: '10px',
+                    background: 'transparent', color: 'rgba(255,255,255,0.4)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    cursor: 'pointer', fontSize: '0.9rem'
+                  }}>
+                  Skip for now
+                </button>
+                <button
+                  disabled={!nameInput.trim() || lbLoading}
+                  onClick={() => handleLeaderboardSubmit(nameInput)}
+                  style={{
+                    padding: '0.65rem 1.5rem', borderRadius: '10px',
+                    background: nameInput.trim()
+                      ? 'linear-gradient(135deg, #6C47FF, #9B6BFF)'
+                      : 'rgba(255,255,255,0.08)',
+                    color: nameInput.trim() ? '#fff' : 'rgba(255,255,255,0.3)',
+                    border: 'none', cursor: nameInput.trim() ? 'pointer' : 'default',
+                    fontWeight: 700, fontSize: '0.95rem',
+                    boxShadow: nameInput.trim()
+                      ? '0 0 20px rgba(108,71,255,0.4)' : 'none',
+                    transition: 'all 0.2s ease'
+                  }}>
+                  {lbLoading ? 'Adding...' : 'Add Me →'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-    </main>
-    {!isEmbed && <Footer />}
+      </main>
+      {!isEmbed && <Footer />}
     </div>
   );
 }

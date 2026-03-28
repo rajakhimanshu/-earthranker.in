@@ -40,6 +40,8 @@ export default async function handler(req) {
       education = 'Unknown',
       bloodType = 'Unknown',
       eyeColor = 'Unknown',
+      hairColor = 'Unknown',
+      handedness = 'Unknown',
       skills = [],
       score = 0,
       tier = 'Common',
@@ -54,29 +56,35 @@ export default async function handler(req) {
     const cleanEducation = sanitize(education);
     const cleanBlood = sanitize(bloodType);
     const cleanEye = sanitize(eyeColor);
+    const cleanHair = sanitize(hairColor);
+    const cleanHand = sanitize(handedness);
     const cleanSkills = (skills || []).map(s => sanitize(s));
 
     const promptText = `You are a poetic data scientist writing a personalised rarity report. 
-Write exactly 3 sentences about this person's statistical rarity. 
-Be specific — mention their actual traits by name. 
-Mention their Global Rank (#${estimatedRank} out of 8.28 billion) and that they are in the top ${Number(topPercentile).toFixed(4)}% of the world population.
-Make it feel like a personal revelation, not a generic compliment. 
-Never use the phrases 'truly unique', 'one of a kind', or 'special'. 
-Start with '${actualName !== 'You' ? actualName : '[userName]'},' if name is provided, or 'You' if not provided. Never invent or assume a name.
+    Write exactly 3 concise sentences about this person's statistical rarity. 
+    1. The first sentence MUST mention their specific combination of ${cleanEye} eyes, ${cleanHair} hair, and ${cleanHand}-handedness.
+    2. The second sentence MUST highlight their rarest skills: ${cleanSkills.slice(0, 3).join(', ')}.
+    3. The third sentence MUST state their exact Global Rank (#${estimatedRank} out of 8.28 billion) and their status in the top ${Number(topPercentile).toFixed(6)}% of humanity.
 
-Traits: 
-Name: ${actualName}, 
-Country: ${cleanCountry}, 
-Age: ${cleanAge}, 
-Education: ${cleanEducation}, 
-Blood Type: ${cleanBlood}, 
-Eye Color: ${cleanEye}, 
-Rare Skills: ${cleanSkills.join(', ')}, 
-Score: ${score}/100, 
-Tier: ${tier}, 
-Global Rank: #${estimatedRank},
-Top Percentile: ${Number(topPercentile).toFixed(4)}%,
-1 in ${oneIn.toLocaleString('en-US')} people.`;
+    Make it feel like a personal revelation based on hard data. 
+    Never use the phrases 'truly unique', 'one of a kind', 'special', or 'miracle'. 
+    Start with '${actualName !== 'You' ? actualName : '[userName]'},' if name is provided, or 'You' if not provided. Never invent or assume a name.
+
+    Traits for Reference: 
+    Name: ${actualName}, 
+    Country: ${cleanCountry}, 
+    Age: ${cleanAge}, 
+    Education: ${cleanEducation}, 
+    Blood Type: ${cleanBlood}, 
+    Eye Color: ${cleanEye}, 
+    Hair Color: ${cleanHair},
+    Handedness: ${cleanHand},
+    Skills: ${cleanSkills.join(', ')}, 
+    Score: ${score}/100, 
+    Tier: ${tier}, 
+    Global Rank: #${estimatedRank},
+    Top Percentile: ${Number(topPercentile).toFixed(6)}%,
+    1 in ${oneIn.toLocaleString('en-US')} people.`;
 
     const groqRequestBody = {
       model: "llama-3.1-8b-instant",

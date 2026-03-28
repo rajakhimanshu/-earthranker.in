@@ -73,9 +73,11 @@ export const EDUCATION = [
   'No formal schooling',
   'Primary school',
   'Secondary / High school',
+  'Some college',
   "Bachelor's degree",
   "Master's degree",
   'PhD / Doctorate',
+  'Trade / Vocational',
 ];
 
 /* ─── Sub-components ──────────────────────────────────────────────── */
