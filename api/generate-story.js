@@ -60,11 +60,13 @@ export default async function handler(req) {
     const cleanHand = sanitize(handedness);
     const cleanSkills = (skills || []).map(s => sanitize(s));
 
+    const formatPercentile = Number(topPercentile) < 0.0001 ? '<0.0001' : Number(topPercentile).toFixed(4);
+
     const promptText = `You are a poetic data scientist writing a personalised rarity report. 
     Write exactly 3 concise sentences about this person's statistical rarity. 
     1. The first sentence MUST mention their specific combination of ${cleanEye} eyes, ${cleanHair} hair, and ${cleanHand}-handedness.
     2. The second sentence MUST highlight their rarest skills: ${cleanSkills.slice(0, 3).join(', ')}.
-    3. The third sentence MUST state their exact Global Rank (#${estimatedRank} out of 8.28 billion) and their status in the top ${Number(topPercentile).toFixed(6)}% of humanity.
+    3. The third sentence MUST state their exact Global Rank (#${estimatedRank} out of 8.28 billion) and their status in the top ${formatPercentile}% of humanity.
 
     Make it feel like a personal revelation based on hard data. 
     Never use the phrases 'truly unique', 'one of a kind', 'special', or 'miracle'. 
@@ -83,7 +85,7 @@ export default async function handler(req) {
     Score: ${score}/100, 
     Tier: ${tier}, 
     Global Rank: #${estimatedRank},
-    Top Percentile: ${Number(topPercentile).toFixed(6)}%,
+    Top Percentile: ${formatPercentile}%,
     1 in ${oneIn.toLocaleString('en-US')} people.`;
 
     const groqRequestBody = {

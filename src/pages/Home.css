@@ -592,12 +592,23 @@
   overflow: hidden;
   background: linear-gradient(
     135deg,
-    rgba(255, 107, 107, 0.2) 0%,
-    rgba(108, 71, 255, 0.25) 50%,
-    rgba(0, 212, 170, 0.18) 100%
+    rgba(16, 20, 60, 0.4) 0%,
+    rgba(30, 15, 60, 0.45) 50%,
+    rgba(10, 30, 50, 0.35) 100%
   );
   background-size: 300% 300%;
-  animation: sectionGradientSweep 6s ease infinite;
+  animation: sectionGradientSweep 3s ease infinite;
+  border-top: 1px solid rgba(255,255,255,0.03);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.section#how-it-works::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at top right, rgba(108,71,255,0.05) 0%, transparent 60%),
+              radial-gradient(circle at bottom left, rgba(0,212,170,0.03) 0%, transparent 60%);
+  pointer-events: none;
 }
 
 @media (max-width: 640px) {
@@ -879,12 +890,12 @@
   overflow: hidden;
   background: linear-gradient(
     135deg,
-    rgba(108, 71, 255, 0.35) 0%,
-    rgba(0, 212, 170, 0.2) 50%,
-    rgba(255, 107, 107, 0.25) 100%
+    rgba(16, 20, 60, 0.4) 0%,
+    rgba(30, 15, 60, 0.45) 50%,
+    rgba(10, 30, 50, 0.35) 100%
   );
   background-size: 300% 300%;
-  animation: sectionGradientSweep 5s ease infinite;
+  animation: sectionGradientSweep 3s ease infinite;
 }
 
 @keyframes sectionGradientSweep {

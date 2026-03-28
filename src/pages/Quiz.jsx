@@ -535,17 +535,7 @@ export default function Quiz() {
             <div className="quiz-field">
               <h2 className="quiz-question">{t.quiz.questions.education.title}</h2>
               <p  className="quiz-hint">{t.quiz.questions.education.hint}</p>
-              <div className="select-wrap">
-                <select
-                  className={`styled-select${errors.education ? ' input--error' : ''}`}
-                  value={answers.education}
-                  onChange={e => set('education', e.target.value)}
-                >
-                  <option value="" disabled>{t.quiz.questions.education.defaultOption}</option>
-                  {EDUCATION.map(e => <option key={e} value={e}>{e}</option>)}
-                </select>
-                <span className="select-arrow">▾</span>
-              </div>
+              <OptionGrid options={EDUCATION} value={answers.education} onChange={v => set('education', v)} cols={2} />
               {errors.education && <p className="field-error">{errors.education}</p>}
             </div>
           )}
@@ -626,7 +616,7 @@ export default function Quiz() {
                 <div className="select-wrap">
                   <select className={`styled-select${errors.birthday ? ' input--error' : ''}`} value={answers.bYear} onChange={e => set('bYear', e.target.value)}>
                     <option value="" disabled>{t.quiz.questions.birthday.year}</option>
-                    {Array.from({length: 2010 - 1950 + 1}, (_, i) => 2010 - i).map(y => <option key={y} value={y}>{y}</option>)}
+                    {Array.from({length: 2021 - 1950 + 1}, (_, i) => 2021 - i).map(y => <option key={y} value={y}>{y}</option>)}
                   </select>
                   <span className="select-arrow">▾</span>
                 </div>

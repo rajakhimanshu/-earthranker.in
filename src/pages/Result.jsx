@@ -1363,8 +1363,10 @@ export default function Result() {
                   background: 'rgba(108,71,255,0.08)', color: '#fff',
                   fontSize: '1rem', outline: 'none',
                   fontFamily: 'var(--font-body)', marginBottom: '0.4rem',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  opacity: lbLoading ? 0.5 : 1
                 }}
+                disabled={lbLoading}
                 autoFocus
               />
               <div style={{
@@ -1401,17 +1403,21 @@ export default function Result() {
                   onClick={() => handleLeaderboardSubmit(nameInput)}
                   style={{
                     padding: '0.65rem 1.5rem', borderRadius: '10px',
-                    background: nameInput.trim()
-                      ? 'linear-gradient(135deg, #6C47FF, #9B6BFF)'
-                      : 'rgba(255,255,255,0.08)',
-                    color: nameInput.trim() ? '#fff' : 'rgba(255,255,255,0.3)',
-                    border: 'none', cursor: nameInput.trim() ? 'pointer' : 'default',
-                    fontWeight: 700, fontSize: '0.95rem',
-                    boxShadow: nameInput.trim()
-                      ? '0 0 20px rgba(108,71,255,0.4)' : 'none',
+                    background: lbLoading 
+                      ? 'linear-gradient(135deg, #FBBF24, #D97706)'
+                      : nameInput.trim()
+                        ? 'linear-gradient(135deg, #6C47FF, #9B6BFF)'
+                        : 'rgba(255,255,255,0.08)',
+                    color: lbLoading || nameInput.trim() ? '#fff' : 'rgba(255,255,255,0.3)',
+                    border: 'none', cursor: (nameInput.trim() && !lbLoading) ? 'pointer' : 'default',
+                    fontWeight: 800, fontSize: '0.95rem',
+                    boxShadow: lbLoading 
+                      ? '0 0 20px rgba(251,191,36,0.6)'
+                      : nameInput.trim()
+                        ? '0 0 20px rgba(108,71,255,0.4)' : 'none',
                     transition: 'all 0.2s ease'
                   }}>
-                  {lbLoading ? 'Adding...' : 'Add Me →'}
+                  {lbLoading ? '⏳ Saving Rank...' : 'Add Me →'}
                 </button>
               </div>
             </div>
